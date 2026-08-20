@@ -38,7 +38,7 @@ fun App(){
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "Prueba de Github",
+            text = "Prueba de Github 2",
             fontSize = 32.sp
         )
     }

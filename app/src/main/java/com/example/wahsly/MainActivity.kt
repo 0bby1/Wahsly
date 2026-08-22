@@ -16,6 +16,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -28,39 +29,110 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.Image
 import androidx.compose.ui.res.painterResource
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.activity.enableEdgeToEdge
+import androidx.activity.SystemBarStyle
+import android.graphics.Color as AndroidColor
+import androidx.compose.foundation.layout.statusBars
 
-class MainActivity : ComponentActivity() {
+
+// cesar@gmail.com
+// 1234
+
+class MainActivity : ComponentActivity() {                      //  G
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent {
-            MaterialTheme {
-                var mostrarRegistro by remember { mutableStateOf(false) }
 
-                if (mostrarRegistro) {
-                    PantallaRegistro(
-                        onRegistroExitoso = {
-                            mostrarRegistro = false
-                            Toast.makeText(
-                                this,
-                                "Cuenta creada. Inicia sesión.",
-                                Toast.LENGTH_LONG
-                            ).show()
-                        },
-                        onVolverLogin = {
-                            mostrarRegistro = false
-                        }
-                    )
-                } else {
-                    PantallaInicioSesion(
-                        onCrearCuenta = {
-                            mostrarRegistro = true
-                        }
-                    )
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.dark(
+                AndroidColor.rgb(200, 217, 230)
+            )
+        )
+
+        setContent {
+
+            MaterialTheme {
+
+                // Guarda qué pantalla se está mostrando actualmente
+                var pantallaActual by remember {
+                    mutableStateOf("LOGIN")
+                }
+
+                when (pantallaActual) {
+
+                    // ---------------- LOGIN ----------------
+                    "LOGIN" -> {
+                        PantallaInicioSesion(
+
+                            // Si quiere crear una cuenta
+                            onCrearCuenta = {
+                                pantallaActual = "REGISTRO"
+                            },
+
+                            // Si inicia sesión correctamente
+                            onLoginExitoso = {
+                                pantallaActual = "INICIO"
+                            }
+                        )
+                    }
+
+                    // ---------------- REGISTRO ----------------
+                    "REGISTRO" -> {
+                        PantallaRegistro(
+
+                            onRegistroExitoso = {
+
+                                pantallaActual = "LOGIN"
+
+                                Toast.makeText(
+                                    this,
+                                    "Cuenta creada. Inicia sesión.",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            },
+
+                            onVolverLogin = {
+                                pantallaActual = "LOGIN"
+                            }
+                        )
+                    }
+
+                    // ---------------- PANTALLA PRINCIPAL ----------------
+                    "INICIO" -> {
+                        PantallaPrincipal(
+
+                            // Abre la pantalla de historial
+                            onHistorial = {
+                                pantallaActual = "HISTORIAL"
+                            },
+
+                            // Cerrar sesión
+                            onCerrarSesion = {
+                                pantallaActual = "LOGIN"
+                            }
+                        )
+                    }
+
+                    // ---------------- HISTORIAL ----------------
+                    "HISTORIAL" -> {
+
+                        PantallaHistorial(
+
+                            // Regresa a Inicio
+                            onVolver = {
+                                pantallaActual = "INICIO"
+                            }
+                        )
+                    }
                 }
             }
         }
     }
-}
+}                                                                      //
 
 // Clase del Usuario
 data class Usuario(
@@ -70,6 +142,21 @@ data class Usuario(
     val contrasena: String
 )
 
+// Registro de escaneo
+
+data class RegistroEscaneo(
+    val nombre: String,
+    val fecha: String,
+    val informacion: String
+)
+
+
+
+// historial vacio porque no sabia que agregar jeje
+
+object BaseDatosHistorial {
+    val registros = mutableStateListOf<RegistroEscaneo>()
+}
 // Usuarios de prueba (mutable)
 object base_de_datos_Usuarios {
     val usuarios = mutableListOf(
@@ -113,7 +200,10 @@ fun correoValido(correo: String): Boolean {
 
 // Pantalla inicio de sesion
 @Composable
-fun PantallaInicioSesion(onCrearCuenta: () -> Unit) {
+fun PantallaInicioSesion(       //
+    onCrearCuenta: () -> Unit,   //Gabo//
+    onLoginExitoso: () -> Unit   //
+) {                             //
     val context = LocalContext.current
     var correo by remember { mutableStateOf("") }
     var contrasena by remember { mutableStateOf("") }
@@ -209,6 +299,9 @@ fun PantallaInicioSesion(onCrearCuenta: () -> Unit) {
                     try {
                         val usuario = autenticador.iniciarSesion(correo, contrasena)
                         Toast.makeText(context, "Bienvenido ${usuario.nombre}", Toast.LENGTH_LONG).show()
+                        // Después de iniciar sesión correctamente se envia al
+                        // desgraciado usuario a la pantalla principal.
+                        onLoginExitoso()
                     } catch (e: IllegalArgumentException) {
                         Toast.makeText(context, e.message ?: "Datos inválidos", Toast.LENGTH_SHORT).show()
                     } catch (e: CredencialesIncorrectasException) {
@@ -533,5 +626,500 @@ fun BotonCrearCuenta(onClick: () -> Unit) {
         contentAlignment = Alignment.Center
     ) {
         Text(text = "Crear Cuenta", color = Color(0xFF334055), fontSize = 23.sp, fontWeight = FontWeight.SemiBold)
+    }
+}
+
+@Composable
+fun PantallaPrincipal(
+    onHistorial: () -> Unit,
+    onCerrarSesion: () -> Unit
+) {
+
+    val context = LocalContext.current
+
+    var busqueda by remember {
+        mutableStateOf("")
+    }
+
+    var mostrarMenu by remember {
+        mutableStateOf(false)
+    }
+
+    // COLORES
+    val azulClaro = Color(0xFFC8D9E6)
+    val azulPrincipal = Color(0xFF547D94)
+    val azulTexto = Color(0xFF334055)
+    val moradoLupa = Color(0xFF9D82D6)
+    val fondo = Color(0xFFFCFCFC)
+
+    // Altura donde Android muestra hora, batería, WiFi, etc.
+    val alturaStatusBar = WindowInsets.statusBars
+        .asPaddingValues()
+        .calculateTopPadding()
+
+
+    Scaffold(
+
+        containerColor = fondo,
+
+        // Evita que Android nos agregue otro espacio arriba
+        contentWindowInsets = WindowInsets(
+            left = 0,
+            top = 0,
+            right = 0,
+            bottom = 0
+        ),
+
+        // ==================================================
+        // BARRA INFERIOR
+        // ==================================================
+        bottomBar = {
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(fondo)
+                    .padding(
+                        start = 10.dp,
+                        end = 10.dp,
+                        bottom = 8.dp
+                    )
+            ) {
+
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(78.dp),
+
+                    shape = RoundedCornerShape(45.dp),
+
+                    color = azulPrincipal,
+
+                    shadowElevation = 5.dp
+                ) {
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 8.dp),
+
+                        verticalAlignment = Alignment.CenterVertically,
+
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+
+                        // ---------------- INICIO ----------------
+                        Box(
+                            modifier = Modifier
+                                .width(105.dp)
+                                .height(65.dp)
+                                .clip(RoundedCornerShape(38.dp))
+                                .background(azulClaro),
+
+                            contentAlignment = Alignment.Center
+                        ) {
+
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+
+                                Icon(
+                                    imageVector = Icons.Default.Home,
+                                    contentDescription = "Inicio",
+                                    tint = azulPrincipal,
+                                    modifier = Modifier.size(34.dp)
+                                )
+
+                                Text(
+                                    text = "Inicio",
+                                    fontSize = 12.sp,
+                                    color = azulPrincipal
+                                )
+                            }
+                        }
+
+
+                        // ---------------- ESCANEAR ----------------
+                        Column(
+                            modifier = Modifier
+                                .width(105.dp)
+                                .clickable {
+
+                                    Toast.makeText(
+                                        context,
+                                        "Escáner próximamente",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                },
+
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = "Escanear",
+                                tint = Color(0xFFC5D7E0),
+                                modifier = Modifier.size(38.dp)
+                            )
+
+                            Text(
+                                text = "Escanear",
+                                fontSize = 12.sp,
+                                color = Color.White
+                            )
+                        }
+
+
+                        // ---------------- CUENTA ----------------
+                        Column(
+                            modifier = Modifier
+                                .width(105.dp)
+                                .clickable {
+
+                                    Toast.makeText(
+                                        context,
+                                        "Cuenta próximamente",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                },
+
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = "Cuenta",
+                                tint = Color(0xFFC5D7E0),
+                                modifier = Modifier.size(32.dp)
+                            )
+
+                            Text(
+                                text = "Cuenta",
+                                fontSize = 12.sp,
+                                color = Color.White
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+    ) { padding ->
+
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(fondo)
+                .padding(bottom = padding.calculateBottomPadding())
+        ) {
+
+
+
+            // CABECERA AZUL CLARO
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(alturaStatusBar + 92.dp)
+                    .background(
+                        color = azulClaro,
+                        shape = RoundedCornerShape(
+                            bottomStart = 12.dp,
+                            bottomEnd = 12.dp
+                        )
+                    )
+            ) {
+
+
+                // BARRA DE BÚSQUEDA
+
+                OutlinedTextField(
+
+                    value = busqueda,
+
+                    onValueChange = {
+                        busqueda = it
+                    },
+
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            start = 15.dp,
+                            end = 15.dp,
+                            top = alturaStatusBar + 12.dp
+                        )
+                        .height(58.dp)
+                        .shadow(
+                            elevation = 5.dp,
+                            shape = RoundedCornerShape(40.dp)
+                        ),
+
+                    leadingIcon = {
+
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "Buscar",
+                            tint = moradoLupa,
+                            modifier = Modifier.size(28.dp)
+                        )
+                    },
+
+                    singleLine = true,
+
+                    shape = RoundedCornerShape(40.dp),
+
+                    colors = OutlinedTextFieldDefaults.colors(
+
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White,
+
+                        focusedBorderColor = Color.Transparent,
+                        unfocusedBorderColor = Color.Transparent,
+
+                        focusedTextColor = azulTexto,
+                        unfocusedTextColor = azulTexto,
+
+                        cursorColor = azulTexto
+                    )
+                )
+            }
+
+
+
+            // FRANJA AZUL DEL MENÚ
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(70.dp)
+                    .background(azulPrincipal)
+            ) {
+
+                IconButton(
+                    onClick = {
+                        mostrarMenu = true
+                    },
+
+                    modifier = Modifier
+                        .align(Alignment.CenterStart)
+                        .padding(start = 12.dp)
+                ) {
+
+                    Icon(
+                        imageVector = Icons.Default.Menu,
+                        contentDescription = "Menú",
+                        tint = Color.White,
+                        modifier = Modifier.size(34.dp)
+                    )
+                }
+
+
+                // ---------------- MENÚ DESPLEGABLE ----------------
+                DropdownMenu(
+
+                    expanded = mostrarMenu,
+
+                    onDismissRequest = {
+                        mostrarMenu = false
+                    }
+
+                ) {
+
+                    DropdownMenuItem(
+
+                        text = {
+                            Text("Historial")
+                        },
+
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.History,
+                                contentDescription = null
+                            )
+                        },
+
+                        onClick = {
+
+                            mostrarMenu = false
+
+                            onHistorial()
+                        }
+                    )
+
+
+                    DropdownMenuItem(
+
+                        text = {
+                            Text("Cerrar sesión")
+                        },
+
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.ExitToApp,
+                                contentDescription = null
+                            )
+                        },
+
+                        onClick = {
+
+                            mostrarMenu = false
+
+                            onCerrarSesion()
+                        }
+                    )
+                }
+            }
+
+
+
+            // CONTENIDO CENTRAL
+
+
+            if (BaseDatosHistorial.registros.isEmpty()) {
+
+                // Historial vacío.
+                // Dejamos esta zona limpia como en tu diseño.
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .background(fondo)
+                )
+
+            } else {
+
+
+                // CUANDO EXISTAN ESCANEOS
+
+                LazyColumn(
+
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .background(fondo),
+
+                    contentPadding = PaddingValues(
+                        start = 32.dp,
+                        end = 32.dp,
+                        top = 35.dp,
+                        bottom = 25.dp
+                    ),
+
+                    verticalArrangement = Arrangement.spacedBy(30.dp)
+
+                ) {
+
+                    items(
+                        BaseDatosHistorial.registros
+                    ) { registro ->
+
+
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(250.dp)
+                                .clickable {
+                                    onHistorial()
+                                },
+
+                            shape = RoundedCornerShape(26.dp),
+
+                            elevation = CardDefaults.cardElevation(
+                                defaultElevation = 5.dp
+                            ),
+
+                            colors = CardDefaults.cardColors(
+                                containerColor = Color.White
+                            )
+                        ) {
+
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(23.dp)
+                            ) {
+
+                                Text(
+                                    text = registro.nombre,
+                                    fontSize = 24.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = azulTexto
+                                )
+
+                                Spacer(
+                                    modifier = Modifier.height(12.dp)
+                                )
+
+                                Text(
+                                    text = registro.fecha,
+                                    fontSize = 14.sp,
+                                    color = Color.Gray
+                                )
+
+                                Spacer(
+                                    modifier = Modifier.height(18.dp)
+                                )
+
+                                Text(
+                                    text = registro.informacion,
+                                    fontSize = 16.sp,
+                                    color = azulTexto
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Pantalla del historial
+
+@Composable
+fun PantallaHistorial(
+    onVolver: () -> Unit
+) {
+
+    val colorFondo = Color(0xFFF9F9F9)
+    val colorTexto = Color(0xFF334055)
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(colorFondo)
+            .padding(30.dp),
+
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+
+        Text(
+            text = "Historial",
+            fontSize = 30.sp,
+            fontWeight = FontWeight.Bold,
+            color = colorTexto
+        )
+
+        Spacer(modifier = Modifier.height(30.dp))
+
+        if (BaseDatosHistorial.registros.isEmpty()) {
+
+            Text(
+                text = "No hay escaneos guardados.",
+                fontSize = 18.sp,
+                color = Color.Gray
+            )
+        }
+
+        Spacer(modifier = Modifier.height(40.dp))
+
+        Button(
+            onClick = {
+                onVolver()
+            }
+        ) {
+            Text("Volver")
+        }
     }
 }

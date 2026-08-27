@@ -446,7 +446,7 @@ class MainActivity : ComponentActivity() {
         var mostrarConfirmacion by remember { mutableStateOf(false) }
 
         val colorFondo = Color(0xFFF4EFEB)
-        val colorTextoPrincipal = Color(0xFF2F4157)
+        val colorTextoPrincipal = Color(0xFFFFFFFF)
         val colorTextoSecundario = Color(0xFFA2B1BE)
         val colorIcono = Color(0xFFFFFFFF)
 
@@ -493,7 +493,7 @@ class MainActivity : ComponentActivity() {
                     text = "Crea tu cuenta",
                     fontSize = 26.sp,
                     fontWeight = FontWeight.Bold,
-                    color = colorTextoPrincipal,
+                    color = Color(0xFF2F4157),
                     modifier = Modifier.align(Alignment.Start)
                 )
 
@@ -691,7 +691,7 @@ class MainActivity : ComponentActivity() {
                     Text(
                         text = "Acepta la Política de Privacidad",
                         fontSize = 16.sp,
-                        color = colorTextoPrincipal,
+                        color = Color(0xFF2F4157),
                         modifier = Modifier.clickable { aceptaPolitica = !aceptaPolitica }
                     )
                 }

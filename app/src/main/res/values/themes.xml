@@ -1,14 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- Tema normal de la app -->
-    <style name="Theme.Wahsly" parent="android:Theme.Material.Light.NoActionBar" />
+    <!-- Tema normal de la aplicación -->
+    <style
+        name="Theme.Wahsly"
+        parent="android:Theme.Material.Light.NoActionBar" />
 
-    <!-- Tema de la splash screen -->
-    <style name="Theme.Wahsly.Splash" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">#FFFFFF</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/icono_washly</item>
-        <item name="postSplashScreenTheme">@style/Theme.Wahsly</item>
+    <!-- Tema usado únicamente mientras Android inicia la app -->
+    <style
+        name="Theme.Wahsly.Splash"
+        parent="Theme.SplashScreen">
+
+        <!-- Mismo fondo que nuestra aplicación -->
+        <item name="windowSplashScreenBackground">#F4EFEB</item>
+
+        <!-- No mostramos ningún icono -->
+        <item name="windowSplashScreenAnimatedIcon">
+            @drawable/splash_transparente
+        </item>
+
+        <!-- Después pasa al tema normal -->
+        <item name="postSplashScreenTheme">
+            @style/Theme.Wahsly
+        </item>
+
     </style>
 
 </resources>

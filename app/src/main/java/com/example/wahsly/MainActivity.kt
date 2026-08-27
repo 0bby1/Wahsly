@@ -33,35 +33,25 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.activity.enableEdgeToEdge
-import androidx.activity.SystemBarStyle
-import android.graphics.Color as AndroidColor
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.ui.layout.ContentScale
+import kotlinx.coroutines.delay
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 
 
 // cesar@gmail.com
 // 1234
 
-class MainActivity : ComponentActivity() {                      //  G
+class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        installSplashScreen() //R
+        installSplashScreen()
         super.onCreate(savedInstanceState)
-
-        enableEdgeToEdge(
-            statusBarStyle = SystemBarStyle.dark(
-                AndroidColor.rgb(200, 217, 230)
-            )
-        )
-
         setContent {
-
             MaterialTheme {
-
-                // Guarda qué pantalla se está mostrando actualmente
+                // Primera pantalla que se mostrará
                 var pantallaActual by remember {
-                    mutableStateOf("LOGIN")
+                    mutableStateOf("SPLASH")
                 }
 
                 // Guarda qué usuario inició sesión
@@ -71,18 +61,29 @@ class MainActivity : ComponentActivity() {                      //  G
 
                 when (pantallaActual) {
 
+                    // ---------------- SPLASH ----------------
+                    "SPLASH" -> {
+
+                        PantallaSplash(
+                            onTerminar = {
+                                pantallaActual = "LOGIN"
+                            }
+                        )
+                    }
+
                     // ---------------- LOGIN ----------------
                     "LOGIN" -> {
+
                         PantallaInicioSesion(
 
-                            // Si quiere crear una cuenta
                             onCrearCuenta = {
                                 pantallaActual = "REGISTRO"
                             },
 
-                            // Si inicia sesión correctamente
                             onLoginExitoso = { usuario ->
+
                                 usuarioActual = usuario
+
                                 pantallaActual = "INICIO"
                             }
                         )
@@ -90,6 +91,7 @@ class MainActivity : ComponentActivity() {                      //  G
 
                     // ---------------- REGISTRO ----------------
                     "REGISTRO" -> {
+
                         PantallaRegistro(
 
                             onRegistroExitoso = {
@@ -111,23 +113,23 @@ class MainActivity : ComponentActivity() {                      //  G
 
                     // ---------------- PANTALLA PRINCIPAL ----------------
                     "INICIO" -> {
+
                         PantallaPrincipal(
 
                             usuario = usuarioActual,
 
-                            // Abre la pantalla de historial
                             onHistorial = {
                                 pantallaActual = "HISTORIAL"
                             },
 
-                            // Abre la pantalla de perfil
                             onPerfil = {
                                 pantallaActual = "PERFIL"
                             },
 
-                            // Cerrar sesión
                             onCerrarSesion = {
+
                                 usuarioActual = null
+
                                 pantallaActual = "LOGIN"
                             }
                         )
@@ -138,7 +140,6 @@ class MainActivity : ComponentActivity() {                      //  G
 
                         PantallaHistorial(
 
-                            // Regresa a Inicio
                             onVolver = {
                                 pantallaActual = "INICIO"
                             }
@@ -157,7 +158,9 @@ class MainActivity : ComponentActivity() {                      //  G
                             },
 
                             onCerrarSesion = {
+
                                 usuarioActual = null
+
                                 pantallaActual = "LOGIN"
                             }
                         )
@@ -165,7 +168,35 @@ class MainActivity : ComponentActivity() {                      //  G
                 }
             }
         }
-    } }                                                                     //
+    }                                                             //
+
+    @Composable
+    fun PantallaSplash(
+        onTerminar: () -> Unit
+    ) {
+
+        LaunchedEffect(Unit) {
+            delay(1500)
+            onTerminar()
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFFF4EFEB)),
+            contentAlignment = Alignment.Center
+        ) {
+
+            Image(
+                painter = painterResource(
+                    id = R.drawable.washlylogo_inicio
+                ),
+                contentDescription = "Logo de Washly",
+                modifier = Modifier.size(280.dp),
+                contentScale = ContentScale.Fit
+            )
+        }
+    }
 
     // Clase del Usuario
     data class Usuario(
@@ -215,7 +246,7 @@ class MainActivity : ComponentActivity() {                      //  G
 
     class CredencialesIncorrectasException(mensaje: String) : Exception(mensaje)
 
-    class AutenticadorLocal : Autenticador {
+    inner class AutenticadorLocal : Autenticador {
         override fun iniciarSesion(correo: String, contrasena: String): Usuario {
             if (correo.isBlank()) throw IllegalArgumentException("Ingresa tu correo electrónico")
             if (contrasena.isBlank()) throw IllegalArgumentException("Ingresa tu contraseña")
@@ -243,10 +274,10 @@ class MainActivity : ComponentActivity() {                      //  G
         var mostrarContrasena by remember { mutableStateOf(false) }
         val autenticador = remember { AutenticadorLocal() }
 
-        val colorFondo = Color(0xFFC8D9E6)
-        val colorTextoPrincipal = Color(0xFF334055)
-        val colorTextoSecundario = Color(0xFFA5B1BD)
-        val colorIcono = Color(0xFFA5A5A5)
+        val colorFondo = Color(0xFFF4EFEB)
+        val colorTextoPrincipal = Color(0xFFFFFFFF)
+        val colorTextoSecundario = Color(0xFFA2B1BE)
+        val colorIcono = Color(0xFFFFFFFF)
 
         Box(modifier = Modifier.fillMaxSize().background(colorFondo)) {
             Column(
@@ -255,12 +286,13 @@ class MainActivity : ComponentActivity() {                      //  G
                     .padding(start = 40.dp, end = 40.dp, top = 95.dp, bottom = 45.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                Spacer(modifier = Modifier.height(20.dp))
                 Image(
-                    painter = painterResource(id = R.drawable.icono_washly),
+                    painter = painterResource(id = R.drawable.washly_inicio_sesion),
                     contentDescription = "Logo de Wahsly",
-                    modifier = Modifier.size(145.dp)
+                    modifier = Modifier.size(225.dp)
                 )
-                Spacer(modifier = Modifier.height(75.dp))
+                Spacer(modifier = Modifier.height(55.dp))
 
                 // Correo
                 OutlinedTextField(
@@ -271,7 +303,7 @@ class MainActivity : ComponentActivity() {                      //  G
                         Text(
                             "Correo electrónico",
                             fontSize = 19.sp,
-                            color = Color(0xFFA5A5A5)
+                            color = Color(0xFFFFFFFF)
                         )
                     },
                     leadingIcon = {
@@ -286,10 +318,10 @@ class MainActivity : ComponentActivity() {                      //  G
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                     shape = RoundedCornerShape(16.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = Color.White,
-                        unfocusedContainerColor = Color.White,
-                        focusedBorderColor = Color(0xFFBFC7CD),
-                        unfocusedBorderColor = Color(0xFFE8E8E8),
+                        focusedContainerColor = Color(0xFF2F4157),
+                        unfocusedContainerColor = Color(0xFF2F4157),
+                        focusedBorderColor = Color(0xFF2F4157),
+                        unfocusedBorderColor = Color(0xFF2F4157),
                         cursorColor = colorTextoPrincipal,
                         focusedTextColor = colorTextoPrincipal,
                         unfocusedTextColor = colorTextoPrincipal
@@ -306,7 +338,7 @@ class MainActivity : ComponentActivity() {                      //  G
                         Text(
                             "Contraseña",
                             fontSize = 19.sp,
-                            color = Color(0xFFA5A5A5)
+                            color = Color(0xFFFFFFFF)
                         )
                     },
                     leadingIcon = {
@@ -322,7 +354,7 @@ class MainActivity : ComponentActivity() {                      //  G
                             Icon(
                                 imageVector = if (mostrarContrasena) Icons.Default.VisibilityOff else Icons.Default.Visibility,
                                 contentDescription = if (mostrarContrasena) "Ocultar" else "Mostrar",
-                                tint = Color(0xFF747474)
+                                tint = Color(0xFFFFFFFF)
                             )
                         }
                     },
@@ -331,10 +363,10 @@ class MainActivity : ComponentActivity() {                      //  G
                     singleLine = true,
                     shape = RoundedCornerShape(16.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = Color.White,
-                        unfocusedContainerColor = Color.White,
-                        focusedBorderColor = Color(0xFFBFC7CD),
-                        unfocusedBorderColor = Color(0xFFE8E8E8),
+                        focusedContainerColor = Color(0xFF2F4157),
+                        unfocusedContainerColor = Color(0xFF2F4157),
+                        focusedBorderColor = Color(0xFF2F4157),
+                        unfocusedBorderColor = Color(0xFF2F4157),
                         cursorColor = colorTextoPrincipal,
                         focusedTextColor = colorTextoPrincipal,
                         unfocusedTextColor = colorTextoPrincipal
@@ -413,10 +445,10 @@ class MainActivity : ComponentActivity() {                      //  G
         var mostrarContrasena by remember { mutableStateOf(false) }
         var mostrarConfirmacion by remember { mutableStateOf(false) }
 
-        val colorFondo = Color(0xFFC8D9E6)
-        val colorTextoPrincipal = Color(0xFF334055)
-        val colorTextoSecundario = Color(0xFFA5B1BD)
-        val colorIcono = Color(0xFFA5A5A5)
+        val colorFondo = Color(0xFFF4EFEB)
+        val colorTextoPrincipal = Color(0xFF2F4157)
+        val colorTextoSecundario = Color(0xFFA2B1BE)
+        val colorIcono = Color(0xFFFFFFFF)
 
         Box(modifier = Modifier.fillMaxSize().background(colorFondo)) {
             Column(
@@ -425,6 +457,7 @@ class MainActivity : ComponentActivity() {                      //  G
                     .padding(start = 40.dp, end = 40.dp, top = 45.dp, bottom = 45.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                Spacer(modifier = Modifier.height(40.dp))
                 // Fila superior: logo a la izquierda, textos a la derecha
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -432,7 +465,7 @@ class MainActivity : ComponentActivity() {                      //  G
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Image(
-                        painter = painterResource(id = R.drawable.icono_washly),
+                        painter = painterResource(id = R.drawable.icono_washly_crear_cuenta),
                         contentDescription = "Logo de Wahsly",
                         modifier = Modifier.size(80.dp)
                     )
@@ -446,7 +479,7 @@ class MainActivity : ComponentActivity() {                      //  G
                         )
                         Text(
                             text = "Iniciar sesión",
-                            color = colorTextoPrincipal,
+                            color = Color(0xFFDC9CAD),
                             fontSize = 18.sp,
                             fontWeight = FontWeight.SemiBold,
                             modifier = Modifier.clickable { onVolverLogin() }
@@ -471,7 +504,7 @@ class MainActivity : ComponentActivity() {                      //  G
                     value = nombre,
                     onValueChange = { nombre = it },
                     modifier = Modifier.fillMaxWidth().height(60.dp),
-                    placeholder = { Text("Nombre", fontSize = 18.sp, color = Color(0xFFA5A5A5)) },
+                    placeholder = { Text("Nombre", fontSize = 18.sp, color = Color(0xFFFFFFFF)) },
                     leadingIcon = {
                         Icon(
                             Icons.Default.Person,
@@ -482,23 +515,23 @@ class MainActivity : ComponentActivity() {                      //  G
                     singleLine = true,
                     shape = RoundedCornerShape(16.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = Color.White,
-                        unfocusedContainerColor = Color.White,
-                        focusedBorderColor = Color(0xFFBFC7CD),
-                        unfocusedBorderColor = Color(0xFFE8E8E8),
+                        focusedContainerColor = Color(0xFF2F4157),
+                        unfocusedContainerColor = Color(0xFF2F4157),
+                        focusedBorderColor = Color(0xFF2F4157),
+                        unfocusedBorderColor = Color(0xFF2F4157),
                         cursorColor = colorTextoPrincipal,
                         focusedTextColor = colorTextoPrincipal,
                         unfocusedTextColor = colorTextoPrincipal
                     )
                 )
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(18.dp))
 
                 // Apellido
                 OutlinedTextField(
                     value = apellido,
                     onValueChange = { apellido = it },
                     modifier = Modifier.fillMaxWidth().height(60.dp),
-                    placeholder = { Text("Apellido", fontSize = 18.sp, color = Color(0xFFA5A5A5)) },
+                    placeholder = { Text("Apellido", fontSize = 18.sp, color = Color(0xFFFFFFFF)) },
                     leadingIcon = {
                         Icon(
                             Icons.Default.Person,
@@ -509,16 +542,16 @@ class MainActivity : ComponentActivity() {                      //  G
                     singleLine = true,
                     shape = RoundedCornerShape(16.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = Color.White,
-                        unfocusedContainerColor = Color.White,
-                        focusedBorderColor = Color(0xFFBFC7CD),
-                        unfocusedBorderColor = Color(0xFFE8E8E8),
+                        focusedContainerColor = Color(0xFF2F4157),
+                        unfocusedContainerColor = Color(0xFF2F4157),
+                        focusedBorderColor = Color(0xFF2F4157),
+                        unfocusedBorderColor = Color(0xFF2F4157),
                         cursorColor = colorTextoPrincipal,
                         focusedTextColor = colorTextoPrincipal,
                         unfocusedTextColor = colorTextoPrincipal
                     )
                 )
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(18.dp))
 
                 // Correo
                 OutlinedTextField(
@@ -529,7 +562,7 @@ class MainActivity : ComponentActivity() {                      //  G
                         Text(
                             "Correo electrónico",
                             fontSize = 18.sp,
-                            color = Color(0xFFA5A5A5)
+                            color = Color(0xFFFFFFFF)
                         )
                     },
                     leadingIcon = {
@@ -543,16 +576,16 @@ class MainActivity : ComponentActivity() {                      //  G
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                     shape = RoundedCornerShape(16.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = Color.White,
-                        unfocusedContainerColor = Color.White,
-                        focusedBorderColor = Color(0xFFBFC7CD),
-                        unfocusedBorderColor = Color(0xFFE8E8E8),
+                        focusedContainerColor = Color(0xFF2F4157),
+                        unfocusedContainerColor = Color(0xFF2F4157),
+                        focusedBorderColor = Color(0xFF2F4157),
+                        unfocusedBorderColor = Color(0xFF2F4157),
                         cursorColor = colorTextoPrincipal,
                         focusedTextColor = colorTextoPrincipal,
                         unfocusedTextColor = colorTextoPrincipal
                     )
                 )
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(18.dp))
 
                 // Contraseña
                 OutlinedTextField(
@@ -563,7 +596,7 @@ class MainActivity : ComponentActivity() {                      //  G
                         Text(
                             "Crea tu contraseña",
                             fontSize = 18.sp,
-                            color = Color(0xFFA5A5A5)
+                            color = Color(0xFFFFFFFF)
                         )
                     },
                     leadingIcon = {
@@ -578,7 +611,7 @@ class MainActivity : ComponentActivity() {                      //  G
                             Icon(
                                 imageVector = if (mostrarContrasena) Icons.Default.VisibilityOff else Icons.Default.Visibility,
                                 contentDescription = null,
-                                tint = Color(0xFF747474)
+                                tint = Color(0xFFFFFFFF)
                             )
                         }
                     },
@@ -587,16 +620,16 @@ class MainActivity : ComponentActivity() {                      //  G
                     singleLine = true,
                     shape = RoundedCornerShape(16.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = Color.White,
-                        unfocusedContainerColor = Color.White,
-                        focusedBorderColor = Color(0xFFBFC7CD),
-                        unfocusedBorderColor = Color(0xFFE8E8E8),
+                        focusedContainerColor = Color(0xFF2F4157),
+                        unfocusedContainerColor = Color(0xFF2F4157),
+                        focusedBorderColor = Color(0xFF2F4157),
+                        unfocusedBorderColor = Color(0xFF2F4157),
                         cursorColor = colorTextoPrincipal,
                         focusedTextColor = colorTextoPrincipal,
                         unfocusedTextColor = colorTextoPrincipal
                     )
                 )
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(18.dp))
 
                 // Confirmar contraseña
                 OutlinedTextField(
@@ -607,7 +640,7 @@ class MainActivity : ComponentActivity() {                      //  G
                         Text(
                             "Confirma tu contraseña",
                             fontSize = 18.sp,
-                            color = Color(0xFFA5A5A5)
+                            color = Color(0xFFFFFFFF)
                         )
                     },
                     leadingIcon = {
@@ -622,7 +655,7 @@ class MainActivity : ComponentActivity() {                      //  G
                             Icon(
                                 imageVector = if (mostrarConfirmacion) Icons.Default.VisibilityOff else Icons.Default.Visibility,
                                 contentDescription = null,
-                                tint = Color(0xFF747474)
+                                tint = Color(0xFFFFFFFF)
                             )
                         }
                     },
@@ -631,16 +664,16 @@ class MainActivity : ComponentActivity() {                      //  G
                     singleLine = true,
                     shape = RoundedCornerShape(16.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = Color.White,
-                        unfocusedContainerColor = Color.White,
-                        focusedBorderColor = Color(0xFFBFC7CD),
-                        unfocusedBorderColor = Color(0xFFE8E8E8),
+                        focusedContainerColor = Color(0xFF2F4157),
+                        unfocusedContainerColor = Color(0xFF2F4157),
+                        focusedBorderColor = Color(0xFF2F4157),
+                        unfocusedBorderColor = Color(0xFF2F4157),
                         cursorColor = colorTextoPrincipal,
                         focusedTextColor = colorTextoPrincipal,
                         unfocusedTextColor = colorTextoPrincipal
                     )
                 )
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(18.dp))
 
                 // Checkbox política
                 Row(
@@ -1384,5 +1417,5 @@ class MainActivity : ComponentActivity() {                      //  G
             Spacer(modifier = Modifier.width(14.dp))
             Text(texto, fontSize = 16.sp, color = colorTexto)
         }
-    }
+    }}
 

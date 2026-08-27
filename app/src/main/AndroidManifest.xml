@@ -6,23 +6,29 @@
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@drawable/icono_washly_error"
+        android:icon="@drawable/icono_cajita_washly"
         android:label="@string/app_name"
-        android:roundIcon="@drawable/icono_washly_error"
+        android:roundIcon="@drawable/icono_cajita_washly"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Wahsly.Splash">
+        android:theme="@style/Theme.Wahsly">
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.Wahsly.Splash"
             android:windowSoftInputMode="adjustResize">
+
             <intent-filter>
+
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
+
             </intent-filter>
+
         </activity>
+
     </application>
 
 </manifest>

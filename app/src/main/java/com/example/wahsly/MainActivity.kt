@@ -1582,6 +1582,7 @@ class MainActivity : ComponentActivity() {
                 }
 
                 //  POP-UP PARA CONFIRMAR CIERRE DE SESIÓN :P
+                if (mostrarDialogoCerrarSesion) {
                     Dialog(onDismissRequest = { mostrarDialogoCerrarSesion = false }) {
                         Box(
                             modifier = Modifier
@@ -1662,4 +1663,4 @@ class MainActivity : ComponentActivity() {
                 tint = Color(0xFFBBBBBB)
             )
         }
-    }
+    }}

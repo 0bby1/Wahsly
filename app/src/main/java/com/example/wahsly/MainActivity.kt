@@ -1662,4 +1662,4 @@ class MainActivity : ComponentActivity() {
                 tint = Color(0xFFBBBBBB)
             )
         }
-    }}
+    }

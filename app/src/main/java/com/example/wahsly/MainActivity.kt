@@ -40,6 +40,7 @@ import kotlinx.coroutines.delay
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import android.net.Uri
 import android.widget.VideoView
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.viewinterop.AndroidView
 
 // cesar@gmail.com
@@ -827,7 +828,7 @@ class MainActivity : ComponentActivity() {
                     }
                 )
 
-                // Ya no hay "o regístrate con" ni botones sociales
+
             }
         }
     }
@@ -903,31 +904,23 @@ class MainActivity : ComponentActivity() {
         }
 
         // COLORES
-        val azulClaro = Color(0xFFC8D9E6)
-        val azulPrincipal = Color(0xFF547D94)
+        val azulClaro = Color(0xFF2F4157)
+        val azulPrincipal = Color(0xFF2F4157)
         val azulTexto = Color(0xFF334055)
         val moradoLupa = Color(0xFF9D82D6)
-        val fondo = Color(0xFFFCFCFC)
+        val fondo = Color(0xFFF4EFEB)
 
         // Altura donde Android muestra hora, batería, WiFi, etc.
         val alturaStatusBar = WindowInsets.statusBars
             .asPaddingValues()
             .calculateTopPadding()
 
-
         Scaffold(
-
             containerColor = fondo,
-
-            // === AHORA RESPETA LOS INSET DEL SISTEMA ===
-            // Usamos WindowInsets.systemBars para que el contenido no se encime con los botones del sistema ni la cámara
             contentWindowInsets = WindowInsets.systemBars,
 
-            // ==================================================
             // BARRA INFERIOR
-            // ==================================================
             bottomBar = {
-
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -938,29 +931,21 @@ class MainActivity : ComponentActivity() {
                             bottom = 8.dp
                         )
                 ) {
-
                     Surface(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(78.dp),
-
                         shape = RoundedCornerShape(45.dp),
-
                         color = azulPrincipal,
-
                         shadowElevation = 5.dp
                     ) {
-
                         Row(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .padding(horizontal = 8.dp),
-
                             verticalAlignment = Alignment.CenterVertically,
-
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-
                             // ---------------- INICIO ----------------
                             Box(
                                 modifier = Modifier
@@ -968,60 +953,50 @@ class MainActivity : ComponentActivity() {
                                     .height(65.dp)
                                     .clip(RoundedCornerShape(38.dp))
                                     .background(azulClaro),
-
                                 contentAlignment = Alignment.Center
                             ) {
-
                                 Column(
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
-
                                     Icon(
                                         imageVector = Icons.Default.Home,
                                         contentDescription = "Inicio",
-                                        tint = azulPrincipal,
+                                        tint = Color(0xFFC5D7E0),
                                         modifier = Modifier.size(34.dp)
                                     )
-
                                     Text(
                                         text = "Inicio",
                                         fontSize = 12.sp,
-                                        color = azulPrincipal
+                                        color = Color.White
                                     )
                                 }
                             }
-
 
                             // ---------------- ESCANEAR ----------------
                             Column(
                                 modifier = Modifier
                                     .width(105.dp)
                                     .clickable {
-
                                         Toast.makeText(
                                             context,
                                             "Escáner próximamente",
                                             Toast.LENGTH_SHORT
                                         ).show()
                                     },
-
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-
                                 Icon(
                                     imageVector = Icons.Default.Add,
                                     contentDescription = "Escanear",
                                     tint = Color(0xFFC5D7E0),
                                     modifier = Modifier.size(38.dp)
                                 )
-
                                 Text(
                                     text = "Escanear",
                                     fontSize = 12.sp,
                                     color = Color.White
                                 )
                             }
-
 
                             // ---------------- CUENTA ----------------
                             Column(
@@ -1030,17 +1005,14 @@ class MainActivity : ComponentActivity() {
                                     .clickable {
                                         onPerfil()
                                     },
-
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-
                                 Icon(
                                     imageVector = Icons.Default.Person,
                                     contentDescription = "Cuenta",
                                     tint = Color(0xFFC5D7E0),
                                     modifier = Modifier.size(32.dp)
                                 )
-
                                 Text(
                                     text = "Cuenta",
                                     fontSize = 12.sp,
@@ -1051,44 +1023,29 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
-
         ) { padding ->
-
-
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(fondo)
                     .padding(bottom = padding.calculateBottomPadding())
             ) {
-
-
-                // CABECERA AZUL CLARO
-
+                // CABECERA
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(alturaStatusBar + 92.dp)
                         .background(
                             color = azulClaro,
-                            shape = RoundedCornerShape(
-                                bottomStart = 12.dp,
-                                bottomEnd = 12.dp
-                            )
+                            shape = RectangleShape
                         )
                 ) {
-
-
                     // BARRA DE BÚSQUEDA
-
                     OutlinedTextField(
-
                         value = busqueda,
-
                         onValueChange = {
                             busqueda = it
                         },
-
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(
@@ -1101,9 +1058,7 @@ class MainActivity : ComponentActivity() {
                                 elevation = 5.dp,
                                 shape = RoundedCornerShape(40.dp)
                             ),
-
                         leadingIcon = {
-
                             Icon(
                                 imageVector = Icons.Default.Search,
                                 contentDescription = "Buscar",
@@ -1111,47 +1066,35 @@ class MainActivity : ComponentActivity() {
                                 modifier = Modifier.size(28.dp)
                             )
                         },
-
                         singleLine = true,
-
                         shape = RoundedCornerShape(40.dp),
-
                         colors = OutlinedTextFieldDefaults.colors(
-
                             focusedContainerColor = Color.White,
                             unfocusedContainerColor = Color.White,
-
                             focusedBorderColor = Color.Transparent,
                             unfocusedBorderColor = Color.Transparent,
-
                             focusedTextColor = azulTexto,
                             unfocusedTextColor = azulTexto,
-
                             cursorColor = azulTexto
                         )
                     )
                 }
 
-
-                // FRANJA AZUL DEL MENÚ
-
+                // FRANJA DEL MENÚ
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(70.dp)
                         .background(azulPrincipal)
                 ) {
-
                     IconButton(
                         onClick = {
                             mostrarMenu = true
                         },
-
                         modifier = Modifier
                             .align(Alignment.CenterStart)
                             .padding(start = 12.dp)
                     ) {
-
                         Icon(
                             imageVector = Icons.Default.Menu,
                             contentDescription = "Menú",
@@ -1160,16 +1103,12 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-
-                    // ---------------- MENÚ DESPLEGABLE ----------------
+                    // MENÚ DESPLEGABLE
                     DropdownMenu(
-
                         expanded = mostrarMenu,
-
                         onDismissRequest = {
                             mostrarMenu = false
                         }
-
                     ) {
                         // Saludo con el nombre del usuario
                         Text(
@@ -1227,84 +1166,125 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-
-                // ==================================================
-                // CONTENIDO CENTRAL: "Mis Rutinas" centrado + historial
-                // ==================================================
+                // CONTENIDO CENTRAL: "Mis Rutinas"
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f)
+                        .padding(top = 16.dp) // separación de la franja del menú
                 ) {
-                    // Bloque de "Mis Rutinas" centrado (ocupa todo el espacio)
-                    Box(
+// Bloque de "Mis Rutinas"
+                    Column(
                         modifier = Modifier
-                            .fillMaxSize()
-                            .weight(1f),
-                        contentAlignment = Alignment.Center
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Column(
+                        Text(
+                            text = "Mis Rutinas",
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = azulTexto,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+
+                        // Tarjeta 1
+                        Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 16.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
+                                .padding(bottom = 8.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = Color(0xFFE8ECEF)
+                            ),
+                            elevation = CardDefaults.cardElevation(2.dp)
                         ) {
-                            Text(
-                                text = "Mis Rutinas",
-                                fontSize = 22.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = azulTexto,
-                                modifier = Modifier.padding(bottom = 8.dp)
-                            )
-
-                            // Tarjeta 1
-                            Card(
+                            Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(bottom = 8.dp),
-                                shape = RoundedCornerShape(12.dp),
-                                colors = CardDefaults.cardColors(
-                                    containerColor = Color(0xFFE8ECEF)
-                                ),
-                                elevation = CardDefaults.cardElevation(2.dp)
+                                    .padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Column(
-                                    modifier = Modifier.padding(16.dp)
-                                ) {
-                                    Text("100% Polyester", fontWeight = FontWeight.Medium, color = azulTexto)
-                                    Text("100%", color = Color.Gray, fontSize = 14.sp)
-                                    Text("TEXTO", color = Color.Gray, fontSize = 14.sp)
+
+                                Image(
+                                    painter = painterResource(id = R.drawable.washlylogo_inicio),
+                                    contentDescription = "Imagen de rutina 1",
+                                    modifier = Modifier
+                                        .size(56.dp)
+                                        .clip(RoundedCornerShape(8.dp))
+                                )
+                                Spacer(modifier = Modifier.width(16.dp))
+                                // Textos
+                                Column {
+                                    Text(
+                                        "100% Polyester",
+                                        fontWeight = FontWeight.Medium,
+                                        color = azulTexto
+                                    )
+                                    Text(
+                                        "100%",
+                                        color = Color.Gray,
+                                        fontSize = 14.sp
+                                    )
+                                    Text(
+                                        "TEXTO",
+                                        color = Color.Gray,
+                                        fontSize = 14.sp
+                                    )
                                 }
                             }
+                        }
 
-                            // Tarjeta 2 (otro ejemplo)
-                            Card(
+                        // Tarjeta 2
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 8.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = Color(0xFFE8ECEF)
+                            ),
+                            elevation = CardDefaults.cardElevation(2.dp)
+                        ) {
+                            Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(bottom = 8.dp),
-                                shape = RoundedCornerShape(12.dp),
-                                colors = CardDefaults.cardColors(
-                                    containerColor = Color(0xFFE8ECEF)
-                                ),
-                                elevation = CardDefaults.cardElevation(2.dp)
+                                    .padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Column(
-                                    modifier = Modifier.padding(16.dp)
-                                ) {
-                                    Text("Algodón 100%", fontWeight = FontWeight.Medium, color = azulTexto)
-                                    Text("Lavado en frío", color = Color.Gray, fontSize = 14.sp)
-                                    Text("Ejemplo de rutina", color = Color.Gray, fontSize = 14.sp)
+
+                                Image(
+                                    painter = painterResource(id = R.drawable.washlylogo_inicio),
+                                    contentDescription = "Imagen de rutina 2",
+                                    modifier = Modifier
+                                        .size(56.dp)
+                                        .clip(RoundedCornerShape(8.dp))
+                                )
+                                Spacer(modifier = Modifier.width(16.dp))
+                                // Textos
+                                Column {
+                                    Text(
+                                        "Algodón 100%",
+                                        fontWeight = FontWeight.Medium,
+                                        color = azulTexto
+                                    )
+                                    Text(
+                                        "Lavado en frío",
+                                        color = Color.Gray,
+                                        fontSize = 14.sp
+                                    )
+                                    Text(
+                                        "Ejemplo de rutina",
+                                        color = Color.Gray,
+                                        fontSize = 14.sp
+                                    )
                                 }
                             }
                         }
                     }
 
-                    // ==================================================
-                    // CONTENIDO ORIGINAL: historial (se muestra debajo)
-                    // ==================================================
-                    if (BaseDatosHistorial.registros.isEmpty()) {
-                        // Si no hay historial, no mostramos nada
-                    } else {
+                    // CONTENIDO ORIGINAL: historial (si existe)
+                    if (BaseDatosHistorial.registros.isNotEmpty()) {
                         LazyColumn(
                             modifier = Modifier
                                 .fillMaxWidth()

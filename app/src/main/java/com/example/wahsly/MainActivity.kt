@@ -37,7 +37,9 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.ui.layout.ContentScale
 import kotlinx.coroutines.delay
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-
+import android.net.Uri
+import android.widget.VideoView
+import androidx.compose.ui.viewinterop.AndroidView
 
 // cesar@gmail.com
 // 1234
@@ -59,6 +61,12 @@ class MainActivity : ComponentActivity() {
                     mutableStateOf<Usuario?>(null)
                 }
 
+                // chavoooos esto indica a qué pantalla ir después del video de carga
+                var destinoDespuesCarga by remember {
+                    mutableStateOf("LOGIN")
+                }
+
+
                 when (pantallaActual) {
 
                     // ---------------- SPLASH ----------------
@@ -70,6 +78,17 @@ class MainActivity : ComponentActivity() {
                             }
                         )
                     }
+
+                    // ---------------- VIDEO DE CARGA ----------------
+                    "CARGA_VIDEO" -> {
+
+                        PantallaCargaVideo(
+                            onTerminar = {
+                                pantallaActual = destinoDespuesCarga
+                            }
+                        )
+                    }
+
 
                     // ---------------- LOGIN ----------------
                     "LOGIN" -> {
@@ -84,7 +103,9 @@ class MainActivity : ComponentActivity() {
 
                                 usuarioActual = usuario
 
-                                pantallaActual = "INICIO"
+                                destinoDespuesCarga = "INICIO"
+
+                                pantallaActual = "CARGA_VIDEO"
                             }
                         )
                     }
@@ -96,11 +117,13 @@ class MainActivity : ComponentActivity() {
 
                             onRegistroExitoso = {
 
-                                pantallaActual = "LOGIN"
+                                destinoDespuesCarga = "LOGIN"
+
+                                pantallaActual = "CARGA_VIDEO"
 
                                 Toast.makeText(
                                     this,
-                                    "Cuenta creada. Inicia sesión.",
+                                    "Cuenta creada correctamente",
                                     Toast.LENGTH_LONG
                                 ).show()
                             },
@@ -194,6 +217,54 @@ class MainActivity : ComponentActivity() {
                 contentDescription = "Logo de Washly",
                 modifier = Modifier.size(280.dp),
                 contentScale = ContentScale.Fit
+            )
+        }
+    }
+    @Composable
+    fun PantallaCargaVideo(
+        onTerminar: () -> Unit
+    ) {
+
+        val context = LocalContext.current
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFFF4EFEB)),
+            contentAlignment = Alignment.Center
+        ) {
+
+            AndroidView(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(1422f / 2530f),
+
+                factory = { contexto ->
+
+                    VideoView(contexto).apply {
+
+                        val videoUri = Uri.parse(
+                            "android.resource://${context.packageName}/${R.raw.washly_carga}"
+                        )
+
+                        setVideoURI(videoUri)
+
+                        setOnPreparedListener { mediaPlayer ->
+
+                            mediaPlayer.isLooping = false
+                            start()
+                        }
+
+                        setOnCompletionListener {
+                            onTerminar()
+                        }
+
+                        setOnErrorListener { _, _, _ ->
+                            onTerminar()
+                            true
+                        }
+                    }
+                }
             )
         }
     }

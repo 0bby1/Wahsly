@@ -34,6 +34,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.ui.layout.ContentScale
 import kotlinx.coroutines.delay
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -500,7 +501,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    // Pantalla de registro (logo arriba izquierda, enlace a login arriba derecha)
+    // Pantalla de registro
     @Composable
     fun PantallaRegistro(
         onRegistroExitoso: () -> Unit,
@@ -918,13 +919,9 @@ class MainActivity : ComponentActivity() {
 
             containerColor = fondo,
 
-            // Evita que Android nos agregue otro espacio arriba
-            contentWindowInsets = WindowInsets(
-                left = 0,
-                top = 0,
-                right = 0,
-                bottom = 0
-            ),
+            // === AHORA RESPETA LOS INSET DEL SISTEMA ===
+            // Usamos WindowInsets.systemBars para que el contenido no se encime con los botones del sistema ni la cámara
+            contentWindowInsets = WindowInsets.systemBars,
 
             // ==================================================
             // BARRA INFERIOR
@@ -1174,146 +1171,187 @@ class MainActivity : ComponentActivity() {
                         }
 
                     ) {
-
+                        // Saludo con el nombre del usuario
+                        Text(
+                            text = "¡Hola, ${usuario?.nombre ?: "Usuario"}!",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            color = azulTexto,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        // Encabezado "General"
+                        Text(
+                            text = "General",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 4.dp),
+                            color = Color.Gray,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        // Opciones con flecha
                         DropdownMenuItem(
-
-                            text = {
-                                Text("Historial")
-                            },
-
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Default.History,
-                                    contentDescription = null
-                                )
-                            },
-
+                            text = { Text("Tipos de lavado") },
+                            trailingIcon = { Icon(Icons.Default.ArrowForward, contentDescription = null) },
                             onClick = {
-
                                 mostrarMenu = false
-
-                                onHistorial()
+                                Toast.makeText(context, "Tipos de lavado", Toast.LENGTH_SHORT).show()
                             }
                         )
-
-
                         DropdownMenuItem(
-
-                            text = {
-                                Text("Cerrar sesión")
-                            },
-
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Default.ExitToApp,
-                                    contentDescription = null
-                                )
-                            },
-
+                            text = { Text("Tipos de Tela") },
+                            trailingIcon = { Icon(Icons.Default.ArrowForward, contentDescription = null) },
                             onClick = {
-
                                 mostrarMenu = false
-
-                                onCerrarSesion()
+                                Toast.makeText(context, "Tipos de Tela", Toast.LENGTH_SHORT).show()
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Productos") },
+                            trailingIcon = { Icon(Icons.Default.ArrowForward, contentDescription = null) },
+                            onClick = {
+                                mostrarMenu = false
+                                Toast.makeText(context, "Productos", Toast.LENGTH_SHORT).show()
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Recomendaciones") },
+                            trailingIcon = { Icon(Icons.Default.ArrowForward, contentDescription = null) },
+                            onClick = {
+                                mostrarMenu = false
+                                Toast.makeText(context, "Recomendaciones", Toast.LENGTH_SHORT).show()
                             }
                         )
                     }
                 }
 
 
-                // CONTENIDO CENTRAL
-
-
-                if (BaseDatosHistorial.registros.isEmpty()) {
-
-                    // Historial vacío.
-                    // Dejamos esta zona limpia como en tu diseño.
+                // ==================================================
+                // CONTENIDO CENTRAL: "Mis Rutinas" centrado + historial
+                // ==================================================
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                ) {
+                    // Bloque de "Mis Rutinas" centrado (ocupa todo el espacio)
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f)
-                            .background(fondo)
-                    )
-
-                } else {
-
-
-                    // CUANDO EXISTAN ESCANEOS
-
-                    LazyColumn(
-
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f)
-                            .background(fondo),
-
-                        contentPadding = PaddingValues(
-                            start = 32.dp,
-                            end = 32.dp,
-                            top = 35.dp,
-                            bottom = 25.dp
-                        ),
-
-                        verticalArrangement = Arrangement.spacedBy(30.dp)
-
+                            .fillMaxSize()
+                            .weight(1f),
+                        contentAlignment = Alignment.Center
                     ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "Mis Rutinas",
+                                fontSize = 22.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = azulTexto,
+                                modifier = Modifier.padding(bottom = 8.dp)
+                            )
 
-                        items(
-                            BaseDatosHistorial.registros
-                        ) { registro ->
-
-
+                            // Tarjeta 1
                             Card(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(250.dp)
-                                    .clickable {
-                                        onHistorial()
-                                    },
-
-                                shape = RoundedCornerShape(26.dp),
-
-                                elevation = CardDefaults.cardElevation(
-                                    defaultElevation = 5.dp
-                                ),
-
+                                    .padding(bottom = 8.dp),
+                                shape = RoundedCornerShape(12.dp),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = Color.White
-                                )
+                                    containerColor = Color(0xFFE8ECEF)
+                                ),
+                                elevation = CardDefaults.cardElevation(2.dp)
                             ) {
-
                                 Column(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .padding(23.dp)
+                                    modifier = Modifier.padding(16.dp)
                                 ) {
+                                    Text("100% Polyester", fontWeight = FontWeight.Medium, color = azulTexto)
+                                    Text("100%", color = Color.Gray, fontSize = 14.sp)
+                                    Text("TEXTO", color = Color.Gray, fontSize = 14.sp)
+                                }
+                            }
 
-                                    Text(
-                                        text = registro.nombre,
-                                        fontSize = 24.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = azulTexto
-                                    )
+                            // Tarjeta 2 (otro ejemplo)
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 8.dp),
+                                shape = RoundedCornerShape(12.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = Color(0xFFE8ECEF)
+                                ),
+                                elevation = CardDefaults.cardElevation(2.dp)
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(16.dp)
+                                ) {
+                                    Text("Algodón 100%", fontWeight = FontWeight.Medium, color = azulTexto)
+                                    Text("Lavado en frío", color = Color.Gray, fontSize = 14.sp)
+                                    Text("Ejemplo de rutina", color = Color.Gray, fontSize = 14.sp)
+                                }
+                            }
+                        }
+                    }
 
-                                    Spacer(
-                                        modifier = Modifier.height(12.dp)
-                                    )
-
-                                    Text(
-                                        text = registro.fecha,
-                                        fontSize = 14.sp,
-                                        color = Color.Gray
-                                    )
-
-                                    Spacer(
-                                        modifier = Modifier.height(18.dp)
-                                    )
-
-                                    Text(
-                                        text = registro.informacion,
-                                        fontSize = 16.sp,
-                                        color = azulTexto
-                                    )
+                    // ==================================================
+                    // CONTENIDO ORIGINAL: historial (se muestra debajo)
+                    // ==================================================
+                    if (BaseDatosHistorial.registros.isEmpty()) {
+                        // Si no hay historial, no mostramos nada
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(200.dp)
+                                .background(fondo),
+                            contentPadding = PaddingValues(
+                                start = 32.dp,
+                                end = 32.dp,
+                                top = 16.dp,
+                                bottom = 25.dp
+                            ),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            items(BaseDatosHistorial.registros) { registro ->
+                                Card(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(150.dp)
+                                        .clickable { onHistorial() },
+                                    shape = RoundedCornerShape(16.dp),
+                                    elevation = CardDefaults.cardElevation(4.dp),
+                                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                                ) {
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(16.dp)
+                                    ) {
+                                        Text(
+                                            text = registro.nombre,
+                                            fontSize = 18.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = azulTexto
+                                        )
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        Text(
+                                            text = registro.fecha,
+                                            fontSize = 14.sp,
+                                            color = Color.Gray
+                                        )
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        Text(
+                                            text = registro.informacion,
+                                            fontSize = 14.sp,
+                                            color = azulTexto
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -1488,5 +1526,5 @@ class MainActivity : ComponentActivity() {
             Spacer(modifier = Modifier.width(14.dp))
             Text(texto, fontSize = 16.sp, color = colorTexto)
         }
-    }}
-
+    }
+}

@@ -1,7 +1,6 @@
 package com.example.wahsly
 
 import android.widget.Toast
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -18,12 +17,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.net.Uri
+import android.widget.VideoView
+import androidx.compose.ui.viewinterop.AndroidView
 
 // Pantalla inicio de sesion
 @Composable
@@ -46,16 +47,43 @@ fun PantallaInicioSesion(       //
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(start = 40.dp, end = 40.dp, top = 95.dp, bottom = 45.dp),
+                .padding(start = 40.dp, end = 40.dp, top = 105.dp, bottom = 45.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(20.dp))
-            Image(
-                painter = painterResource(id = R.drawable.washly_inicio_sesion),
-                contentDescription = "Logo de Wahsly",
-                modifier = Modifier.size(225.dp)
-            )
-            Spacer(modifier = Modifier.height(55.dp))
+            Spacer(modifier = Modifier.height(0.dp))
+            Box(
+                modifier = Modifier.size(300.dp)
+                    .height(10.dp)
+                    .offset(y = (-40).dp),
+                contentAlignment = Alignment.Center
+            ) {
+
+                AndroidView(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(16f / 9f),
+
+                    factory = { contexto ->
+
+                        VideoView(contexto).apply {
+
+                            val videoUri = Uri.parse(
+                                "android.resource://${context.packageName}/${R.raw.washly_login}"
+                            )
+
+                            setVideoURI(videoUri)
+
+                            setOnPreparedListener { mediaPlayer ->
+
+                                // Hace que la animación se repita
+                                mediaPlayer.isLooping = true
+
+                                start()
+                            }
+                        }
+                    }
+                )
+            }
 
             // Correo
             OutlinedTextField(

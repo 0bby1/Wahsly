@@ -115,8 +115,8 @@ fun PantallaPerfil(
             )
         } else {
             listOf(
-                Color(0xFF718A9C),
-                Color(0xFF405B70)
+                Color(0xFF4F7188),
+                AzulPrincipalClaro
             )
         }
 

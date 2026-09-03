@@ -57,7 +57,7 @@ fun PantallaRegistro(
         if (modoOscuro) FondoOscuro else FondoClaro
 
     val colorCampo =
-        if (modoOscuro) BlancoOscuro else AzulPrincipalClaro
+        if (modoOscuro) CremaOscuro else AzulPrincipalClaro
 
     val colorTextoCampo =
         if (modoOscuro) AzulTextoClaro else TextoBlancoClaro

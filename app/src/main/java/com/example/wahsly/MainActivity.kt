@@ -51,6 +51,7 @@ class MainActivity : ComponentActivity() {
                     // ---------------- SPLASH ----------------
                     "SPLASH" -> {
                         PantallaSplash(
+                            modoOscuro = modoOscuro,
                             onTerminar = {
                                 pantallaActual = "LOGIN"
                             }
@@ -60,6 +61,7 @@ class MainActivity : ComponentActivity() {
                     // ---------------- VIDEO DE CARGA ----------------
                     "CARGA_VIDEO" -> {
                         PantallaCargaVideo(
+                            modoOscuro = modoOscuro,
                             onTerminar = {
                                 pantallaActual = destinoDespuesCarga
                             }

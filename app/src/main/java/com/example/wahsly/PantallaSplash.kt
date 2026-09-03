@@ -14,6 +14,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 
 @Composable
 fun PantallaSplash(
+    modoOscuro: Boolean,
     onTerminar: () -> Unit
 ) {
     val context = LocalContext.current
@@ -21,7 +22,7 @@ fun PantallaSplash(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF4EFEB)),
+            .background(if (modoOscuro) FondoOscuro else FondoClaro),
         contentAlignment = Alignment.Center
     ) {
         AndroidView(

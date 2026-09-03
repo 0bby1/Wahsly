@@ -90,7 +90,8 @@ fun PantallaRegistro(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.icono_washly_crear_cuenta),
+                    painter = if (modoOscuro) {painterResource(id = R.drawable.icono_washly_crear_cuenta_oscuro)
+                    } else {painterResource(id = R.drawable.icono_washly_crear_cuenta_claro)},
                     contentDescription = "Logo de Wahsly",
                     modifier = Modifier.size(80.dp)
                 )

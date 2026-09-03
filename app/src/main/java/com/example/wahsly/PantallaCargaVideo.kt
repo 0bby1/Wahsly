@@ -16,6 +16,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 
 @Composable
 fun PantallaCargaVideo(
+    modoOscuro: Boolean,
     onTerminar: () -> Unit
 ) {
     val context = LocalContext.current
@@ -23,7 +24,7 @@ fun PantallaCargaVideo(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF4EFEB)),
+            .background(if (modoOscuro) FondoOscuro else FondoClaro),
         contentAlignment = Alignment.Center
     ) {
         AndroidView(
@@ -32,9 +33,15 @@ fun PantallaCargaVideo(
                 .aspectRatio(1422f / 2530f),
             factory = { contexto ->
                 VideoView(contexto).apply {
-                    val videoUri = Uri.parse(
-                        "android.resource://${context.packageName}/${R.raw.washly_carga}"
-                    )
+                    val videoUri = if (modoOscuro){
+                        Uri.parse(
+                            "android.resource://${context.packageName}/${R.raw.washly_carga_oscuro}"
+                        )
+                    } else {
+                        Uri.parse(
+                            "android.resource://${context.packageName}/${R.raw.washly_carga_claro}"
+                        )
+                    }
                     setVideoURI(videoUri)
                     setOnPreparedListener { mediaPlayer ->
                         mediaPlayer.isLooping = false

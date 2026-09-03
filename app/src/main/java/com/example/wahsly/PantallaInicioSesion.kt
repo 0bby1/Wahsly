@@ -74,9 +74,14 @@ fun PantallaInicioSesion(
                         .aspectRatio(16f / 9f),
                     factory = { contexto ->
                         VideoView(contexto).apply {
-                            val videoUri = Uri.parse(
-                                "android.resource://${context.packageName}/${R.raw.washly_login}"
-                            )
+                            val videoUri = if (modoOscuro){
+                                Uri.parse(
+                                    "android.resource://${context.packageName}/${R.raw.washly_login_oscuro}"
+                                )
+                            } else
+                            {Uri.parse(
+                                "android.resource://${context.packageName}/${R.raw.washly_login_claro}"
+                            )}
                             setVideoURI(videoUri)
                             setOnPreparedListener { mediaPlayer ->
                                 // Hace que la animación se repita

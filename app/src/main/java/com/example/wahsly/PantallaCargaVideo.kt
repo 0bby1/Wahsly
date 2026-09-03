@@ -18,7 +18,6 @@ import androidx.compose.ui.viewinterop.AndroidView
 fun PantallaCargaVideo(
     onTerminar: () -> Unit
 ) {
-
     val context = LocalContext.current
 
     Box(
@@ -27,32 +26,23 @@ fun PantallaCargaVideo(
             .background(Color(0xFFF4EFEB)),
         contentAlignment = Alignment.Center
     ) {
-
         AndroidView(
             modifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(1422f / 2530f),
-
             factory = { contexto ->
-
                 VideoView(contexto).apply {
-
                     val videoUri = Uri.parse(
                         "android.resource://${context.packageName}/${R.raw.washly_carga}"
                     )
-
                     setVideoURI(videoUri)
-
                     setOnPreparedListener { mediaPlayer ->
-
                         mediaPlayer.isLooping = false
                         start()
                     }
-
                     setOnCompletionListener {
                         onTerminar()
                     }
-
                     setOnErrorListener { _, _, _ ->
                         onTerminar()
                         true

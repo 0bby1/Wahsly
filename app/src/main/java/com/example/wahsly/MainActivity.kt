@@ -11,7 +11,6 @@ import androidx.compose.runtime.setValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 
 class MainActivity : ComponentActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
@@ -27,17 +26,30 @@ class MainActivity : ComponentActivity() {
                     mutableStateOf<Usuario?>(null)
                 }
 
-                // chavoooos esto indica a qué pantalla ir después del video de carga
+                // Esto indica a qué pantalla ir después del video de carga
                 var destinoDespuesCarga by remember {
                     mutableStateOf("LOGIN")
                 }
 
+                val preferencias = remember {
+                    getSharedPreferences(
+                        "configuracion_washly",
+                        MODE_PRIVATE
+                    )
+                }
+
+                var modoOscuro by remember {
+                    mutableStateOf(
+                        preferencias.getBoolean(
+                            "modoOscuro",
+                            false
+                        )
+                    )
+                }
 
                 when (pantallaActual) {
-
                     // ---------------- SPLASH ----------------
                     "SPLASH" -> {
-
                         PantallaSplash(
                             onTerminar = {
                                 pantallaActual = "LOGIN"
@@ -47,7 +59,6 @@ class MainActivity : ComponentActivity() {
 
                     // ---------------- VIDEO DE CARGA ----------------
                     "CARGA_VIDEO" -> {
-
                         PantallaCargaVideo(
                             onTerminar = {
                                 pantallaActual = destinoDespuesCarga
@@ -55,22 +66,16 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-
                     // ---------------- LOGIN ----------------
                     "LOGIN" -> {
-
                         PantallaInicioSesion(
-
+                            modoOscuro = modoOscuro,
                             onCrearCuenta = {
                                 pantallaActual = "REGISTRO"
                             },
-
                             onLoginExitoso = { usuario ->
-
                                 usuarioActual = usuario
-
                                 destinoDespuesCarga = "INICIO"
-
                                 pantallaActual = "CARGA_VIDEO"
                             }
                         )
@@ -78,9 +83,8 @@ class MainActivity : ComponentActivity() {
 
                     // ---------------- REGISTRO ----------------
                     "REGISTRO" -> {
-
                         PantallaRegistro(
-
+                            modoOscuro = modoOscuro,
                             onRegistroExitoso = { usuario ->
                                 usuarioActual = usuario
                                 destinoDespuesCarga = "INICIO"
@@ -94,19 +98,14 @@ class MainActivity : ComponentActivity() {
 
                     // ---------------- PANTALLA PRINCIPAL ----------------
                     "INICIO" -> {
-
                         PantallaPrincipal(
-
                             usuario = usuarioActual,
-
+                            modoOscuro = modoOscuro,
                             onPerfil = {
                                 pantallaActual = "PERFIL"
                             },
-
                             onCerrarSesion = {
-
                                 usuarioActual = null
-
                                 pantallaActual = "LOGIN"
                             }
                         )
@@ -114,26 +113,43 @@ class MainActivity : ComponentActivity() {
 
                     // ---------------- PERFIL ----------------
                     "PERFIL" -> {
-
                         PantallaPerfil(
-
                             usuario = usuarioActual,
-
+                            modoOscuro = modoOscuro,
+                            onConfiguracion = {
+                                pantallaActual = "CONFIGURACION"
+                            },
                             onVolver = {
                                 pantallaActual = "INICIO"
                             },
-
                             onCerrarSesion = {
-
                                 usuarioActual = null
-
                                 pantallaActual = "LOGIN"
+                            }
+                        )
+                    }
+
+                    // ---------------- CONFIGURACIÓN ----------------
+                    "CONFIGURACION" -> {
+                        PantallaConfiguracion(
+                            modoOscuro = modoOscuro,
+                            onCambiarModoOscuro = { nuevoValor ->
+                                modoOscuro = nuevoValor
+                                preferencias
+                                    .edit()
+                                    .putBoolean(
+                                        "modoOscuro",
+                                        nuevoValor
+                                    )
+                                    .apply()
+                            },
+                            onVolver = {
+                                pantallaActual = "PERFIL"
                             }
                         )
                     }
                 }
             }
         }
-    }                                                             //
-
+    }
 }

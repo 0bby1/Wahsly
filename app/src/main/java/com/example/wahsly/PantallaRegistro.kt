@@ -31,9 +31,11 @@ import androidx.compose.ui.graphics.Brush
 import kotlinx.coroutines.delay
 import androidx.compose.ui.draw.clip
 
+
 // Pantalla de registro
 @Composable
 fun PantallaRegistro(
+    modoOscuro: Boolean,
     onRegistroExitoso: (Usuario) -> Unit,
     onVolverLogin: () -> Unit
 ) {
@@ -49,10 +51,29 @@ fun PantallaRegistro(
     var mostrarRegistroExitoso by remember { mutableStateOf(false) }
     var usuarioRegistrado by remember { mutableStateOf<Usuario?>(null) }
 
-    val colorFondo = Color(0xFFF4EFEB)
-    val colorTextoPrincipal = Color(0xFFFFFFFF)
-    val colorTextoSecundario = Color(0xFFA2B1BE)
-    val colorIcono = Color(0xFFFFFFFF)
+
+    // Colores
+    val colorFondo =
+        if (modoOscuro) FondoOscuro else FondoClaro
+
+    val colorCampo =
+        if (modoOscuro) BlancoOscuro else AzulPrincipalClaro
+
+    val colorTextoCampo =
+        if (modoOscuro) AzulTextoClaro else TextoBlancoClaro
+
+    val colorTitulo =
+        if (modoOscuro) CremaOscuro else AzulTextoClaro
+
+    val colorTextoSecundario =
+        if (modoOscuro) TextoSecundarioOscuro else TextoSecundarioClaro
+
+    val colorRosa =
+        if (modoOscuro) RosaOscuro else RosaClaro
+
+    val colorTextoPrincipal = colorTextoCampo
+
+    val colorIcono = colorTextoCampo
 
     Box(modifier = Modifier.fillMaxSize().background(colorFondo)) {
         Column(
@@ -83,7 +104,7 @@ fun PantallaRegistro(
                     )
                     Text(
                         text = "Iniciar sesión",
-                        color = Color(0xFFDC9CAD),
+                        color = colorRosa,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.SemiBold,
                         modifier = Modifier.clickable { onVolverLogin() }
@@ -97,7 +118,7 @@ fun PantallaRegistro(
                 text = "Crea tu cuenta",
                 fontSize = 26.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF2F4157),
+                color = colorTitulo,
                 modifier = Modifier.align(Alignment.Start)
             )
 
@@ -108,7 +129,7 @@ fun PantallaRegistro(
                 value = nombre,
                 onValueChange = { nombre = it },
                 modifier = Modifier.fillMaxWidth().height(60.dp),
-                placeholder = { Text("Nombre", fontSize = 18.sp, color = Color(0xFFFFFFFF)) },
+                placeholder = { Text("Nombre", fontSize = 18.sp, color = colorTextoCampo) },
                 leadingIcon = {
                     Icon(
                         Icons.Default.Person,
@@ -119,15 +140,16 @@ fun PantallaRegistro(
                 singleLine = true,
                 shape = RoundedCornerShape(16.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color(0xFF2F4157),
-                    unfocusedContainerColor = Color(0xFF2F4157),
-                    focusedBorderColor = Color(0xFF2F4157),
-                    unfocusedBorderColor = Color(0xFF2F4157),
+                    focusedContainerColor = colorCampo,
+                    unfocusedContainerColor = colorCampo,
+                    focusedBorderColor = colorCampo,
+                    unfocusedBorderColor = colorCampo,
                     cursorColor = colorTextoPrincipal,
                     focusedTextColor = colorTextoPrincipal,
                     unfocusedTextColor = colorTextoPrincipal
                 )
             )
+
             Spacer(modifier = Modifier.height(18.dp))
 
             // Apellido
@@ -135,7 +157,7 @@ fun PantallaRegistro(
                 value = apellido,
                 onValueChange = { apellido = it },
                 modifier = Modifier.fillMaxWidth().height(60.dp),
-                placeholder = { Text("Apellido", fontSize = 18.sp, color = Color(0xFFFFFFFF)) },
+                placeholder = { Text("Apellido", fontSize = 18.sp, color = colorTextoCampo) },
                 leadingIcon = {
                     Icon(
                         Icons.Default.Person,
@@ -146,15 +168,16 @@ fun PantallaRegistro(
                 singleLine = true,
                 shape = RoundedCornerShape(16.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color(0xFF2F4157),
-                    unfocusedContainerColor = Color(0xFF2F4157),
-                    focusedBorderColor = Color(0xFF2F4157),
-                    unfocusedBorderColor = Color(0xFF2F4157),
+                    focusedContainerColor = colorCampo,
+                    unfocusedContainerColor = colorCampo,
+                    focusedBorderColor = colorCampo,
+                    unfocusedBorderColor = colorCampo,
                     cursorColor = colorTextoPrincipal,
                     focusedTextColor = colorTextoPrincipal,
                     unfocusedTextColor = colorTextoPrincipal
                 )
             )
+
             Spacer(modifier = Modifier.height(18.dp))
 
             // Correo
@@ -166,7 +189,7 @@ fun PantallaRegistro(
                     Text(
                         "Correo electrónico",
                         fontSize = 18.sp,
-                        color = Color(0xFFFFFFFF)
+                        color = colorTextoCampo
                     )
                 },
                 leadingIcon = {
@@ -180,15 +203,16 @@ fun PantallaRegistro(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 shape = RoundedCornerShape(16.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color(0xFF2F4157),
-                    unfocusedContainerColor = Color(0xFF2F4157),
-                    focusedBorderColor = Color(0xFF2F4157),
-                    unfocusedBorderColor = Color(0xFF2F4157),
+                    focusedContainerColor = colorCampo,
+                    unfocusedContainerColor = colorCampo,
+                    focusedBorderColor = colorCampo,
+                    unfocusedBorderColor = colorCampo,
                     cursorColor = colorTextoPrincipal,
                     focusedTextColor = colorTextoPrincipal,
                     unfocusedTextColor = colorTextoPrincipal
                 )
             )
+
             Spacer(modifier = Modifier.height(18.dp))
 
             // Contraseña
@@ -200,7 +224,7 @@ fun PantallaRegistro(
                     Text(
                         "Crea tu contraseña",
                         fontSize = 18.sp,
-                        color = Color(0xFFFFFFFF)
+                        color = colorTextoCampo
                     )
                 },
                 leadingIcon = {
@@ -215,7 +239,7 @@ fun PantallaRegistro(
                         Icon(
                             imageVector = if (mostrarContrasena) Icons.Default.VisibilityOff else Icons.Default.Visibility,
                             contentDescription = null,
-                            tint = Color(0xFFFFFFFF)
+                            tint = colorTextoCampo
                         )
                     }
                 },
@@ -224,15 +248,16 @@ fun PantallaRegistro(
                 singleLine = true,
                 shape = RoundedCornerShape(16.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color(0xFF2F4157),
-                    unfocusedContainerColor = Color(0xFF2F4157),
-                    focusedBorderColor = Color(0xFF2F4157),
-                    unfocusedBorderColor = Color(0xFF2F4157),
+                    focusedContainerColor = colorCampo,
+                    unfocusedContainerColor = colorCampo,
+                    focusedBorderColor = colorCampo,
+                    unfocusedBorderColor = colorCampo,
                     cursorColor = colorTextoPrincipal,
                     focusedTextColor = colorTextoPrincipal,
                     unfocusedTextColor = colorTextoPrincipal
                 )
             )
+
             Spacer(modifier = Modifier.height(18.dp))
 
             // Confirmar contraseña
@@ -244,7 +269,7 @@ fun PantallaRegistro(
                     Text(
                         "Confirma tu contraseña",
                         fontSize = 18.sp,
-                        color = Color(0xFFFFFFFF)
+                        color = colorTextoCampo
                     )
                 },
                 leadingIcon = {
@@ -259,7 +284,7 @@ fun PantallaRegistro(
                         Icon(
                             imageVector = if (mostrarConfirmacion) Icons.Default.VisibilityOff else Icons.Default.Visibility,
                             contentDescription = null,
-                            tint = Color(0xFFFFFFFF)
+                            tint = colorTextoCampo
                         )
                     }
                 },
@@ -268,15 +293,16 @@ fun PantallaRegistro(
                 singleLine = true,
                 shape = RoundedCornerShape(16.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color(0xFF2F4157),
-                    unfocusedContainerColor = Color(0xFF2F4157),
-                    focusedBorderColor = Color(0xFF2F4157),
-                    unfocusedBorderColor = Color(0xFF2F4157),
+                    focusedContainerColor = colorCampo,
+                    unfocusedContainerColor = colorCampo,
+                    focusedBorderColor = colorCampo,
+                    unfocusedBorderColor = colorCampo,
                     cursorColor = colorTextoPrincipal,
                     focusedTextColor = colorTextoPrincipal,
                     unfocusedTextColor = colorTextoPrincipal
                 )
             )
+
             Spacer(modifier = Modifier.height(18.dp))
 
             // Checkbox política
@@ -284,18 +310,18 @@ fun PantallaRegistro(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Checkbox(
+                Switch(
                     checked = aceptaPolitica,
                     onCheckedChange = { aceptaPolitica = it },
-                    colors = CheckboxDefaults.colors(
-                        checkedColor = Color(0xFF334055),
-                        uncheckedColor = Color.Gray
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = Color.White,
+                        checkedTrackColor = Color(0xFFEFAEFD)
                     )
                 )
                 Text(
-                    text = "Acepta la Política de Privacidad",
+                    text = "  Acepta la Política de Privacidad",
                     fontSize = 16.sp,
-                    color = Color(0xFF2F4157),
+                    color = colorCampo,
                     modifier = Modifier.clickable { aceptaPolitica = !aceptaPolitica }
                 )
             }
@@ -305,6 +331,7 @@ fun PantallaRegistro(
             // Botón Regístrate
             BotonDegradado(
                 texto = "Regístrate",
+                modoOscuro = modoOscuro,
                 onClick = {
                     if (nombre.isBlank() || apellido.isBlank() || correo.isBlank() ||
                         contrasena.isBlank() || confirmarContrasena.isBlank()
@@ -361,12 +388,22 @@ fun PantallaRegistro(
             )
         }
         if (mostrarRegistroExitoso) {
-
+            val coloresRegistroExitoso =
+                if (modoOscuro) {
+                    listOf(
+                        RosaClaro,
+                        FondoClaro
+                    )
+                } else {
+                    listOf(
+                        AzulGradienteOscuro,
+                        FondoOscuro
+                    )
+                }
             Dialog(
                 onDismissRequest = {
                 }
             ) {
-
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -374,18 +411,19 @@ fun PantallaRegistro(
                         .clip(RoundedCornerShape(45.dp))
                         .background(
                             brush = Brush.verticalGradient(
-                                colors = listOf(
-                                    Color(0xFF52778E),
-                                    Color(0xFF2F4157)
-                                )
+                                colors = coloresRegistroExitoso
+
                             )
                         ),
                     contentAlignment = Alignment.Center
                 ) {
-
                     Text(
                         text = "Tu registro fue\nexitoso",
-                        color = Color.White,
+                        color =
+                            if (modoOscuro)
+                                AzulTextoClaro
+                            else
+                                CremaOscuro,
                         fontSize = 30.sp,
                         fontWeight = FontWeight.Bold,
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center,

@@ -24,29 +24,21 @@ fun PantallaSplash(
             .background(Color(0xFFF4EFEB)),
         contentAlignment = Alignment.Center
     ) {
-
         AndroidView(
             modifier = Modifier.fillMaxSize(),
-
             factory = { contexto ->
-
                 VideoView(contexto).apply {
-
                     val videoUri = Uri.parse(
                         "android.resource://${context.packageName}/${R.raw.washly}"
                     )
-
                     setVideoURI(videoUri)
-
                     setOnPreparedListener { mediaPlayer ->
                         mediaPlayer.isLooping = false
                         start()
                     }
-
                     setOnCompletionListener {
                         onTerminar()
                     }
-
                     setOnErrorListener { _, _, _ ->
                         onTerminar()
                         true

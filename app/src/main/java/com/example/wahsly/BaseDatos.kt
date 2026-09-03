@@ -7,7 +7,7 @@ object BaseDatosHistorial {
     val registros = mutableStateListOf<RegistroEscaneo>()
 }
 
-// Usuarios de prueba (mutable)
+// Usuarios de prueba
 object base_de_datos_Usuarios {
     val usuarios = mutableListOf(
         Usuario("César", "Avalos", "cesar@gmail.com", "1234"),

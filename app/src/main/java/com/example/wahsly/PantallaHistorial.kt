@@ -13,12 +13,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 // Pantalla del historial
-
 @Composable
 fun PantallaHistorial(
     onVolver: () -> Unit
 ) {
-
     val colorFondo = Color(0xFFF9F9F9)
     val colorTexto = Color(0xFF334055)
 
@@ -27,10 +25,8 @@ fun PantallaHistorial(
             .fillMaxSize()
             .background(colorFondo)
             .padding(30.dp),
-
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
         Text(
             text = "Historial",
             fontSize = 30.sp,
@@ -41,7 +37,6 @@ fun PantallaHistorial(
         Spacer(modifier = Modifier.height(30.dp))
 
         if (BaseDatosHistorial.registros.isEmpty()) {
-
             Text(
                 text = "No hay escaneos guardados.",
                 fontSize = 18.sp,

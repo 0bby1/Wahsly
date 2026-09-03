@@ -23,30 +23,63 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.border
 
 @Composable
 fun PantallaPrincipal(
     usuario: Usuario?,
+    modoOscuro: Boolean,
     onPerfil: () -> Unit,
     onCerrarSesion: () -> Unit
 ) {
 
     val context = LocalContext.current
-
     var busqueda by remember {
         mutableStateOf("")
     }
-
     var mostrarMenu by remember {
         mutableStateOf(false)
     }
 
-    // COLORES
-    val azulClaro = Color(0xFF2F4157)
-    val azulPrincipal = Color(0xFF2F4157)
-    val azulTexto = Color(0xFF334055)
-    val rosaLupa = Color(0xFFDC9CAD)
-    val fondo = Color(0xFFF4EFEB)
+    // Colores
+    val colorFondo =
+        if (modoOscuro) FondoOscuro else FondoClaro
+
+    val colorEncabezado =
+        if (modoOscuro) RosaOscuro else AzulPrincipalClaro
+
+    val colorFranjaMenu =
+        if (modoOscuro) RosaOscuro else AzulPrincipalClaro
+
+    val colorBarraInferior =
+        if (modoOscuro) RosaOscuro else AzulPrincipalClaro
+
+    val colorTextoPrincipal =
+        if (modoOscuro) CremaOscuro else AzulTextoClaro
+
+    val colorTextoSecundario =
+        if (modoOscuro) CremaOscuro else Color.Gray
+
+    val colorLupa =
+        if (modoOscuro) RosaOscuro else RosaClaro
+
+    val colorBuscador =
+        if (modoOscuro) FondoOscuro else Color.White
+
+    val colorTarjetaRutina =
+        if (modoOscuro) FondoOscuro else TarjetaRutinaClaro
+
+    val colorBordeTarjeta =
+        if (modoOscuro) RosaOscuro else Color.Transparent
+
+    val colorSeleccionado =
+        if (modoOscuro) CremaOscuro else Color.White
+
+    val colorIconosBarra =
+        if (modoOscuro) CremaOscuro else IconoSecundarioClaro
+
+    val colorTextoBarra =
+        if (modoOscuro) CremaOscuro else Color.White
 
     // Altura donde Android muestra hora, batería, WiFi, etc.
     val alturaStatusBar = WindowInsets.statusBars
@@ -54,7 +87,7 @@ fun PantallaPrincipal(
         .calculateTopPadding()
 
     Scaffold(
-        containerColor = fondo,
+        containerColor = colorFondo,
         contentWindowInsets = WindowInsets.systemBars,
 
         // BARRA INFERIOR
@@ -62,7 +95,7 @@ fun PantallaPrincipal(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(fondo)
+                    .background(colorFondo)
                     .padding(
                         start = 10.dp,
                         end = 10.dp,
@@ -74,7 +107,7 @@ fun PantallaPrincipal(
                         .fillMaxWidth()
                         .height(78.dp),
                     shape = RoundedCornerShape(45.dp),
-                    color = azulPrincipal,
+                    color = colorBarraInferior,
                     shadowElevation = 5.dp
                 ) {
                     Row(
@@ -90,7 +123,7 @@ fun PantallaPrincipal(
                                 .width(105.dp)
                                 .height(65.dp)
                                 .clip(RoundedCornerShape(38.dp))
-                                .background(Color.White),
+                                .background(colorSeleccionado),
                             contentAlignment = Alignment.Center
                         ) {
                             Column(
@@ -99,14 +132,14 @@ fun PantallaPrincipal(
                                 Icon(
                                     imageVector = Icons.Default.Home,
                                     contentDescription = "Inicio",
-                                    tint = azulPrincipal,
+                                    tint = colorBarraInferior,
                                     modifier = Modifier.size(34.dp)
                                 )
 
                                 Text(
                                     text = "Inicio",
                                     fontSize = 12.sp,
-                                    color = azulPrincipal
+                                    color = colorBarraInferior
                                 )
                             }
                         }
@@ -127,13 +160,13 @@ fun PantallaPrincipal(
                             Icon(
                                 imageVector = Icons.Default.Add,
                                 contentDescription = "Escanear",
-                                tint = Color(0xFFC5D7E0),
+                                tint = colorIconosBarra,
                                 modifier = Modifier.size(38.dp)
                             )
                             Text(
                                 text = "Escanear",
                                 fontSize = 12.sp,
-                                color = Color.White
+                                color = colorTextoBarra
                             )
                         }
 
@@ -149,13 +182,13 @@ fun PantallaPrincipal(
                             Icon(
                                 imageVector = Icons.Default.Person,
                                 contentDescription = "Cuenta",
-                                tint = Color(0xFFC5D7E0),
+                                tint = colorIconosBarra,
                                 modifier = Modifier.size(32.dp)
                             )
                             Text(
                                 text = "Cuenta",
                                 fontSize = 12.sp,
-                                color = Color.White
+                                color = colorTextoBarra
                             )
                         }
                     }
@@ -166,7 +199,7 @@ fun PantallaPrincipal(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(fondo)
+                .background(colorFondo)
                 .padding(bottom = padding.calculateBottomPadding())
         ) {
             // CABECERA
@@ -175,7 +208,7 @@ fun PantallaPrincipal(
                     .fillMaxWidth()
                     .height(alturaStatusBar + 92.dp)
                     .background(
-                        color = azulClaro,
+                        color = colorEncabezado,
                         shape = RectangleShape
                     )
             ) {
@@ -201,20 +234,20 @@ fun PantallaPrincipal(
                         Icon(
                             imageVector = Icons.Default.Search,
                             contentDescription = "Buscar",
-                            tint = rosaLupa,
+                            tint = colorLupa,
                             modifier = Modifier.size(28.dp)
                         )
                     },
                     singleLine = true,
                     shape = RoundedCornerShape(40.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = Color.White,
-                        unfocusedContainerColor = Color.White,
+                        focusedContainerColor = colorBuscador,
+                        unfocusedContainerColor = colorBuscador,
                         focusedBorderColor = Color.Transparent,
                         unfocusedBorderColor = Color.Transparent,
-                        focusedTextColor = azulTexto,
-                        unfocusedTextColor = azulTexto,
-                        cursorColor = azulTexto
+                        focusedTextColor = colorTextoPrincipal,
+                        unfocusedTextColor = colorTextoPrincipal,
+                        cursorColor = colorTextoPrincipal
                     )
                 )
             }
@@ -224,7 +257,7 @@ fun PantallaPrincipal(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(70.dp)
-                    .background(azulPrincipal)
+                    .background(colorFranjaMenu)
             ) {
                 IconButton(
                     onClick = {
@@ -237,7 +270,7 @@ fun PantallaPrincipal(
                     Icon(
                         imageVector = Icons.Default.Menu,
                         contentDescription = "Menú",
-                        tint = rosaLupa,
+                        tint = if (modoOscuro){colorFondo} else {colorLupa},
                         modifier = Modifier.size(34.dp)
                     )
                 }
@@ -255,7 +288,6 @@ fun PantallaPrincipal(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp, vertical = 8.dp),
-                        color = azulTexto,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -265,7 +297,6 @@ fun PantallaPrincipal(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp, vertical = 4.dp),
-                        color = Color.Gray,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -312,7 +343,8 @@ fun PantallaPrincipal(
                     .weight(1f)
                     .padding(top = 16.dp) // separación de la franja del menú
             ) {
-// Bloque de "Mis Rutinas"
+
+            // Bloque de "Mis Rutinas"
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -323,7 +355,7 @@ fun PantallaPrincipal(
                         text = "Mis Rutinas",
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
-                        color = azulTexto,
+                        color = colorTextoPrincipal,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
 
@@ -331,10 +363,15 @@ fun PantallaPrincipal(
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 8.dp),
+                            .padding(bottom = 8.dp)
+                            .border(
+                                width = if (modoOscuro) 2.dp else 0.dp,
+                                color = colorBordeTarjeta,
+                                shape = RoundedCornerShape(12.dp)
+                            ),
                         shape = RoundedCornerShape(12.dp),
                         colors = CardDefaults.cardColors(
-                            containerColor = Color(0xFFE8ECEF)
+                            containerColor = colorTarjetaRutina
                         ),
                         elevation = CardDefaults.cardElevation(2.dp)
                     ) {
@@ -344,7 +381,6 @@ fun PantallaPrincipal(
                                 .padding(16.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-
                             Image(
                                 painter = painterResource(id = R.drawable.washlylogo_inicio),
                                 contentDescription = "Imagen de rutina 1",
@@ -358,16 +394,16 @@ fun PantallaPrincipal(
                                 Text(
                                     "100% Polyester",
                                     fontWeight = FontWeight.Medium,
-                                    color = azulTexto
+                                    color = colorTextoPrincipal
                                 )
                                 Text(
                                     "100%",
-                                    color = Color.Gray,
+                                    color = colorTextoSecundario,
                                     fontSize = 14.sp
                                 )
                                 Text(
                                     "TEXTO",
-                                    color = Color.Gray,
+                                    color = colorTextoSecundario,
                                     fontSize = 14.sp
                                 )
                             }
@@ -378,10 +414,15 @@ fun PantallaPrincipal(
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 8.dp),
+                            .padding(bottom = 8.dp)
+                            .border(
+                                width = if (modoOscuro) 2.dp else 0.dp,
+                                color = colorBordeTarjeta,
+                                shape = RoundedCornerShape(12.dp)
+                            ),
                         shape = RoundedCornerShape(12.dp),
                         colors = CardDefaults.cardColors(
-                            containerColor = Color(0xFFE8ECEF)
+                            containerColor = colorTarjetaRutina
                         ),
                         elevation = CardDefaults.cardElevation(2.dp)
                     ) {
@@ -391,7 +432,6 @@ fun PantallaPrincipal(
                                 .padding(16.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-
                             Image(
                                 painter = painterResource(id = R.drawable.washlylogo_inicio),
                                 contentDescription = "Imagen de rutina 2",
@@ -405,16 +445,16 @@ fun PantallaPrincipal(
                                 Text(
                                     "Algodón 100%",
                                     fontWeight = FontWeight.Medium,
-                                    color = azulTexto
+                                    color = colorTextoPrincipal
                                 )
                                 Text(
                                     "Lavado en frío",
-                                    color = Color.Gray,
+                                    color = colorTextoSecundario,
                                     fontSize = 14.sp
                                 )
                                 Text(
                                     "Ejemplo de rutina",
-                                    color = Color.Gray,
+                                    color = colorTextoSecundario,
                                     fontSize = 14.sp
                                 )
                             }
@@ -428,7 +468,7 @@ fun PantallaPrincipal(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(200.dp)
-                            .background(fondo),
+                            .background(colorFondo),
                         contentPadding = PaddingValues(
                             start = 32.dp,
                             end = 32.dp,
@@ -455,19 +495,19 @@ fun PantallaPrincipal(
                                         text = registro.nombre,
                                         fontSize = 18.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = azulTexto
+                                        color = colorTextoPrincipal
                                     )
                                     Spacer(modifier = Modifier.height(8.dp))
                                     Text(
                                         text = registro.fecha,
                                         fontSize = 14.sp,
-                                        color = Color.Gray
+                                        color = colorTextoSecundario
                                     )
                                     Spacer(modifier = Modifier.height(8.dp))
                                     Text(
                                         text = registro.informacion,
                                         fontSize = 14.sp,
-                                        color = azulTexto
+                                        color = colorTextoPrincipal
                                     )
                                 }
                             }

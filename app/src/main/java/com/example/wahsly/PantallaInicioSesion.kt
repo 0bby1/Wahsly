@@ -15,7 +15,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -28,20 +27,32 @@ import androidx.compose.ui.viewinterop.AndroidView
 
 // Pantalla inicio de sesion
 @Composable
-fun PantallaInicioSesion(       //
-    onCrearCuenta: () -> Unit,   //Gabo//
-    onLoginExitoso: (Usuario) -> Unit   //
-) {                             //
+fun PantallaInicioSesion(
+    modoOscuro: Boolean,
+    onCrearCuenta: () -> Unit,
+    onLoginExitoso: (Usuario) -> Unit
+) {
     val context = LocalContext.current
     var correo by remember { mutableStateOf("") }
     var contrasena by remember { mutableStateOf("") }
     var mostrarContrasena by remember { mutableStateOf(false) }
     val autenticador = remember { AutenticadorLocal() }
 
-    val colorFondo = Color(0xFFF4EFEB)
-    val colorTextoPrincipal = Color(0xFFFFFFFF)
-    val colorTextoSecundario = Color(0xFFA2B1BE)
-    val colorIcono = Color(0xFFFFFFFF)
+    // Colores
+    val colorFondo =
+        if (modoOscuro) FondoOscuro else FondoClaro
+
+    val colorCampo =
+        if (modoOscuro) CremaOscuro else AzulPrincipalClaro
+
+    val colorTextoPrincipal =
+        if (modoOscuro) AzulTextoClaro else TextoBlancoClaro
+
+    val colorTextoSecundario =
+        if (modoOscuro) TextoSecundarioOscuro else TextoSecundarioClaro
+
+    val colorIcono =
+        if (modoOscuro) AzulTextoClaro else TextoBlancoClaro
 
     Box(modifier = Modifier.fillMaxSize().background(colorFondo)) {
         Column(
@@ -57,27 +68,19 @@ fun PantallaInicioSesion(       //
                     .offset(y = (-40).dp),
                 contentAlignment = Alignment.Center
             ) {
-
                 AndroidView(
                     modifier = Modifier
                         .fillMaxWidth()
                         .aspectRatio(16f / 9f),
-
                     factory = { contexto ->
-
                         VideoView(contexto).apply {
-
                             val videoUri = Uri.parse(
                                 "android.resource://${context.packageName}/${R.raw.washly_login}"
                             )
-
                             setVideoURI(videoUri)
-
                             setOnPreparedListener { mediaPlayer ->
-
                                 // Hace que la animación se repita
                                 mediaPlayer.isLooping = true
-
                                 start()
                             }
                         }
@@ -94,7 +97,7 @@ fun PantallaInicioSesion(       //
                     Text(
                         "Correo electrónico",
                         fontSize = 19.sp,
-                        color = Color(0xFFFFFFFF)
+                        color = colorTextoPrincipal
                     )
                 },
                 leadingIcon = {
@@ -109,15 +112,16 @@ fun PantallaInicioSesion(       //
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 shape = RoundedCornerShape(16.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color(0xFF2F4157),
-                    unfocusedContainerColor = Color(0xFF2F4157),
-                    focusedBorderColor = Color(0xFF2F4157),
-                    unfocusedBorderColor = Color(0xFF2F4157),
+                    focusedContainerColor = colorCampo,
+                    unfocusedContainerColor = colorCampo,
+                    focusedBorderColor = colorCampo,
+                    unfocusedBorderColor = colorCampo,
                     cursorColor = colorTextoPrincipal,
                     focusedTextColor = colorTextoPrincipal,
                     unfocusedTextColor = colorTextoPrincipal
                 )
             )
+
             Spacer(modifier = Modifier.height(30.dp))
 
             // Contraseña
@@ -129,7 +133,7 @@ fun PantallaInicioSesion(       //
                     Text(
                         "Contraseña",
                         fontSize = 19.sp,
-                        color = Color(0xFFFFFFFF)
+                        color = colorTextoPrincipal
                     )
                 },
                 leadingIcon = {
@@ -145,7 +149,7 @@ fun PantallaInicioSesion(       //
                         Icon(
                             imageVector = if (mostrarContrasena) Icons.Default.VisibilityOff else Icons.Default.Visibility,
                             contentDescription = if (mostrarContrasena) "Ocultar" else "Mostrar",
-                            tint = Color(0xFFFFFFFF)
+                            tint = colorIcono
                         )
                     }
                 },
@@ -154,15 +158,16 @@ fun PantallaInicioSesion(       //
                 singleLine = true,
                 shape = RoundedCornerShape(16.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color(0xFF2F4157),
-                    unfocusedContainerColor = Color(0xFF2F4157),
-                    focusedBorderColor = Color(0xFF2F4157),
-                    unfocusedBorderColor = Color(0xFF2F4157),
+                    focusedContainerColor = colorCampo,
+                    unfocusedContainerColor = colorCampo,
+                    focusedBorderColor = colorCampo,
+                    unfocusedBorderColor = colorCampo,
                     cursorColor = colorTextoPrincipal,
                     focusedTextColor = colorTextoPrincipal,
                     unfocusedTextColor = colorTextoPrincipal
                 )
             )
+
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
@@ -178,6 +183,7 @@ fun PantallaInicioSesion(       //
 
             BotonDegradado(
                 texto = "Iniciar Sesión",
+                modoOscuro = modoOscuro,
                 onClick = {
                     try {
                         val usuario = autenticador.iniciarSesion(correo, contrasena)
@@ -187,7 +193,7 @@ fun PantallaInicioSesion(       //
                             Toast.LENGTH_LONG
                         ).show()
                         // Después de iniciar sesión correctamente se envia al
-                        // desgraciado usuario a la pantalla principal.
+                        //  usuario a la pantalla principal.
                         onLoginExitoso(usuario)
                     } catch (e: IllegalArgumentException) {
                         Toast.makeText(
@@ -206,6 +212,7 @@ fun PantallaInicioSesion(       //
                     }
                 }
             )
+
             Spacer(modifier = Modifier.height(25.dp))
 
             Text(
@@ -213,6 +220,7 @@ fun PantallaInicioSesion(       //
                 color = colorTextoSecundario,
                 fontSize = 16.sp
             )
+
             Spacer(modifier = Modifier.height(20.dp))
 
             BotonCrearCuenta(onClick = onCrearCuenta)

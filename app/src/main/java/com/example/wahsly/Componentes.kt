@@ -19,7 +19,29 @@ import androidx.compose.ui.unit.sp
 
 // Botón Degradado (compartido)
 @Composable
-fun BotonDegradado(texto: String, onClick: () -> Unit) {
+fun BotonDegradado(
+    texto: String,
+    modoOscuro: Boolean,
+    onClick: () -> Unit
+) {
+    val coloresBoton =
+        if (modoOscuro) {
+            listOf(
+                RosaOscuro,
+                CremaOscuro
+            )
+        } else {
+            listOf(
+                Color(0xFF7B92A4),
+                Color(0xFF334055)
+            )
+        }
+
+    val colorTexto =
+        if (modoOscuro)
+            FondoOscuro
+        else
+            Color.White
     val forma = RoundedCornerShape(50.dp)
     Box(
         modifier = Modifier
@@ -28,7 +50,7 @@ fun BotonDegradado(texto: String, onClick: () -> Unit) {
             .clip(forma)
             .background(
                 brush = Brush.horizontalGradient(
-                    colors = listOf(Color(0xFF7B92A4), Color(0xFF334055))
+                    colors = coloresBoton
                 )
             )
             .clickable { onClick() },
@@ -36,7 +58,7 @@ fun BotonDegradado(texto: String, onClick: () -> Unit) {
     ) {
         Text(
             text = texto,
-            color = Color.White,
+            color = colorTexto,
             fontSize = 23.sp,
             fontWeight = FontWeight.SemiBold
         )

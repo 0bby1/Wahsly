@@ -21,9 +21,6 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.semantics
 import android.net.Uri
 import android.widget.VideoView
 import androidx.compose.ui.viewinterop.AndroidView
@@ -223,28 +220,15 @@ fun PantallaInicioSesion(
 
             Spacer(modifier = Modifier.height(25.dp))
 
-            // Sección para crear cuenta (Accesible para TalkBack)
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .semantics(mergeDescendants = true) {
-                        role = Role.Button
-                    }
-                    .clickable(
-                        onClickLabel = "Crear una cuenta nueva",
-                        onClick = onCrearCuenta
-                    )
-            ) {
-                Text(
-                    text = "¿Aún no tienes una cuenta?",
-                    color = colorTextoSecundario,
-                    fontSize = 16.sp
-                )
+            Text(
+                text = "¿Aún no tienes una cuenta?",
+                color = colorTextoSecundario,
+                fontSize = 16.sp
+            )
 
-                Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-                BotonCrearCuenta(onClick = { }) // El click lo maneja el contenedor
-            }
+            BotonCrearCuenta(onClick = onCrearCuenta, modoOscuro = modoOscuro)
         }
     }
 }

@@ -25,10 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 
-
 // BOTÓN DEGRADADO
-
-
 @Composable
 fun BotonDegradado(
     texto: String,
@@ -36,34 +33,29 @@ fun BotonDegradado(
     onClick: () -> Unit
 ) {
 
-    val coloresBoton =
-        if (modoOscuro) {
-            listOf(
-                RosaOscuro,
-                CremaOscuro
-            )
-        } else {
-            listOf(
-                Color(0xFF7B92A4),
-                Color(0xFF334055)
-            )
-        }
+    val coloresBoton = if (modoOscuro) {
+        listOf(
+            RosaOscuro,
+            CremaOscuro
+        )
+    } else {
+        listOf(
+            Color(0xFF7B92A4),
+            Color(0xFF334055)
+        )
+    }
 
-    val colorTexto =
-        if (modoOscuro)
-            FondoOscuro
-        else
-            Color.White
-
-
-    val forma = RoundedCornerShape(50.dp)
-
+    val colorTexto = if (modoOscuro) {
+        FondoOscuro
+    } else {
+        Color.White
+    }
 
     Box(
         modifier = Modifier
             .width(255.dp)
             .height(61.dp)
-            .clip(forma)
+            .clip(RoundedCornerShape(50.dp))
             .background(
                 brush = Brush.horizontalGradient(
                     colors = coloresBoton
@@ -85,28 +77,39 @@ fun BotonDegradado(
 }
 
 
-
 // BOTÓN CREAR CUENTA
-
-
 @Composable
 fun BotonCrearCuenta(
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modoOscuro: Boolean
 ) {
 
-    val forma = RoundedCornerShape(50.dp)
+    val coloresBoton = if (modoOscuro) {
+        listOf(
+            RosaOscuro,
+            CremaOscuro
+        )
+    } else {
+        listOf(
+            Color(0xFF7B92A4),
+            Color(0xFF334055)
+        )
+    }
+
+    val colorTexto = if (modoOscuro) {
+        FondoOscuro
+    } else {
+        Color.White
+    }
 
     Box(
         modifier = Modifier
             .width(230.dp)
             .height(61.dp)
-            .clip(forma)
+            .clip(RoundedCornerShape(50.dp))
             .background(
                 brush = Brush.horizontalGradient(
-                    colors = listOf(
-                        Color(0xFFD29FAD),
-                        Color(0xFFD9D9D9)
-                    )
+                    colors = coloresBoton
                 )
             )
             .clickable {
@@ -117,7 +120,7 @@ fun BotonCrearCuenta(
 
         Text(
             text = "Crear Cuenta",
-            color = Color(0xFF334055),
+            color = colorTexto,
             fontSize = 23.sp,
             fontWeight = FontWeight.SemiBold
         )
@@ -125,10 +128,7 @@ fun BotonCrearCuenta(
 }
 
 
-
 // BARRA INFERIOR ANIMADA
-
-
 @Composable
 fun BarraInferiorAnimada(
     seleccionado: Int,
@@ -138,39 +138,40 @@ fun BarraInferiorAnimada(
     onCuenta: () -> Unit
 ) {
 
-    val colorFondo =
-        if (modoOscuro)
-            FondoOscuro
-        else
-            FondoClaro
+    // Evita valores menores de 0 o mayores de 2
+    val opcionSeleccionada = seleccionado.coerceIn(0, 2)
 
+    val colorFondo = if (modoOscuro) {
+        FondoOscuro
+    } else {
+        FondoClaro
+    }
 
-    val colorBarra =
-        if (modoOscuro)
-            RosaOscuro
-        else
-            AzulPrincipalClaro
+    val colorBarra = if (modoOscuro) {
+        RosaOscuro
+    } else {
+        AzulPrincipalClaro
+    }
 
+    val colorPastilla = if (modoOscuro) {
+        FondoOscuro
+    } else {
+        CremaOscuro
+    }
 
-    val colorPastilla =
-        if (modoOscuro)
-            CremaOscuro
-        else
-            Color.White
+    // Color de la opción seleccionada
+    val colorSeleccionado = if (modoOscuro) {
+        CremaOscuro
+    } else {
+        AzulPrincipalClaro
+    }
 
-
-    val colorIconoInactivo =
-        if (modoOscuro)
-            CremaOscuro
-        else
-            IconoSecundarioClaro
-
-
-    val colorTextoInactivo =
-        if (modoOscuro)
-            CremaOscuro
-        else
-            Color.White
+    // Color de las opciones NO seleccionadas
+    val colorInactivo = if (modoOscuro) {
+        FondoOscuro
+    } else {
+        CremaOscuro
+    }
 
 
     Box(
@@ -202,10 +203,9 @@ fun BarraInferiorAnimada(
                 val anchoElemento = maxWidth / 3
 
 
-                // POSICIÓN DE LA PASTILLA BLANCA
+                // POSICIÓN DE LA PASTILLA
                 val posicionPastilla by animateDpAsState(
-                    targetValue =
-                        anchoElemento * seleccionado.toFloat(),
+                    targetValue = anchoElemento * opcionSeleccionada.toFloat(),
 
                     animationSpec = spring(
                         dampingRatio = 0.70f,
@@ -216,29 +216,19 @@ fun BarraInferiorAnimada(
                 )
 
 
-
-                // PASTILLA BLANCA ANIMADA
-
-
+                // PASTILLA ANIMADA
                 Box(
                     modifier = Modifier
-                        .offset(
-                            x = posicionPastilla
-                        )
+                        .offset(x = posicionPastilla)
                         .width(anchoElemento)
                         .fillMaxHeight()
                         .padding(vertical = 6.dp)
-                        .clip(
-                            RoundedCornerShape(38.dp)
-                        )
+                        .clip(RoundedCornerShape(38.dp))
                         .background(colorPastilla)
                 )
 
 
-
                 // OPCIONES
-
-
                 Row(
                     modifier = Modifier.fillMaxSize(),
                     verticalAlignment = Alignment.CenterVertically
@@ -246,7 +236,6 @@ fun BarraInferiorAnimada(
 
 
                     // INICIO
-
                     Column(
                         modifier = Modifier
                             .width(anchoElemento)
@@ -254,44 +243,36 @@ fun BarraInferiorAnimada(
                                 onInicio()
                             },
 
-                        horizontalAlignment =
-                            Alignment.CenterHorizontally
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
 
                         Icon(
-                            imageVector =
-                                Icons.Default.Home,
+                            imageVector = Icons.Default.Home,
+                            contentDescription = "Inicio",
 
-                            contentDescription =
-                                "Inicio",
+                            tint = if (opcionSeleccionada == 0) {
+                                colorSeleccionado
+                            } else {
+                                colorInactivo
+                            },
 
-                            tint =
-                                if (seleccionado == 0)
-                                    colorBarra
-                                else
-                                    colorIconoInactivo,
-
-                            modifier =
-                                Modifier.size(34.dp)
+                            modifier = Modifier.size(34.dp)
                         )
-
 
                         Text(
                             text = "Inicio",
-
                             fontSize = 12.sp,
 
-                            color =
-                                if (seleccionado == 0)
-                                    colorBarra
-                                else
-                                    colorTextoInactivo
+                            color = if (opcionSeleccionada == 0) {
+                                colorSeleccionado
+                            } else {
+                                colorInactivo
+                            }
                         )
                     }
 
 
                     // ESCANEAR
-
                     Column(
                         modifier = Modifier
                             .width(anchoElemento)
@@ -299,44 +280,36 @@ fun BarraInferiorAnimada(
                                 onEscanear()
                             },
 
-                        horizontalAlignment =
-                            Alignment.CenterHorizontally
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
 
                         Icon(
-                            imageVector =
-                                Icons.Default.Add,
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Escanear",
 
-                            contentDescription =
-                                "Escanear",
+                            tint = if (opcionSeleccionada == 1) {
+                                colorSeleccionado
+                            } else {
+                                colorInactivo
+                            },
 
-                            tint =
-                                if (seleccionado == 1)
-                                    colorBarra
-                                else
-                                    colorIconoInactivo,
-
-                            modifier =
-                                Modifier.size(38.dp)
+                            modifier = Modifier.size(38.dp)
                         )
-
 
                         Text(
                             text = "Escanear",
-
                             fontSize = 12.sp,
 
-                            color =
-                                if (seleccionado == 1)
-                                    colorBarra
-                                else
-                                    colorTextoInactivo
+                            color = if (opcionSeleccionada == 1) {
+                                colorSeleccionado
+                            } else {
+                                colorInactivo
+                            }
                         )
                     }
 
 
                     // CUENTA
-
                     Column(
                         modifier = Modifier
                             .width(anchoElemento)
@@ -344,38 +317,31 @@ fun BarraInferiorAnimada(
                                 onCuenta()
                             },
 
-                        horizontalAlignment =
-                            Alignment.CenterHorizontally
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
 
                         Icon(
-                            imageVector =
-                                Icons.Default.Person,
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "Cuenta",
 
-                            contentDescription =
-                                "Cuenta",
+                            tint = if (opcionSeleccionada == 2) {
+                                colorSeleccionado
+                            } else {
+                                colorInactivo
+                            },
 
-                            tint =
-                                if (seleccionado == 2)
-                                    colorBarra
-                                else
-                                    colorIconoInactivo,
-
-                            modifier =
-                                Modifier.size(30.dp)
+                            modifier = Modifier.size(30.dp)
                         )
-
 
                         Text(
                             text = "Cuenta",
-
                             fontSize = 12.sp,
 
-                            color =
-                                if (seleccionado == 2)
-                                    colorBarra
-                                else
-                                    colorTextoInactivo
+                            color = if (opcionSeleccionada == 2) {
+                                colorSeleccionado
+                            } else {
+                                colorInactivo
+                            }
                         )
                     }
                 }

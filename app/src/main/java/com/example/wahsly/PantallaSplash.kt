@@ -29,9 +29,16 @@ fun PantallaSplash(
             modifier = Modifier.fillMaxSize(),
             factory = { contexto ->
                 VideoView(contexto).apply {
-                    val videoUri = Uri.parse(
-                        "android.resource://${context.packageName}/${R.raw.washly}"
-                    )
+                    val videoUri = if (modoOscuro) {
+                        Uri.parse(
+                            "android.resource://${context.packageName}/${R.raw.washly_oscuro}"
+                        )
+                    }
+                    else {
+                        Uri.parse(
+                            "android.resource://${context.packageName}/${R.raw.washly}"
+                        )
+                    }
                     setVideoURI(videoUri)
                     setOnPreparedListener { mediaPlayer ->
                         mediaPlayer.isLooping = false

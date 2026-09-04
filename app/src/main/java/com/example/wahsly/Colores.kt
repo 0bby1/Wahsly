@@ -19,7 +19,7 @@ val DivisorClaro = Color(0xFFEAEAEA)
 
 // MODO OSCURO
 val FondoOscuro = Color(0xFF2F4157)
-val RosaOscuro = Color(0xFFDC9CAD)
+val RosaOscuro = Color(0xFFE0F4FF)
 val CremaOscuro = Color(0xFFF4EFEB)
 val TarjetaPerfilOscuro = Color(0xFF4B6177)
 val AzulGradienteOscuro = Color(0xFF567086)

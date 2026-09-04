@@ -76,16 +76,19 @@ fun PantallaPrincipal(
         if (modoOscuro) RosaOscuro else AzulPrincipalClaro
 
     val colorTextoPrincipal =
-        if (modoOscuro) CremaOscuro else AzulTextoClaro
+        if (modoOscuro) RosaOscuro else AzulTextoClaro
 
     val colorTextoSecundario =
         if (modoOscuro) CremaOscuro else Color.Gray
 
     val colorLupa =
-        if (modoOscuro) RosaOscuro else RosaClaro
+        if (modoOscuro) RosaOscuro else FondoOscuro
+
+    val color3Barras =
+        if (modoOscuro) FondoOscuro else CremaOscuro
 
     val colorBuscador =
-        if (modoOscuro) FondoOscuro else Color.White
+        if (modoOscuro) FondoOscuro else CremaOscuro
 
     val colorTarjetaRutina =
         if (modoOscuro) FondoOscuro else TarjetaRutinaClaro
@@ -97,10 +100,16 @@ fun PantallaPrincipal(
         if (modoOscuro) CremaOscuro else Color.White
 
     val colorIconosBarra =
-        if (modoOscuro) CremaOscuro else IconoSecundarioClaro
+        if (modoOscuro) FondoOscuro else IconoSecundarioClaro
 
     val colorTextoBarra =
-        if (modoOscuro) CremaOscuro else Color.White
+        if (modoOscuro) FondoOscuro else Color.White
+
+    val franja =
+        if (modoOscuro) RosaOscuro else FondoOscuro
+
+    val franjaTexto =
+        if (modoOscuro) FondoOscuro else CremaOscuro
 
     // Altura donde Android muestra hora, batería, WiFi, etc.
     val alturaStatusBar = WindowInsets.statusBars
@@ -144,214 +153,7 @@ fun PantallaPrincipal(
         contentWindowInsets = WindowInsets.systemBars,
 
         // BARRA INFERIOR
-        bottomBar = {
-
-                if (mostrarBarraInferior) {
-
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(colorFondo)
-                            .padding(
-                                start = 10.dp,
-                                end = 10.dp,
-                                bottom = 8.dp
-                            )
-                    ) {
-
-                        Surface(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(78.dp),
-                            shape = RoundedCornerShape(45.dp),
-                            color = colorBarraInferior,
-                            shadowElevation = 5.dp
-                        ) {
-
-                            BoxWithConstraints(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(horizontal = 8.dp)
-                            ) {
-
-                                // Cada botón ocupa 1/3 de la barra
-                                val anchoItem = maxWidth / 3
-
-
-                                //
-                                // POSICIÓN ANIMADA DE LA PASTILLA
-                                //
-
-                                val posicionPastilla by animateDpAsState(
-                                    targetValue =
-                                        anchoItem * tabSeleccionado.toFloat(),
-
-                                    animationSpec = spring(
-                                        dampingRatio = 0.68f,
-                                        stiffness = 300f
-                                    ),
-
-                                    label = "MovimientoPastilla"
-                                )
-
-
-
-                                // PASTILLA BLANCA QUE SE MUEVE
-
-
-                                Box(
-                                    modifier = Modifier
-                                        .offset(x = posicionPastilla)
-                                        .width(anchoItem)
-                                        .fillMaxHeight()
-                                        .padding(vertical = 6.dp)
-                                        .clip(
-                                            RoundedCornerShape(38.dp)
-                                        )
-                                        .background(colorSeleccionado)
-                                )
-
-
-                                //
-                                // BOTONES
-                                //
-
-                                Row(
-                                    modifier = Modifier.fillMaxSize(),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-
-
-                                    // ---------------- INICIO ----------------
-
-                                    Column(
-                                        modifier = Modifier
-                                            .width(anchoItem)
-                                            .clickable {
-
-                                                tabSeleccionado = 0
-                                            },
-
-                                        horizontalAlignment =
-                                            Alignment.CenterHorizontally
-                                    ) {
-
-                                        Icon(
-                                            imageVector = Icons.Default.Home,
-                                            contentDescription = "Inicio",
-
-                                            tint =
-                                                if (tabSeleccionado == 0)
-                                                    colorBarraInferior
-                                                else
-                                                    colorIconosBarra,
-
-                                            modifier = Modifier.size(34.dp)
-                                        )
-
-                                        Text(
-                                            text = "Inicio",
-                                            fontSize = 12.sp,
-
-                                            color =
-                                                if (tabSeleccionado == 0)
-                                                    colorBarraInferior
-                                                else
-                                                    colorTextoBarra
-                                        )
-                                    }
-
-
-                                    // ---------------- ESCANEAR ----------------
-
-                                    Column(
-                                        modifier = Modifier
-                                            .width(anchoItem)
-                                            .clickable {
-
-                                                Toast.makeText(
-                                                    context,
-                                                    "Escáner próximamente",
-                                                    Toast.LENGTH_SHORT
-                                                ).show()
-                                            },
-
-                                        horizontalAlignment =
-                                            Alignment.CenterHorizontally
-                                    ) {
-
-                                        Icon(
-                                            imageVector = Icons.Default.Add,
-                                            contentDescription = "Escanear",
-                                            tint = colorIconosBarra,
-                                            modifier = Modifier.size(38.dp)
-                                        )
-
-                                        Text(
-                                            text = "Escanear",
-                                            fontSize = 12.sp,
-                                            color = colorTextoBarra
-                                        )
-                                    }
-
-
-                                    // ---------------- CUENTA ----------------
-
-                                    Column(
-                                        modifier = Modifier
-                                            .width(anchoItem)
-                                            .clickable {
-
-                                                if (tabSeleccionado != 2) {
-
-                                                    // Mueve la pastilla hacia Cuenta
-                                                    tabSeleccionado = 2
-
-                                                    scope.launch {
-
-                                                        // Espera a que se vea la animación
-                                                        delay(320)
-
-                                                        // Después abre Perfil
-                                                        onPerfil()
-                                                    }
-                                                }
-                                            },
-
-                                        horizontalAlignment =
-                                            Alignment.CenterHorizontally
-                                    ) {
-
-                                        Icon(
-                                            imageVector = Icons.Default.Person,
-                                            contentDescription = "Cuenta",
-
-                                            tint =
-                                                if (tabSeleccionado == 2)
-                                                    colorBarraInferior
-                                                else
-                                                    colorIconosBarra,
-
-                                            modifier = Modifier.size(32.dp)
-                                        )
-
-                                        Text(
-                                            text = "Cuenta",
-                                            fontSize = 12.sp,
-
-                                            color =
-                                                if (tabSeleccionado == 2)
-                                                    colorBarraInferior
-                                                else
-                                                    colorTextoBarra
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }) { padding ->
+        ) { padding ->
 
             Box(
                 modifier = Modifier
@@ -425,7 +227,7 @@ fun PantallaPrincipal(
                                     bottomEnd = 35.dp
                                 )
                             )
-                            .background(colorFranjaMenu)
+                            .background(franja)
                     ) {
 
                         IconButton(
@@ -440,12 +242,7 @@ fun PantallaPrincipal(
                             Icon(
                                 imageVector = Icons.Default.Menu,
                                 contentDescription = "Menú",
-                                tint =
-                                    if (modoOscuro) {
-                                        colorFondo
-                                    } else {
-                                        colorLupa
-                                    },
+                                tint = color3Barras,
                                 modifier = Modifier.size(34.dp)
                             )
                         }
@@ -672,7 +469,7 @@ fun PantallaPrincipal(
                                     topEnd = 30.dp,
                                     bottomEnd = 30.dp
                                 ),
-                                color = RosaClaro,
+                                color = franja,
                                 shadowElevation = 8.dp
                             ) {
 
@@ -703,7 +500,7 @@ fun PantallaPrincipal(
                                             .fillMaxWidth()
                                             .height(50.dp)
                                             .clip(RoundedCornerShape(30.dp))
-                                            .background(RosaClaro)
+                                            .background(franja)
                                             .padding(horizontal = 10.dp),
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
@@ -730,7 +527,7 @@ fun PantallaPrincipal(
 
                                         Text(
                                             text = "¡Hola, ${usuario?.nombre ?: "Usuario"}!",
-                                            color = Color.White,
+                                            color = franjaTexto,
                                             fontSize = 18.sp,
                                             fontWeight = FontWeight.Bold
                                         )

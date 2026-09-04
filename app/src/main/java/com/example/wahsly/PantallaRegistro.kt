@@ -335,7 +335,7 @@ fun PantallaRegistro(
                     onCheckedChange = null, // Controlado por el Row
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = Color.White,
-                        checkedTrackColor = Color(0xFFEFAEFD)
+                        checkedTrackColor = Color(0xFF487A32)
                     )
                 )
                 Text(
@@ -412,7 +412,7 @@ fun PantallaRegistro(
             val coloresRegistroExitoso =
                 if (modoOscuro) {
                     listOf(
-                        RosaClaro,
+                        RosaOscuro,
                         FondoClaro
                     )
                 } else {

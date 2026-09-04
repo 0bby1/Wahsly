@@ -292,13 +292,13 @@ fun PantallaPerfil(
                                     Icon(
                                         imageVector = Icons.Default.Person,
                                         contentDescription = "Cuenta",
-                                        tint = colorBarraInferior,
+                                        tint = colorTexto,
                                         modifier = Modifier.size(28.dp)
                                     )
                                     Text(
                                         text = "Cuenta",
                                         fontSize = 12.sp,
-                                        color = colorBarraInferior
+                                        color = colorTexto
                                     )
                                 }
                             }

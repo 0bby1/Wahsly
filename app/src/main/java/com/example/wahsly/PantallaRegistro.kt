@@ -28,6 +28,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.LiveRegionMode
 import kotlinx.coroutines.delay
 import androidx.compose.ui.draw.clip
 
@@ -108,7 +113,10 @@ fun PantallaRegistro(
                         color = colorRosa,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.clickable { onVolverLogin() }
+                        modifier = Modifier.clickable(
+                            role = Role.Button,
+                            onClick = onVolverLogin
+                        )
                     )
                 }
             }
@@ -130,7 +138,8 @@ fun PantallaRegistro(
                 value = nombre,
                 onValueChange = { nombre = it },
                 modifier = Modifier.fillMaxWidth().height(60.dp),
-                placeholder = { Text("Nombre", fontSize = 18.sp, color = colorTextoCampo) },
+                label = { Text("Nombre") },
+                placeholder = { Text("Tu nombre", fontSize = 18.sp, color = colorTextoCampo) },
                 leadingIcon = {
                     Icon(
                         Icons.Default.Person,
@@ -158,7 +167,8 @@ fun PantallaRegistro(
                 value = apellido,
                 onValueChange = { apellido = it },
                 modifier = Modifier.fillMaxWidth().height(60.dp),
-                placeholder = { Text("Apellido", fontSize = 18.sp, color = colorTextoCampo) },
+                label = { Text("Apellido") },
+                placeholder = { Text("Tu apellido", fontSize = 18.sp, color = colorTextoCampo) },
                 leadingIcon = {
                     Icon(
                         Icons.Default.Person,
@@ -186,9 +196,10 @@ fun PantallaRegistro(
                 value = correo,
                 onValueChange = { correo = it },
                 modifier = Modifier.fillMaxWidth().height(60.dp),
+                label = { Text("Correo electrónico") },
                 placeholder = {
                     Text(
-                        "Correo electrónico",
+                        "ejemplo@correo.com",
                         fontSize = 18.sp,
                         color = colorTextoCampo
                     )
@@ -221,6 +232,7 @@ fun PantallaRegistro(
                 value = contrasena,
                 onValueChange = { contrasena = it },
                 modifier = Modifier.fillMaxWidth().height(60.dp),
+                label = { Text("Contraseña") },
                 placeholder = {
                     Text(
                         "Crea tu contraseña",
@@ -266,6 +278,7 @@ fun PantallaRegistro(
                 value = confirmarContrasena,
                 onValueChange = { confirmarContrasena = it },
                 modifier = Modifier.fillMaxWidth().height(60.dp),
+                label = { Text("Confirmar contraseña") },
                 placeholder = {
                     Text(
                         "Confirma tu contraseña",
@@ -309,11 +322,17 @@ fun PantallaRegistro(
             // Checkbox política
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .semantics(mergeDescendants = true) { }
+                    .clickable(
+                        role = Role.Checkbox,
+                        onClick = { aceptaPolitica = !aceptaPolitica }
+                    )
             ) {
                 Switch(
                     checked = aceptaPolitica,
-                    onCheckedChange = { aceptaPolitica = it },
+                    onCheckedChange = null, // Controlado por el Row
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = Color.White,
                         checkedTrackColor = Color(0xFFEFAEFD)
@@ -322,71 +341,72 @@ fun PantallaRegistro(
                 Text(
                     text = "  Acepta la Política de Privacidad",
                     fontSize = 16.sp,
-                    color = colorCampo,
-                    modifier = Modifier.clickable { aceptaPolitica = !aceptaPolitica }
+                    color = colorCampo
                 )
             }
 
             Spacer(modifier = Modifier.height(20.dp))
 
             // Botón Regístrate
-            BotonDegradado(
-                texto = "Regístrate",
-                modoOscuro = modoOscuro,
-                onClick = {
-                    if (nombre.isBlank() || apellido.isBlank() || correo.isBlank() ||
-                        contrasena.isBlank() || confirmarContrasena.isBlank()
-                    ) {
-                        Toast.makeText(
-                            context,
-                            "Todos los campos son obligatorios",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        return@BotonDegradado
-                    }
-                    if (!correoValido(correo)) {
-                        Toast.makeText(
-                            context,
-                            "Correo electrónico no válido",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        return@BotonDegradado
-                    }
-                    if (contrasena != confirmarContrasena) {
-                        Toast.makeText(
-                            context,
-                            "Las contraseñas no coinciden",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        return@BotonDegradado
-                    }
-                    if (!aceptaPolitica) {
-                        Toast.makeText(
-                            context,
-                            "Debes aceptar la política de privacidad",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        return@BotonDegradado
-                    }
+            Box(modifier = Modifier.semantics { role = Role.Button }) {
+                BotonDegradado(
+                    texto = "Regístrate",
+                    modoOscuro = modoOscuro,
+                    onClick = {
+                        if (nombre.isBlank() || apellido.isBlank() || correo.isBlank() ||
+                            contrasena.isBlank() || confirmarContrasena.isBlank()
+                        ) {
+                            Toast.makeText(
+                                context,
+                                "Todos los campos son obligatorios",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            return@BotonDegradado
+                        }
+                        if (!correoValido(correo)) {
+                            Toast.makeText(
+                                context,
+                                "Correo electrónico no válido",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            return@BotonDegradado
+                        }
+                        if (contrasena != confirmarContrasena) {
+                            Toast.makeText(
+                                context,
+                                "Las contraseñas no coinciden",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            return@BotonDegradado
+                        }
+                        if (!aceptaPolitica) {
+                            Toast.makeText(
+                                context,
+                                "Debes aceptar la política de privacidad",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            return@BotonDegradado
+                        }
 
-                    val nuevoUsuario = Usuario(
-                        nombre = nombre.trim(),
-                        apellido = apellido.trim(),
-                        correo = correo.trim(),
-                        contrasena = contrasena
-                    )
-                    if (base_de_datos_Usuarios.agregarUsuario(nuevoUsuario)) {
-                        usuarioRegistrado = nuevoUsuario
-                        mostrarRegistroExitoso = true
-                    } else {
-                        Toast.makeText(
-                            context,
-                            "El correo ya está registrado",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        val nuevoUsuario = Usuario(
+                            nombre = nombre.trim(),
+                            apellido = apellido.trim(),
+                            correo = correo.trim(),
+                            contrasena = contrasena
+                        )
+                        if (base_de_datos_Usuarios.agregarUsuario(nuevoUsuario)) {
+                            usuarioRegistrado = nuevoUsuario
+                            mostrarRegistroExitoso = true
+                        } else {
+                            Toast.makeText(
+                                context,
+                                "El correo ya está registrado",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
                     }
-                }
-            )
+                )
+            }
         }
         if (mostrarRegistroExitoso) {
             val coloresRegistroExitoso =
@@ -415,7 +435,8 @@ fun PantallaRegistro(
                                 colors = coloresRegistroExitoso
 
                             )
-                        ),
+                        )
+                        .semantics { liveRegion = LiveRegionMode.Polite },
                     contentAlignment = Alignment.Center
                 ) {
                     Text(

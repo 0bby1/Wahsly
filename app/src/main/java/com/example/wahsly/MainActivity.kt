@@ -98,32 +98,22 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-                    // ---------------- PANTALLA PRINCIPAL ----------------
-                    "INICIO" -> {
-                        PantallaPrincipal(
-                            usuario = usuarioActual,
-                            modoOscuro = modoOscuro,
-                            onPerfil = {
-                                pantallaActual = "PERFIL"
-                            },
-                            onCerrarSesion = {
-                                usuarioActual = null
-                                pantallaActual = "LOGIN"
-                            }
-                        )
-                    }
+                    // ---------------- INICIO Y PERFIL ----------------
+                    "INICIO", "PERFIL" -> {
 
-                    // ---------------- PERFIL ----------------
-                    "PERFIL" -> {
-                        PantallaPerfil(
+                        NavegacionPrincipal(
+                            seccionActual = pantallaActual,
                             usuario = usuarioActual,
                             modoOscuro = modoOscuro,
+
+                            onCambiarSeccion = { nuevaSeccion ->
+                                pantallaActual = nuevaSeccion
+                            },
+
                             onConfiguracion = {
                                 pantallaActual = "CONFIGURACION"
                             },
-                            onVolver = {
-                                pantallaActual = "INICIO"
-                            },
+
                             onCerrarSesion = {
                                 usuarioActual = null
                                 pantallaActual = "LOGIN"

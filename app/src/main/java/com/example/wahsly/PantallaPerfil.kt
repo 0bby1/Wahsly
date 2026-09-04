@@ -25,6 +25,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.unit.TextUnit
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 
 
 // Pantalla de perfil de usuario
@@ -34,7 +37,9 @@ fun PantallaPerfil(
     modoOscuro: Boolean,
     onConfiguracion: () -> Unit,
     onVolver: () -> Unit,
-    onCerrarSesion: () -> Unit
+    onCerrarSesion: () -> Unit,
+    mostrarBarraInferior: Boolean = true,
+    animarCabecera: Boolean = false
 ) {
 
     val context = LocalContext.current
@@ -141,108 +146,161 @@ fun PantallaPerfil(
     val colorTextoBotonDialogo =
         AzulTextoClaro
 
+    // =======================================
+// ANIMACIÓN DE LA CABECERA DE PERFIL
+// =======================================
+
+    val alturaStatusBarPerfil =
+        WindowInsets.statusBars
+            .asPaddingValues()
+            .calculateTopPadding()
+
+    val alturaInicio =
+        alturaStatusBarPerfil + 92.dp
+
+    var iniciarAnimacionCabecera by remember(animarCabecera) {
+        mutableStateOf(!animarCabecera)
+    }
+
+    LaunchedEffect(animarCabecera) {
+        if (animarCabecera) {
+            iniciarAnimacionCabecera = true
+        }
+    }
+
+    val alturaCabeceraAnimada by animateDpAsState(
+        targetValue =
+            if (iniciarAnimacionCabecera)
+                235.dp
+            else
+                alturaInicio,
+
+        animationSpec = spring(
+            dampingRatio = 0.78f,
+            stiffness = 220f
+        ),
+
+        label = "AlturaCabeceraPerfil"
+    )
+
+    val radioCabeceraAnimado by animateDpAsState(
+        targetValue =
+            if (iniciarAnimacionCabecera)
+                35.dp
+            else
+                0.dp,
+
+        animationSpec = tween(
+            durationMillis = 320
+        ),
+
+        label = "RadioCabeceraPerfil"
+    )
+
     Scaffold(
         containerColor = colorFondo,
         contentWindowInsets = WindowInsets.systemBars,
         bottomBar = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(colorFondo)
-                    .padding(
-                        start = 10.dp,
-                        end = 10.dp,
-                        bottom = 8.dp
-                    )
-            ) {
-                Surface(
+            if (mostrarBarraInferior) {
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(78.dp),
-                    shape = RoundedCornerShape(45.dp),
-                    color = colorBarraInferior,
-                    shadowElevation = 5.dp
+                        .background(colorFondo)
+                        .padding(
+                            start = 10.dp,
+                            end = 10.dp,
+                            bottom = 8.dp
+                        )
                 ) {
-                    Row(
+                    Surface(
                         modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                            .fillMaxWidth()
+                            .height(78.dp),
+                        shape = RoundedCornerShape(45.dp),
+                        color = colorBarraInferior,
+                        shadowElevation = 5.dp
                     ) {
-
-                        // INICIO
-                        Column(
+                        Row(
                             modifier = Modifier
-                                .width(105.dp)
-                                .clickable {
-                                    onVolver()
-                                },
-                            horizontalAlignment = Alignment.CenterHorizontally
+                                .fillMaxSize()
+                                .padding(horizontal = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Home,
-                                contentDescription = "Inicio",
-                                tint = colorIconosBarra,
-                                modifier = Modifier.size(34.dp)
-                            )
 
-                            Text(
-                                text = "Inicio",
-                                fontSize = 12.sp,
-                                color = colorTextoBarra
-                            )
-                        }
-
-                        // ESCANEAR
-                        Column(
-                            modifier = Modifier
-                                .width(105.dp)
-                                .clickable {
-                                    Toast.makeText(
-                                        context,
-                                        "Escáner próximamente",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                },
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Add,
-                                contentDescription = "Escanear",
-                                tint = colorIconosBarra,
-                                modifier = Modifier.size(38.dp)
-                            )
-                            Text(
-                                text = "Escanear",
-                                fontSize = 12.sp,
-                                color = colorTextoBarra
-                            )
-                        }
-
-                        // CUENTA ACTIVA
-                        Box(
-                            modifier = Modifier
-                                .width(105.dp)
-                                .height(65.dp)
-                                .clip(RoundedCornerShape(38.dp))
-                                .background(colorSeleccionado),
-                            contentAlignment = Alignment.Center
-                        ) {
+                            // INICIO
                             Column(
+                                modifier = Modifier
+                                    .width(105.dp)
+                                    .clickable {
+                                        onVolver()
+                                    },
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.Person,
-                                    contentDescription = "Cuenta",
-                                    tint = colorBarraInferior,
-                                    modifier = Modifier.size(28.dp)
+                                    imageVector = Icons.Default.Home,
+                                    contentDescription = "Inicio",
+                                    tint = colorIconosBarra,
+                                    modifier = Modifier.size(34.dp)
+                                )
+
+                                Text(
+                                    text = "Inicio",
+                                    fontSize = 12.sp,
+                                    color = colorTextoBarra
+                                )
+                            }
+
+                            // ESCANEAR
+                            Column(
+                                modifier = Modifier
+                                    .width(105.dp)
+                                    .clickable {
+                                        Toast.makeText(
+                                            context,
+                                            "Escáner próximamente",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    },
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Add,
+                                    contentDescription = "Escanear",
+                                    tint = colorIconosBarra,
+                                    modifier = Modifier.size(38.dp)
                                 )
                                 Text(
-                                    text = "Cuenta",
+                                    text = "Escanear",
                                     fontSize = 12.sp,
-                                    color = colorBarraInferior
+                                    color = colorTextoBarra
                                 )
+                            }
+
+                            // CUENTA ACTIVA
+                            Box(
+                                modifier = Modifier
+                                    .width(105.dp)
+                                    .height(65.dp)
+                                    .clip(RoundedCornerShape(38.dp))
+                                    .background(colorSeleccionado),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Person,
+                                        contentDescription = "Cuenta",
+                                        tint = colorBarraInferior,
+                                        modifier = Modifier.size(28.dp)
+                                    )
+                                    Text(
+                                        text = "Cuenta",
+                                        fontSize = 12.sp,
+                                        color = colorBarraInferior
+                                    )
+                                }
                             }
                         }
                     }
@@ -265,11 +323,11 @@ fun PantallaPerfil(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(235.dp)
+                    .height(alturaCabeceraAnimada)
                     .clip(
                         RoundedCornerShape(
-                            bottomStart = 35.dp,
-                            bottomEnd = 35.dp
+                            bottomStart = radioCabeceraAnimado,
+                            bottomEnd = radioCabeceraAnimado
                         )
                     )
                     .background(

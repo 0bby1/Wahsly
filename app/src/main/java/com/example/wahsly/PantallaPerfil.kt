@@ -25,6 +25,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
@@ -232,14 +238,16 @@ fun PantallaPerfil(
                             Column(
                                 modifier = Modifier
                                     .width(105.dp)
-                                    .clickable {
-                                        onVolver()
-                                    },
+                                    .selectable(
+                                        selected = false,
+                                        onClick = onVolver,
+                                        role = Role.Tab
+                                    ),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Home,
-                                    contentDescription = "Inicio",
+                                    contentDescription = null,
                                     tint = colorIconosBarra,
                                     modifier = Modifier.size(34.dp)
                                 )
@@ -255,18 +263,22 @@ fun PantallaPerfil(
                             Column(
                                 modifier = Modifier
                                     .width(105.dp)
-                                    .clickable {
-                                        Toast.makeText(
-                                            context,
-                                            "Escáner próximamente",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    },
+                                    .selectable(
+                                        selected = false,
+                                        onClick = {
+                                            Toast.makeText(
+                                                context,
+                                                "Escáner próximamente",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        },
+                                        role = Role.Tab
+                                    ),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Add,
-                                    contentDescription = "Escanear",
+                                    contentDescription = null,
                                     tint = colorIconosBarra,
                                     modifier = Modifier.size(38.dp)
                                 )
@@ -283,7 +295,12 @@ fun PantallaPerfil(
                                     .width(105.dp)
                                     .height(65.dp)
                                     .clip(RoundedCornerShape(38.dp))
-                                    .background(colorSeleccionado),
+                                    .background(colorSeleccionado)
+                                    .selectable(
+                                        selected = true,
+                                        onClick = { },
+                                        role = Role.Tab
+                                    ),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Column(
@@ -291,7 +308,7 @@ fun PantallaPerfil(
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Person,
-                                        contentDescription = "Cuenta",
+                                        contentDescription = null,
                                         tint = colorTexto,
                                         modifier = Modifier.size(28.dp)
                                     )
@@ -349,12 +366,13 @@ fun PantallaPerfil(
                         width = 5.dp,
                         color = colorBordeAvatar,
                         shape = CircleShape
-                    ),
+                    )
+                    .semantics { role = Role.Image },
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Outlined.Person,
-                    contentDescription = "Foto de perfil",
+                    contentDescription = "Foto de perfil de ${usuario?.nombre ?: "Usuario"}",
                     tint = colorAvatarIcono,
                     modifier = Modifier.size(145.dp)
                 )
@@ -460,12 +478,13 @@ fun PantallaPerfil(
                                 .padding(
                                     top = 24.dp,
                                     bottom = 8.dp
-                                ),
+                                )
+                                .semantics { liveRegion = LiveRegionMode.Polite },
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             // TEXTO
                             Text(
-                                text = "¿Cerrar sesión?",
+                                text = "¿Deseas cerrar sesión?",
                                 color = colorTextoDialogo,
                                 fontSize = 22.sp,
                                 fontWeight = FontWeight.Bold,
@@ -479,10 +498,13 @@ fun PantallaPerfil(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(50.dp))
                                     .background(colorBotonDialogo)
-                                    .clickable {
-                                        mostrarDialogoCerrarSesion = false
-                                        onCerrarSesion()
-                                    }
+                                    .clickable(
+                                        role = Role.Button,
+                                        onClick = {
+                                            mostrarDialogoCerrarSesion = false
+                                            onCerrarSesion()
+                                        }
+                                    )
                                     .padding(
                                         horizontal = 40.dp,
                                         vertical = 12.dp
@@ -516,9 +538,10 @@ fun OpcionPerfilConFlecha(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable {
-                onClick()
-            }
+            .clickable(
+                role = Role.Button,
+                onClick = onClick
+            )
             .padding(
                 horizontal = 16.dp,
                 vertical = 12.dp

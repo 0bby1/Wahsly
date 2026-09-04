@@ -30,6 +30,8 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
@@ -242,7 +244,10 @@ fun PantallaPerfil(
                                         selected = false,
                                         onClick = onVolver,
                                         role = Role.Tab
-                                    ),
+                                    )
+                                    .semantics(mergeDescendants = true) {
+                                        contentDescription = "Ir a la pantalla de Inicio"
+                                    },
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Icon(
@@ -273,7 +278,10 @@ fun PantallaPerfil(
                                             ).show()
                                         },
                                         role = Role.Tab
-                                    ),
+                                    )
+                                    .semantics(mergeDescendants = true) {
+                                        contentDescription = "Abrir escáner de códigos"
+                                    },
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Icon(
@@ -300,7 +308,11 @@ fun PantallaPerfil(
                                         selected = true,
                                         onClick = { },
                                         role = Role.Tab
-                                    ),
+                                    )
+                                    .semantics(mergeDescendants = true) {
+                                        contentDescription = "Pestaña de Cuenta"
+                                        stateDescription = "Seleccionada"
+                                    },
                                 contentAlignment = Alignment.Center
                             ) {
                                 Column(
@@ -479,7 +491,10 @@ fun PantallaPerfil(
                                     top = 24.dp,
                                     bottom = 8.dp
                                 )
-                                .semantics { liveRegion = LiveRegionMode.Polite },
+                                .semantics { 
+                                    liveRegion = LiveRegionMode.Polite 
+                                    contentDescription = "Ventana de confirmación: ¿Deseas cerrar sesión?"
+                                },
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             // TEXTO
@@ -500,6 +515,7 @@ fun PantallaPerfil(
                                     .background(colorBotonDialogo)
                                     .clickable(
                                         role = Role.Button,
+                                        onClickLabel = "Confirmar cierre de sesión",
                                         onClick = {
                                             mostrarDialogoCerrarSesion = false
                                             onCerrarSesion()
@@ -509,6 +525,7 @@ fun PantallaPerfil(
                                         horizontal = 40.dp,
                                         vertical = 12.dp
                                     )
+                                    .semantics(mergeDescendants = true) { }
                             ) {
                                 Text(
                                     text = "Aceptar",
@@ -540,12 +557,14 @@ fun OpcionPerfilConFlecha(
             .fillMaxWidth()
             .clickable(
                 role = Role.Button,
+                onClickLabel = "Acceder a $texto",
                 onClick = onClick
             )
             .padding(
                 horizontal = 16.dp,
                 vertical = 12.dp
-            ),
+            )
+            .semantics(mergeDescendants = true) { },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(

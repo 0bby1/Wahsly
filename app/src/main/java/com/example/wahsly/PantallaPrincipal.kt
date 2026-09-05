@@ -36,6 +36,8 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.zIndex
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
 
 @Composable
 fun PantallaPrincipal(
@@ -193,7 +195,8 @@ fun PantallaPrincipal(
                                 .shadow(
                                     elevation = 5.dp,
                                     shape = RoundedCornerShape(40.dp)
-                                ),
+                                )
+                                .semantics { contentDescription = "Buscador de rutinas" },
                             leadingIcon = {
                                 Icon(
                                     imageVector = Icons.Default.Search,

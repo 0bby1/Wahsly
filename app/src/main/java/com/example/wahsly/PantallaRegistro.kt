@@ -33,6 +33,7 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.contentDescription
 import kotlinx.coroutines.delay
 import androidx.compose.ui.draw.clip
 
@@ -137,7 +138,10 @@ fun PantallaRegistro(
             OutlinedTextField(
                 value = nombre,
                 onValueChange = { nombre = it },
-                modifier = Modifier.fillMaxWidth().height(60.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(60.dp)
+                    .semantics { contentDescription = "Nombre" },
                 label = { Text("Nombre") },
                 placeholder = { Text("Tu nombre", fontSize = 18.sp, color = colorTextoCampo) },
                 leadingIcon = {
@@ -166,7 +170,10 @@ fun PantallaRegistro(
             OutlinedTextField(
                 value = apellido,
                 onValueChange = { apellido = it },
-                modifier = Modifier.fillMaxWidth().height(60.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(60.dp)
+                    .semantics { contentDescription = "Apellido" },
                 label = { Text("Apellido") },
                 placeholder = { Text("Tu apellido", fontSize = 18.sp, color = colorTextoCampo) },
                 leadingIcon = {
@@ -195,7 +202,10 @@ fun PantallaRegistro(
             OutlinedTextField(
                 value = correo,
                 onValueChange = { correo = it },
-                modifier = Modifier.fillMaxWidth().height(60.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(60.dp)
+                    .semantics { contentDescription = "Correo electrónico" },
                 label = { Text("Correo electrónico") },
                 placeholder = {
                     Text(
@@ -231,7 +241,10 @@ fun PantallaRegistro(
             OutlinedTextField(
                 value = contrasena,
                 onValueChange = { contrasena = it },
-                modifier = Modifier.fillMaxWidth().height(60.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(60.dp)
+                    .semantics { contentDescription = "Contraseña" },
                 label = { Text("Contraseña") },
                 placeholder = {
                     Text(
@@ -277,7 +290,10 @@ fun PantallaRegistro(
             OutlinedTextField(
                 value = confirmarContrasena,
                 onValueChange = { confirmarContrasena = it },
-                modifier = Modifier.fillMaxWidth().height(60.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(60.dp)
+                    .semantics { contentDescription = "Confirmar contraseña" },
                 label = { Text("Confirmar contraseña") },
                 placeholder = {
                     Text(

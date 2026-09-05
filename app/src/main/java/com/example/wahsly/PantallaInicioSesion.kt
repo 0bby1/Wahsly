@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
 import android.net.Uri
 import android.widget.VideoView
 import androidx.compose.ui.viewinterop.AndroidView
@@ -100,7 +101,10 @@ fun PantallaInicioSesion(
             OutlinedTextField(
                 value = correo,
                 onValueChange = { correo = it },
-                modifier = Modifier.fillMaxWidth().height(66.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(66.dp)
+                    .semantics { contentDescription = "Correo electrónico" },
                 placeholder = {
                     Text(
                         "Correo electrónico",
@@ -136,7 +140,10 @@ fun PantallaInicioSesion(
             OutlinedTextField(
                 value = contrasena,
                 onValueChange = { contrasena = it },
-                modifier = Modifier.fillMaxWidth().height(66.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(66.dp)
+                    .semantics { contentDescription = "Contraseña" },
                 placeholder = {
                     Text(
                         "Contraseña",
@@ -223,7 +230,7 @@ fun PantallaInicioSesion(
 
             Spacer(modifier = Modifier.height(25.dp))
 
-            // Sección para crear cuenta (Accesible para TalkBack)
+            // Sección para crear cuenta
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier

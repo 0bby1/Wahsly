@@ -243,7 +243,7 @@ fun PantallaInicioSesion(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                BotonCrearCuenta(onClick = { }, modoOscuro = modoOscuro)
+                BotonCrearCuenta(onClick = onCrearCuenta, modoOscuro = modoOscuro)
             }
         }
     }

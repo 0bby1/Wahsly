@@ -1,7 +1,6 @@
 package com.example.wahsly
 
-import android.util.Patterns
-
 fun correoValido(correo: String): Boolean {
-    return Patterns.EMAIL_ADDRESS.matcher(correo.trim()).matches()
+    val regex = Regex("^[A-Za-z0-9._%+-]+@gmail\\.com$", RegexOption.IGNORE_CASE)
+    return regex.matches(correo.trim())
 }

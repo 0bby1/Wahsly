@@ -77,7 +77,6 @@ fun PantallaRegistro(
         if (modoOscuro) RosaOscuro else RosaClaro
 
     val colorTextoPrincipal = colorTextoCampo
-
     val colorIcono = colorTextoCampo
 
     Box(modifier = Modifier.fillMaxSize().background(colorFondo)) {
@@ -138,7 +137,6 @@ fun PantallaRegistro(
                 value = nombre,
                 onValueChange = { nombre = it },
                 modifier = Modifier.fillMaxWidth().height(60.dp),
-                label = { Text("Nombre") },
                 placeholder = { Text("Tu nombre", fontSize = 18.sp, color = colorTextoCampo) },
                 leadingIcon = {
                     Icon(
@@ -152,11 +150,26 @@ fun PantallaRegistro(
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = colorCampo,
                     unfocusedContainerColor = colorCampo,
+
                     focusedBorderColor = colorCampo,
                     unfocusedBorderColor = colorCampo,
-                    cursorColor = colorTextoPrincipal,
-                    focusedTextColor = colorTextoPrincipal,
-                    unfocusedTextColor = colorTextoPrincipal
+
+                    focusedTextColor = colorTextoCampo,
+                    unfocusedTextColor = colorTextoCampo,
+
+                    focusedLabelColor = colorTextoCampo,
+                    unfocusedLabelColor = colorTextoCampo,
+
+                    focusedPlaceholderColor = colorTextoCampo,
+                    unfocusedPlaceholderColor = colorTextoCampo,
+
+                    focusedLeadingIconColor = colorIcono,
+                    unfocusedLeadingIconColor = colorIcono,
+
+                    focusedTrailingIconColor = colorIcono,
+                    unfocusedTrailingIconColor = colorIcono,
+
+                    cursorColor = colorTextoCampo
                 )
             )
 
@@ -167,7 +180,6 @@ fun PantallaRegistro(
                 value = apellido,
                 onValueChange = { apellido = it },
                 modifier = Modifier.fillMaxWidth().height(60.dp),
-                label = { Text("Apellido") },
                 placeholder = { Text("Tu apellido", fontSize = 18.sp, color = colorTextoCampo) },
                 leadingIcon = {
                     Icon(
@@ -181,11 +193,26 @@ fun PantallaRegistro(
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = colorCampo,
                     unfocusedContainerColor = colorCampo,
+
                     focusedBorderColor = colorCampo,
                     unfocusedBorderColor = colorCampo,
-                    cursorColor = colorTextoPrincipal,
-                    focusedTextColor = colorTextoPrincipal,
-                    unfocusedTextColor = colorTextoPrincipal
+
+                    focusedTextColor = colorTextoCampo,
+                    unfocusedTextColor = colorTextoCampo,
+
+                    focusedLabelColor = colorTextoCampo,
+                    unfocusedLabelColor = colorTextoCampo,
+
+                    focusedPlaceholderColor = colorTextoCampo,
+                    unfocusedPlaceholderColor = colorTextoCampo,
+
+                    focusedLeadingIconColor = colorIcono,
+                    unfocusedLeadingIconColor = colorIcono,
+
+                    focusedTrailingIconColor = colorIcono,
+                    unfocusedTrailingIconColor = colorIcono,
+
+                    cursorColor = colorTextoCampo
                 )
             )
 
@@ -196,7 +223,6 @@ fun PantallaRegistro(
                 value = correo,
                 onValueChange = { correo = it },
                 modifier = Modifier.fillMaxWidth().height(60.dp),
-                label = { Text("Correo electrónico") },
                 placeholder = {
                     Text(
                         "ejemplo@correo.com",
@@ -217,11 +243,26 @@ fun PantallaRegistro(
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = colorCampo,
                     unfocusedContainerColor = colorCampo,
+
                     focusedBorderColor = colorCampo,
                     unfocusedBorderColor = colorCampo,
-                    cursorColor = colorTextoPrincipal,
-                    focusedTextColor = colorTextoPrincipal,
-                    unfocusedTextColor = colorTextoPrincipal
+
+                    focusedTextColor = colorTextoCampo,
+                    unfocusedTextColor = colorTextoCampo,
+
+                    focusedLabelColor = colorTextoCampo,
+                    unfocusedLabelColor = colorTextoCampo,
+
+                    focusedPlaceholderColor = colorTextoCampo,
+                    unfocusedPlaceholderColor = colorTextoCampo,
+
+                    focusedLeadingIconColor = colorIcono,
+                    unfocusedLeadingIconColor = colorIcono,
+
+                    focusedTrailingIconColor = colorIcono,
+                    unfocusedTrailingIconColor = colorIcono,
+
+                    cursorColor = colorTextoCampo
                 )
             )
 
@@ -232,7 +273,6 @@ fun PantallaRegistro(
                 value = contrasena,
                 onValueChange = { contrasena = it },
                 modifier = Modifier.fillMaxWidth().height(60.dp),
-                label = { Text("Contraseña") },
                 placeholder = {
                     Text(
                         "Crea tu contraseña",
@@ -263,11 +303,26 @@ fun PantallaRegistro(
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = colorCampo,
                     unfocusedContainerColor = colorCampo,
+
                     focusedBorderColor = colorCampo,
                     unfocusedBorderColor = colorCampo,
-                    cursorColor = colorTextoPrincipal,
-                    focusedTextColor = colorTextoPrincipal,
-                    unfocusedTextColor = colorTextoPrincipal
+
+                    focusedTextColor = colorTextoCampo,
+                    unfocusedTextColor = colorTextoCampo,
+
+                    focusedLabelColor = colorTextoCampo,
+                    unfocusedLabelColor = colorTextoCampo,
+
+                    focusedPlaceholderColor = colorTextoCampo,
+                    unfocusedPlaceholderColor = colorTextoCampo,
+
+                    focusedLeadingIconColor = colorIcono,
+                    unfocusedLeadingIconColor = colorIcono,
+
+                    focusedTrailingIconColor = colorIcono,
+                    unfocusedTrailingIconColor = colorIcono,
+
+                    cursorColor = colorTextoCampo
                 )
             )
 
@@ -278,7 +333,6 @@ fun PantallaRegistro(
                 value = confirmarContrasena,
                 onValueChange = { confirmarContrasena = it },
                 modifier = Modifier.fillMaxWidth().height(60.dp),
-                label = { Text("Confirmar contraseña") },
                 placeholder = {
                     Text(
                         "Confirma tu contraseña",
@@ -309,11 +363,26 @@ fun PantallaRegistro(
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = colorCampo,
                     unfocusedContainerColor = colorCampo,
+
                     focusedBorderColor = colorCampo,
                     unfocusedBorderColor = colorCampo,
-                    cursorColor = colorTextoPrincipal,
-                    focusedTextColor = colorTextoPrincipal,
-                    unfocusedTextColor = colorTextoPrincipal
+
+                    focusedTextColor = colorTextoCampo,
+                    unfocusedTextColor = colorTextoCampo,
+
+                    focusedLabelColor = colorTextoCampo,
+                    unfocusedLabelColor = colorTextoCampo,
+
+                    focusedPlaceholderColor = colorTextoCampo,
+                    unfocusedPlaceholderColor = colorTextoCampo,
+
+                    focusedLeadingIconColor = colorIcono,
+                    unfocusedLeadingIconColor = colorIcono,
+
+                    focusedTrailingIconColor = colorIcono,
+                    unfocusedTrailingIconColor = colorIcono,
+
+                    cursorColor = colorTextoCampo
                 )
             )
 

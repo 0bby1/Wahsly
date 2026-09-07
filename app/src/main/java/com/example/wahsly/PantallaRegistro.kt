@@ -17,6 +17,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -27,7 +28,6 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
@@ -37,7 +37,6 @@ import androidx.compose.ui.draw.clip
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.delay
 
-// Pantalla de registro
 @Composable
 fun PantallaRegistro(
     modoOscuro: Boolean,
@@ -47,7 +46,7 @@ fun PantallaRegistro(
 ) {
     val context = LocalContext.current
 
-    // Mostrar Toast cuando aparezca un mensaje de error
+    // Mostrar Toast cuando aparezca mensaje de error
     LaunchedEffect(viewModel.mensajeError) {
         viewModel.mensajeError?.let {
             Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
@@ -337,7 +336,7 @@ fun PantallaRegistro(
                 }
             }
 
-            LaunchedEffect(viewModel.mostrarRegistroExitoso) {
+            LaunchedEffect(Unit) {
                 delay(1000)
                 viewModel.registroExitosoManejado()
                 viewModel.usuarioRegistrado?.let { usuario ->

@@ -3,34 +3,43 @@ package com.example.wahsly
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
+
+        base_de_datos_Usuarios.inicializar(this)
+        BaseDatosHistorial.inicializar(this)
+
         setContent {
             MaterialTheme {
-                // Primera pantalla que se mostrará
-                var pantallaActual by remember {
-                    mutableStateOf("SPLASH")
-                }
+                // NAVCONTROLLER
+                val navController = rememberNavController()
 
-                // Guarda qué usuario inició sesión
+                // ESTADOS DE LA APP
                 var usuarioActual by remember {
                     mutableStateOf<Usuario?>(null)
                 }
 
-                // Esto indica a qué pantalla ir después del video de carga
-                var destinoDespuesCarga by remember {
-                    mutableStateOf("LOGIN")
+                // Controla Inicio y Perfil sin destruir
+                // NavegacionPrincipal.
+                var seccionActual by remember {
+                    mutableStateOf("INICIO")
                 }
 
+                // PREFERENCIAS
                 val preferencias = remember {
                     getSharedPreferences(
                         "configuracion_washly",
@@ -47,82 +56,119 @@ class MainActivity : ComponentActivity() {
                     )
                 }
 
-                when (pantallaActual) {
-                    // ---------------- SPLASH ----------------
-                    "SPLASH" -> {
+                // NAVHOST
+                NavHost(
+                    navController = navController,
+                    startDestination = "SPLASH",
+                    enterTransition = { EnterTransition.None },
+                    exitTransition = { ExitTransition.None },
+                    popEnterTransition = { EnterTransition.None },
+                    popExitTransition = { ExitTransition.None }
+                ) {
+                    // SPLASH
+                    composable("SPLASH") {
                         PantallaSplash(
                             modoOscuro = modoOscuro,
                             onTerminar = {
-                                pantallaActual = "LOGIN"
+                                navController.navigate("LOGIN") {
+                                    popUpTo("SPLASH") {
+                                        inclusive = true
+                                    }
+                                }
                             }
                         )
                     }
 
-                    // ---------------- VIDEO DE CARGA ----------------
-                    "CARGA_VIDEO" -> {
-                        PantallaCargaVideo(
-                            modoOscuro = modoOscuro,
-                            onTerminar = {
-                                pantallaActual = destinoDespuesCarga
-                            }
-                        )
-                    }
-
-                    // ---------------- LOGIN ----------------
-                    "LOGIN" -> {
+                    // LOGIN
+                    composable("LOGIN") {
                         PantallaInicioSesion(
                             modoOscuro = modoOscuro,
                             onCrearCuenta = {
-                                pantallaActual = "REGISTRO"
+                                navController.navigate(
+                                    "REGISTRO"
+                                )
                             },
                             onLoginExitoso = { usuario ->
                                 usuarioActual = usuario
-                                destinoDespuesCarga = "INICIO"
-                                pantallaActual = "CARGA_VIDEO"
+                                // Siempre iniciamos en Inicio
+                                seccionActual = "INICIO"
+                                navController.navigate(
+                                    "CARGA_VIDEO"
+                                )
                             }
                         )
                     }
 
-                    // ---------------- REGISTRO ----------------
-                    "REGISTRO" -> {
+                    // REGISTRO
+                    composable("REGISTRO") {
                         PantallaRegistro(
                             modoOscuro = modoOscuro,
                             onRegistroExitoso = { usuario ->
                                 usuarioActual = usuario
-                                destinoDespuesCarga = "INICIO"
-                                pantallaActual = "CARGA_VIDEO"
+                                seccionActual = "INICIO"
+                                navController.navigate(
+                                    "CARGA_VIDEO"
+                                ) {
+                                    popUpTo("REGISTRO") {
+                                        inclusive = true
+                                    }
+                                }
                             },
                             onVolverLogin = {
-                                pantallaActual = "LOGIN"
+                                navController.popBackStack()
                             }
                         )
                     }
 
-                    // ---------------- INICIO Y PERFIL ----------------
-                    "INICIO", "PERFIL" -> {
+                    // VIDEO DE CARGA
+                    composable("CARGA_VIDEO") {
+                        PantallaCargaVideo(
+                            modoOscuro = modoOscuro,
+                            onTerminar = {
+                                navController.navigate(
+                                    "PRINCIPAL"
+                                ) {
+                                    popUpTo("LOGIN") {
+                                        inclusive = true
+                                    }
+                                    launchSingleTop = true
+                                }
+                            }
+                        )
+                    }
 
+                    // PRINCIPAL
+                    composable("PRINCIPAL") {
                         NavegacionPrincipal(
-                            seccionActual = pantallaActual,
+                            seccionActual = seccionActual,
                             usuario = usuarioActual,
                             modoOscuro = modoOscuro,
-
                             onCambiarSeccion = { nuevaSeccion ->
-                                pantallaActual = nuevaSeccion
+                                seccionActual = nuevaSeccion
                             },
-
                             onConfiguracion = {
-                                pantallaActual = "CONFIGURACION"
+                                navController.navigate(
+                                    "CONFIGURACION"
+                                )
                             },
-
                             onCerrarSesion = {
                                 usuarioActual = null
-                                pantallaActual = "LOGIN"
+                                seccionActual = "INICIO"
+                                navController.navigate(
+                                    "LOGIN"
+                                ) {
+                                    popUpTo("PRINCIPAL") {
+                                        inclusive = true
+                                    }
+
+                                    launchSingleTop = true
+                                }
                             }
                         )
                     }
 
-                    // ---------------- CONFIGURACIÓN ----------------
-                    "CONFIGURACION" -> {
+                    // CONFIGURACION
+                    composable("CONFIGURACION") {
                         PantallaConfiguracion(
                             modoOscuro = modoOscuro,
                             onCambiarModoOscuro = { nuevoValor ->
@@ -136,7 +182,7 @@ class MainActivity : ComponentActivity() {
                                     .apply()
                             },
                             onVolver = {
-                                pantallaActual = "PERFIL"
+                                navController.popBackStack()
                             }
                         )
                     }

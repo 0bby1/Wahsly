@@ -53,5 +53,6 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.core:core-splashscreen:1.0.1")
-    implementation("androidx.navigation:navigation-compose:2.9.8")
+    implementation(libs.constraintlayout.compose)
+    implementation(libs.androidx.navigation.compose)
 }

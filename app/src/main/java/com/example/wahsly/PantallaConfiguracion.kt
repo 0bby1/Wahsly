@@ -1,7 +1,6 @@
 package com.example.wahsly
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -13,6 +12,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.Dimension
 
 @Composable
 fun PantallaConfiguracion(
@@ -34,43 +35,51 @@ fun PantallaConfiguracion(
     val colorAcento =
         if (modoOscuro) RosaOscuro else AzulPrincipalClaro
 
-
-    Column(
+    ConstraintLayout(
         modifier = Modifier
             .fillMaxSize()
             .background(colorFondo)
             .padding(24.dp)
     ) {
-        Spacer(modifier = Modifier.height(30.dp))
+        // Referencias
+        val (botonVolver, titulo, tarjetaModoOscuro) = createRefs()
 
-        // Encabezado
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(
-                onClick = onVolver
-            ) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Volver",
-                    tint = colorTexto
-                )
+        // BOTÓN VOLVER
+        IconButton(
+            onClick = onVolver,
+            modifier = Modifier.constrainAs(botonVolver) {
+                top.linkTo(parent.top, margin = 30.dp)
+                start.linkTo(parent.start)
             }
-
-            Spacer(modifier = Modifier.width(10.dp))
-
-            Text(
-                text = "Configuración",
-                color = colorTexto,
-                fontSize = 26.sp
+        ) {
+            Icon(
+                imageVector = Icons.Default.ArrowBack,
+                contentDescription = "Volver",
+                tint = colorTexto
             )
         }
 
-        Spacer(modifier = Modifier.height(40.dp))
+        // TÍTULO
+        Text(
+            text = "Configuración",
+            color = colorTexto,
+            fontSize = 26.sp,
+            modifier = Modifier.constrainAs(titulo) {
+                top.linkTo(botonVolver.top)
+                bottom.linkTo(botonVolver.bottom)
+                start.linkTo(botonVolver.end, margin = 10.dp)
+            }
+        )
 
         // TARJETA MODO OSCURO
         Surface(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .constrainAs(tarjetaModoOscuro) {
+                    top.linkTo(botonVolver.bottom, margin = 40.dp)
+                    start.linkTo(parent.start)
+                    end.linkTo(parent.end)
+                    width = Dimension.fillToConstraints
+                },
             shape = RoundedCornerShape(18.dp),
             color = colorTarjeta,
             shadowElevation = 4.dp

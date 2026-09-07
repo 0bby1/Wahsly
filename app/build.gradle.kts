@@ -55,4 +55,5 @@ dependencies {
     implementation("androidx.core:core-splashscreen:1.0.1")
     implementation(libs.constraintlayout.compose)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
 }

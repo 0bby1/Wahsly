@@ -33,50 +33,35 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.LiveRegionMode
-import kotlinx.coroutines.delay
 import androidx.compose.ui.draw.clip
-
+import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.delay
 
 // Pantalla de registro
 @Composable
 fun PantallaRegistro(
     modoOscuro: Boolean,
     onRegistroExitoso: (Usuario) -> Unit,
-    onVolverLogin: () -> Unit
+    onVolverLogin: () -> Unit,
+    viewModel: RegistroViewModel = viewModel()
 ) {
     val context = LocalContext.current
-    var nombre by remember { mutableStateOf("") }
-    var apellido by remember { mutableStateOf("") }
-    var correo by remember { mutableStateOf("") }
-    var contrasena by remember { mutableStateOf("") }
-    var confirmarContrasena by remember { mutableStateOf("") }
-    var aceptaPolitica by remember { mutableStateOf(false) }
-    var mostrarContrasena by remember { mutableStateOf(false) }
-    var mostrarConfirmacion by remember { mutableStateOf(false) }
-    var mostrarRegistroExitoso by remember { mutableStateOf(false) }
-    var usuarioRegistrado by remember { mutableStateOf<Usuario?>(null) }
 
+    // Mostrar Toast cuando aparezca un mensaje de error
+    LaunchedEffect(viewModel.mensajeError) {
+        viewModel.mensajeError?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            viewModel.mensajeErrorMostrado()
+        }
+    }
 
     // Colores
-    val colorFondo =
-        if (modoOscuro) FondoOscuro else FondoClaro
-
-    val colorCampo =
-        if (modoOscuro) CremaOscuro else AzulPrincipalClaro
-
-    val colorTextoCampo =
-        if (modoOscuro) AzulTextoClaro else TextoBlancoClaro
-
-    val colorTitulo =
-        if (modoOscuro) CremaOscuro else AzulTextoClaro
-
-    val colorTextoSecundario =
-        if (modoOscuro) TextoSecundarioOscuro else TextoSecundarioClaro
-
-    val colorRosa =
-        if (modoOscuro) RosaOscuro else RosaClaro
-
-    val colorTextoPrincipal = colorTextoCampo
+    val colorFondo = if (modoOscuro) FondoOscuro else FondoClaro
+    val colorCampo = if (modoOscuro) CremaOscuro else AzulPrincipalClaro
+    val colorTextoCampo = if (modoOscuro) AzulTextoClaro else TextoBlancoClaro
+    val colorTitulo = if (modoOscuro) CremaOscuro else AzulTextoClaro
+    val colorTextoSecundario = if (modoOscuro) TextoSecundarioOscuro else TextoSecundarioClaro
+    val colorRosa = if (modoOscuro) RosaOscuro else RosaClaro
     val colorIcono = colorTextoCampo
 
     Box(modifier = Modifier.fillMaxSize().background(colorFondo)) {
@@ -87,35 +72,25 @@ fun PantallaRegistro(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(40.dp))
-            // Fila superior: logo a la izquierda, textos a la derecha
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Image(
-                    painter = if (modoOscuro) {painterResource(id = R.drawable.icono_washly_crear_cuenta_oscuro)
-                    } else {painterResource(id = R.drawable.icono_washly_crear_cuenta_claro)},
+                    painter = if (modoOscuro) painterResource(id = R.drawable.icono_washly_crear_cuenta_oscuro)
+                    else painterResource(id = R.drawable.icono_washly_crear_cuenta_claro),
                     contentDescription = "Logo de Wahsly",
                     modifier = Modifier.size(80.dp)
                 )
-                Column(
-                    horizontalAlignment = Alignment.End
-                ) {
-                    Text(
-                        text = "¿Ya tienes una cuenta?",
-                        color = colorTextoSecundario,
-                        fontSize = 16.sp
-                    )
+                Column(horizontalAlignment = Alignment.End) {
+                    Text(text = "¿Ya tienes una cuenta?", color = colorTextoSecundario, fontSize = 16.sp)
                     Text(
                         text = "Iniciar sesión",
                         color = colorRosa,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.clickable(
-                            role = Role.Button,
-                            onClick = onVolverLogin
-                        )
+                        modifier = Modifier.clickable(role = Role.Button, onClick = onVolverLogin)
                     )
                 }
             }
@@ -134,41 +109,28 @@ fun PantallaRegistro(
 
             // Nombre
             OutlinedTextField(
-                value = nombre,
-                onValueChange = { nombre = it },
+                value = viewModel.nombre,
+                onValueChange = viewModel::onNombreChange,
                 modifier = Modifier.fillMaxWidth().height(60.dp),
                 placeholder = { Text("Tu nombre", fontSize = 18.sp, color = colorTextoCampo) },
-                leadingIcon = {
-                    Icon(
-                        Icons.Default.Person,
-                        contentDescription = null,
-                        tint = colorIcono
-                    )
-                },
+                leadingIcon = { Icon(Icons.Default.Person, contentDescription = null, tint = colorIcono) },
                 singleLine = true,
                 shape = RoundedCornerShape(16.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = colorCampo,
                     unfocusedContainerColor = colorCampo,
-
                     focusedBorderColor = colorCampo,
                     unfocusedBorderColor = colorCampo,
-
                     focusedTextColor = colorTextoCampo,
                     unfocusedTextColor = colorTextoCampo,
-
                     focusedLabelColor = colorTextoCampo,
                     unfocusedLabelColor = colorTextoCampo,
-
                     focusedPlaceholderColor = colorTextoCampo,
                     unfocusedPlaceholderColor = colorTextoCampo,
-
                     focusedLeadingIconColor = colorIcono,
                     unfocusedLeadingIconColor = colorIcono,
-
                     focusedTrailingIconColor = colorIcono,
                     unfocusedTrailingIconColor = colorIcono,
-
                     cursorColor = colorTextoCampo
                 )
             )
@@ -177,41 +139,28 @@ fun PantallaRegistro(
 
             // Apellido
             OutlinedTextField(
-                value = apellido,
-                onValueChange = { apellido = it },
+                value = viewModel.apellido,
+                onValueChange = viewModel::onApellidoChange,
                 modifier = Modifier.fillMaxWidth().height(60.dp),
                 placeholder = { Text("Tu apellido", fontSize = 18.sp, color = colorTextoCampo) },
-                leadingIcon = {
-                    Icon(
-                        Icons.Default.Person,
-                        contentDescription = null,
-                        tint = colorIcono
-                    )
-                },
+                leadingIcon = { Icon(Icons.Default.Person, contentDescription = null, tint = colorIcono) },
                 singleLine = true,
                 shape = RoundedCornerShape(16.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = colorCampo,
                     unfocusedContainerColor = colorCampo,
-
                     focusedBorderColor = colorCampo,
                     unfocusedBorderColor = colorCampo,
-
                     focusedTextColor = colorTextoCampo,
                     unfocusedTextColor = colorTextoCampo,
-
                     focusedLabelColor = colorTextoCampo,
                     unfocusedLabelColor = colorTextoCampo,
-
                     focusedPlaceholderColor = colorTextoCampo,
                     unfocusedPlaceholderColor = colorTextoCampo,
-
                     focusedLeadingIconColor = colorIcono,
                     unfocusedLeadingIconColor = colorIcono,
-
                     focusedTrailingIconColor = colorIcono,
                     unfocusedTrailingIconColor = colorIcono,
-
                     cursorColor = colorTextoCampo
                 )
             )
@@ -220,48 +169,29 @@ fun PantallaRegistro(
 
             // Correo
             OutlinedTextField(
-                value = correo,
-                onValueChange = { correo = it },
+                value = viewModel.correo,
+                onValueChange = viewModel::onCorreoChange,
                 modifier = Modifier.fillMaxWidth().height(60.dp),
-                placeholder = {
-                    Text(
-                        "ejemplo@correo.com",
-                        fontSize = 18.sp,
-                        color = colorTextoCampo
-                    )
-                },
-                leadingIcon = {
-                    Icon(
-                        Icons.Default.Email,
-                        contentDescription = null,
-                        tint = colorIcono
-                    )
-                },
+                placeholder = { Text("ejemplo@correo.com", fontSize = 18.sp, color = colorTextoCampo) },
+                leadingIcon = { Icon(Icons.Default.Email, contentDescription = null, tint = colorIcono) },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 shape = RoundedCornerShape(16.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = colorCampo,
                     unfocusedContainerColor = colorCampo,
-
                     focusedBorderColor = colorCampo,
                     unfocusedBorderColor = colorCampo,
-
                     focusedTextColor = colorTextoCampo,
                     unfocusedTextColor = colorTextoCampo,
-
                     focusedLabelColor = colorTextoCampo,
                     unfocusedLabelColor = colorTextoCampo,
-
                     focusedPlaceholderColor = colorTextoCampo,
                     unfocusedPlaceholderColor = colorTextoCampo,
-
                     focusedLeadingIconColor = colorIcono,
                     unfocusedLeadingIconColor = colorIcono,
-
                     focusedTrailingIconColor = colorIcono,
                     unfocusedTrailingIconColor = colorIcono,
-
                     cursorColor = colorTextoCampo
                 )
             )
@@ -270,58 +200,39 @@ fun PantallaRegistro(
 
             // Contraseña
             OutlinedTextField(
-                value = contrasena,
-                onValueChange = { contrasena = it },
+                value = viewModel.contrasena,
+                onValueChange = viewModel::onContrasenaChange,
                 modifier = Modifier.fillMaxWidth().height(60.dp),
-                placeholder = {
-                    Text(
-                        "Crea tu contraseña",
-                        fontSize = 18.sp,
-                        color = colorTextoCampo
-                    )
-                },
-                leadingIcon = {
-                    Icon(
-                        Icons.Default.Lock,
-                        contentDescription = null,
-                        tint = colorIcono
-                    )
-                },
+                placeholder = { Text("Crea tu contraseña", fontSize = 18.sp, color = colorTextoCampo) },
+                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = colorIcono) },
                 trailingIcon = {
-                    IconButton(onClick = { mostrarContrasena = !mostrarContrasena }) {
+                    IconButton(onClick = { viewModel.toggleMostrarContrasena() }) {
                         Icon(
-                            imageVector = if (mostrarContrasena) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                            imageVector = if (viewModel.mostrarContrasena) Icons.Default.VisibilityOff else Icons.Default.Visibility,
                             contentDescription = null,
                             tint = colorTextoCampo
                         )
                     }
                 },
-                visualTransformation = if (mostrarContrasena) VisualTransformation.None else PasswordVisualTransformation(),
+                visualTransformation = if (viewModel.mostrarContrasena) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 singleLine = true,
                 shape = RoundedCornerShape(16.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = colorCampo,
                     unfocusedContainerColor = colorCampo,
-
                     focusedBorderColor = colorCampo,
                     unfocusedBorderColor = colorCampo,
-
                     focusedTextColor = colorTextoCampo,
                     unfocusedTextColor = colorTextoCampo,
-
                     focusedLabelColor = colorTextoCampo,
                     unfocusedLabelColor = colorTextoCampo,
-
                     focusedPlaceholderColor = colorTextoCampo,
                     unfocusedPlaceholderColor = colorTextoCampo,
-
                     focusedLeadingIconColor = colorIcono,
                     unfocusedLeadingIconColor = colorIcono,
-
                     focusedTrailingIconColor = colorIcono,
                     unfocusedTrailingIconColor = colorIcono,
-
                     cursorColor = colorTextoCampo
                 )
             )
@@ -330,58 +241,39 @@ fun PantallaRegistro(
 
             // Confirmar contraseña
             OutlinedTextField(
-                value = confirmarContrasena,
-                onValueChange = { confirmarContrasena = it },
+                value = viewModel.confirmarContrasena,
+                onValueChange = viewModel::onConfirmarContrasenaChange,
                 modifier = Modifier.fillMaxWidth().height(60.dp),
-                placeholder = {
-                    Text(
-                        "Confirma tu contraseña",
-                        fontSize = 18.sp,
-                        color = colorTextoCampo
-                    )
-                },
-                leadingIcon = {
-                    Icon(
-                        Icons.Default.Lock,
-                        contentDescription = null,
-                        tint = colorIcono
-                    )
-                },
+                placeholder = { Text("Confirma tu contraseña", fontSize = 18.sp, color = colorTextoCampo) },
+                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = colorIcono) },
                 trailingIcon = {
-                    IconButton(onClick = { mostrarConfirmacion = !mostrarConfirmacion }) {
+                    IconButton(onClick = { viewModel.toggleMostrarConfirmacion() }) {
                         Icon(
-                            imageVector = if (mostrarConfirmacion) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                            imageVector = if (viewModel.mostrarConfirmacion) Icons.Default.VisibilityOff else Icons.Default.Visibility,
                             contentDescription = null,
                             tint = colorTextoCampo
                         )
                     }
                 },
-                visualTransformation = if (mostrarConfirmacion) VisualTransformation.None else PasswordVisualTransformation(),
+                visualTransformation = if (viewModel.mostrarConfirmacion) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 singleLine = true,
                 shape = RoundedCornerShape(16.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = colorCampo,
                     unfocusedContainerColor = colorCampo,
-
                     focusedBorderColor = colorCampo,
                     unfocusedBorderColor = colorCampo,
-
                     focusedTextColor = colorTextoCampo,
                     unfocusedTextColor = colorTextoCampo,
-
                     focusedLabelColor = colorTextoCampo,
                     unfocusedLabelColor = colorTextoCampo,
-
                     focusedPlaceholderColor = colorTextoCampo,
                     unfocusedPlaceholderColor = colorTextoCampo,
-
                     focusedLeadingIconColor = colorIcono,
                     unfocusedLeadingIconColor = colorIcono,
-
                     focusedTrailingIconColor = colorIcono,
                     unfocusedTrailingIconColor = colorIcono,
-
                     cursorColor = colorTextoCampo
                 )
             )
@@ -394,24 +286,17 @@ fun PantallaRegistro(
                 modifier = Modifier
                     .fillMaxWidth()
                     .semantics(mergeDescendants = true) { }
-                    .clickable(
-                        role = Role.Checkbox,
-                        onClick = { aceptaPolitica = !aceptaPolitica }
-                    )
+                    .clickable(role = Role.Checkbox, onClick = { viewModel.toggleAceptaPolitica() })
             ) {
                 Switch(
-                    checked = aceptaPolitica,
-                    onCheckedChange = null, // Controlado por el Row
+                    checked = viewModel.aceptaPolitica,
+                    onCheckedChange = null,
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = Color.White,
                         checkedTrackColor = Color(0xFF487A32)
                     )
                 )
-                Text(
-                    text = "  Acepta la Política de Privacidad",
-                    fontSize = 16.sp,
-                    color = colorCampo
-                )
+                Text(text = "  Acepta la Política de Privacidad", fontSize = 16.sp, color = colorCampo)
             }
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -421,100 +306,29 @@ fun PantallaRegistro(
                 BotonDegradado(
                     texto = "Regístrate",
                     modoOscuro = modoOscuro,
-                    onClick = {
-                        if (nombre.isBlank() || apellido.isBlank() || correo.isBlank() ||
-                            contrasena.isBlank() || confirmarContrasena.isBlank()
-                        ) {
-                            Toast.makeText(
-                                context,
-                                "Todos los campos son obligatorios",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            return@BotonDegradado
-                        }
-                        if (!correoValido(correo)) {
-                            Toast.makeText(
-                                context,
-                                "Correo electrónico no válido",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            return@BotonDegradado
-                        }
-                        if (contrasena != confirmarContrasena) {
-                            Toast.makeText(
-                                context,
-                                "Las contraseñas no coinciden",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            return@BotonDegradado
-                        }
-                        if (!aceptaPolitica) {
-                            Toast.makeText(
-                                context,
-                                "Debes aceptar la política de privacidad",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            return@BotonDegradado
-                        }
-
-                        val nuevoUsuario = Usuario(
-                            nombre = nombre.trim(),
-                            apellido = apellido.trim(),
-                            correo = correo.trim(),
-                            contrasena = contrasena
-                        )
-                        if (base_de_datos_Usuarios.agregarUsuario(nuevoUsuario)) {
-                            usuarioRegistrado = nuevoUsuario
-                            mostrarRegistroExitoso = true
-                        } else {
-                            Toast.makeText(
-                                context,
-                                "El correo ya está registrado",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                    }
+                    onClick = { viewModel.registrar() }
                 )
             }
         }
-        if (mostrarRegistroExitoso) {
+
+        if (viewModel.mostrarRegistroExitoso) {
             val coloresRegistroExitoso =
-                if (modoOscuro) {
-                    listOf(
-                        RosaOscuro,
-                        FondoClaro
-                    )
-                } else {
-                    listOf(
-                        AzulGradienteOscuro,
-                        FondoOscuro
-                    )
-                }
-            Dialog(
-                onDismissRequest = {
-                }
-            ) {
+                if (modoOscuro) listOf(RosaOscuro, FondoClaro)
+                else listOf(AzulGradienteOscuro, FondoOscuro)
+
+            Dialog(onDismissRequest = { }) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp)
                         .clip(RoundedCornerShape(45.dp))
-                        .background(
-                            brush = Brush.verticalGradient(
-                                colors = coloresRegistroExitoso
-
-                            )
-                        )
+                        .background(brush = Brush.verticalGradient(colors = coloresRegistroExitoso))
                         .semantics { liveRegion = LiveRegionMode.Polite },
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = "Tu registro fue\nexitoso",
-                        color =
-                            if (modoOscuro)
-                                AzulTextoClaro
-                            else
-                                CremaOscuro,
+                        color = if (modoOscuro) AzulTextoClaro else CremaOscuro,
                         fontSize = 30.sp,
                         fontWeight = FontWeight.Bold,
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center,
@@ -523,13 +337,11 @@ fun PantallaRegistro(
                 }
             }
 
-            LaunchedEffect(mostrarRegistroExitoso) {
-                if (mostrarRegistroExitoso) {
-                    delay(1000)
-                    mostrarRegistroExitoso = false
-                    usuarioRegistrado?.let { usuario ->
-                        onRegistroExitoso(usuario)
-                    }
+            LaunchedEffect(viewModel.mostrarRegistroExitoso) {
+                delay(1000)
+                viewModel.registroExitosoManejado()
+                viewModel.usuarioRegistrado?.let { usuario ->
+                    onRegistroExitoso(usuario)
                 }
             }
         }

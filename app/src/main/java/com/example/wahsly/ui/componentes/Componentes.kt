@@ -38,6 +38,7 @@ import com.example.wahsly.ui.theme.CremaOscuro
 import com.example.wahsly.ui.theme.FondoClaro
 import com.example.wahsly.ui.theme.FondoOscuro
 import com.example.wahsly.ui.theme.RosaOscuro
+import androidx.compose.runtime.getValue
 
 // BOTÓN DEGRADADO
 @Composable

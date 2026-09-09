@@ -17,6 +17,8 @@ import com.example.wahsly.ui.theme.FondoOscuro
 import com.example.wahsly.ui.pantallas.PantallaPerfil
 import com.example.wahsly.ui.pantallas.PantallaPrincipal
 import com.example.wahsly.datos.model.Usuario
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 
 @Composable
 fun NavegacionPrincipal(

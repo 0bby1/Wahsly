@@ -7,6 +7,8 @@ import com.example.wahsly.utilidades.correoValido
 import com.example.wahsly.datos.model.Usuario
 import com.example.wahsly.datos.repository.UsuarioRepository
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 
 class RegistroViewModel(private val repository: UsuarioRepository) : ViewModel() {
 

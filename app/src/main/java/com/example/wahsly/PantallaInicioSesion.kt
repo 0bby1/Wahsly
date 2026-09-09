@@ -28,6 +28,8 @@ import androidx.compose.ui.semantics.contentDescription
 import android.net.Uri
 import android.widget.VideoView
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 
 // Pantalla inicio de sesion
 @Composable
@@ -37,10 +39,14 @@ fun PantallaInicioSesion(
     onLoginExitoso: (Usuario) -> Unit
 ) {
     val context = LocalContext.current
+    val db = remember { AppDatabase.getDatabase(context) }
+    val repository = remember { UsuarioRepository(db.usuarioDao()) }
+    val autenticador = remember { AutenticadorLocal(repository) }
+    val scope = rememberCoroutineScope()
+
     var correo by remember { mutableStateOf("") }
     var contrasena by remember { mutableStateOf("") }
     var mostrarContrasena by remember { mutableStateOf(false) }
-    val autenticador = remember { AutenticadorLocal() }
 
     // Colores
     val colorFondo =
@@ -200,30 +206,22 @@ fun PantallaInicioSesion(
                 texto = "Iniciar Sesión",
                 modoOscuro = modoOscuro,
                 onClick = {
-                    try {
-                        val usuario = autenticador.iniciarSesion(correo, contrasena)
-                        Toast.makeText(
-                            context,
-                            "Bienvenido ${usuario.nombre}",
-                            Toast.LENGTH_LONG
-                        ).show()
-                        // Después de iniciar sesión correctamente se envia al
-                        //  usuario a la pantalla principal.
-                        onLoginExitoso(usuario)
-                    } catch (e: IllegalArgumentException) {
-                        Toast.makeText(
-                            context,
-                            e.message ?: "Datos inválidos",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    } catch (e: CredencialesIncorrectasException) {
-                        Toast.makeText(context, e.message ?: "Error", Toast.LENGTH_SHORT).show()
-                    } catch (e: Exception) {
-                        Toast.makeText(
-                            context,
-                            "Ocurrió un error inesperado",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                    scope.launch {
+                        try {
+                            val usuario = autenticador.iniciarSesion(correo, contrasena)
+                            Toast.makeText(
+                                context,
+                                "Bienvenido ${usuario.nombre}",
+                                Toast.LENGTH_LONG
+                            ).show()
+                            onLoginExitoso(usuario)
+                        } catch (e: IllegalArgumentException) {
+                            Toast.makeText(context, e.message ?: "Datos inválidos", Toast.LENGTH_SHORT).show()
+                        } catch (e: CredencialesIncorrectasException) {
+                            Toast.makeText(context, e.message ?: "Error", Toast.LENGTH_SHORT).show()
+                        } catch (e: Exception) {
+                            Toast.makeText(context, "Ocurrió un error inesperado", Toast.LENGTH_SHORT).show()
+                        }
                     }
                 }
             )

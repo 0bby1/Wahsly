@@ -20,8 +20,6 @@ class MainActivity : ComponentActivity() {
         installSplashScreen()
         super.onCreate(savedInstanceState)
 
-        base_de_datos_Usuarios.inicializar(this)
-        BaseDatosHistorial.inicializar(this)
 
         setContent {
             MaterialTheme {

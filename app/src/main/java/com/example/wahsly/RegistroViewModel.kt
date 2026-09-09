@@ -4,8 +4,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 
-class RegistroViewModel : ViewModel() {
+class RegistroViewModel(private val repository: UsuarioRepository) : ViewModel() {
 
     var nombre by mutableStateOf("")
         private set
@@ -62,17 +64,19 @@ class RegistroViewModel : ViewModel() {
             return
         }
 
-        val nuevoUsuario = Usuario(
-            nombre = nombre.trim(),
-            apellido = apellido.trim(),
-            correo = correo.trim(),
-            contrasena = contrasena
-        )
-        if (base_de_datos_Usuarios.agregarUsuario(nuevoUsuario)) {
-            usuarioRegistrado = nuevoUsuario
-            mostrarRegistroExitoso = true
-        } else {
-            mensajeError = "El correo ya está registrado"
+        viewModelScope.launch {
+            val nuevoUsuario = Usuario(
+                nombre = nombre.trim(),
+                apellido = apellido.trim(),
+                correo = correo.trim(),
+                contrasena = contrasena
+            )
+            if (repository.agregarUsuario(nuevoUsuario)) {
+                usuarioRegistrado = nuevoUsuario
+                mostrarRegistroExitoso = true
+            } else {
+                mensajeError = "El correo ya está registrado"
+            }
         }
     }
 }

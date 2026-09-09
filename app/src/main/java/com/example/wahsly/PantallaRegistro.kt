@@ -41,10 +41,12 @@ import kotlinx.coroutines.delay
 fun PantallaRegistro(
     modoOscuro: Boolean,
     onRegistroExitoso: (Usuario) -> Unit,
-    onVolverLogin: () -> Unit,
-    viewModel: RegistroViewModel = viewModel()
+    onVolverLogin: () -> Unit
 ) {
     val context = LocalContext.current
+    val db = remember { AppDatabase.getDatabase(context) }
+    val repository = remember { UsuarioRepository(db.usuarioDao()) }
+    val viewModel: RegistroViewModel = viewModel(factory = ViewModelFactory(repository))
 
     // Mostrar Toast cuando aparezca mensaje de error
     LaunchedEffect(viewModel.mensajeError) {

@@ -1,15 +1,24 @@
 package com.example.wahsly
 
-// Clase del Usuario
+import androidx.room.Entity
+import androidx.room.Index
+import androidx.room.PrimaryKey
+
+@Entity(
+    tableName = "usuarios",
+    indices = [Index(value = ["correo"], unique = true)]
+)
 data class Usuario(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val nombre: String,
     val apellido: String,
     val correo: String,
     val contrasena: String
 )
 
-// Registro de escaneo
+@Entity(tableName = "historial")
 data class RegistroEscaneo(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val nombre: String,
     val fecha: String,
     val informacion: String

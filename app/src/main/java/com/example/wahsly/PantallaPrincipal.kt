@@ -50,6 +50,9 @@ fun PantallaPrincipal(
 ){
 
     val context = LocalContext.current
+    val db = remember { AppDatabase.getDatabase(context) }
+    val historialRepository = remember { HistorialRepository(db.historialDao()) }
+    val registros by historialRepository.registros.collectAsState(initial = emptyList())
     var busqueda by remember {
         mutableStateOf("")
     }
@@ -380,7 +383,7 @@ fun PantallaPrincipal(
                         }
 
                         // CONTENIDO ORIGINAL: historial (si existe)
-                        if (BaseDatosHistorial.registros.isNotEmpty()) {
+                        if (registros.isNotEmpty()) {
                             LazyColumn(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -394,7 +397,7 @@ fun PantallaPrincipal(
                                 ),
                                 verticalArrangement = Arrangement.spacedBy(16.dp)
                             ) {
-                                items(BaseDatosHistorial.registros) { registro ->
+                                items(registros) { registro ->
                                     Card(
                                         modifier = Modifier
                                             .fillMaxWidth()
@@ -428,9 +431,12 @@ fun PantallaPrincipal(
                                             )
                                         }
                                     }
+
                                 }
                             }
                         }
+
+
                     }
                 }
                         AnimatedVisibility(

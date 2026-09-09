@@ -1,4 +1,4 @@
-package com.example.wahsly
+package com.example.wahsly.ui.pantallas
 
 import android.widget.Toast
 import androidx.compose.foundation.Image
@@ -34,7 +34,26 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.wahsly.R
+import com.example.wahsly.datos.database.AppDatabase
+import com.example.wahsly.datos.model.Usuario
+import com.example.wahsly.datos.repository.UsuarioRepository
+import com.example.wahsly.ui.componentes.BotonDegradado
+import com.example.wahsly.ui.theme.AzulGradienteOscuro
+import com.example.wahsly.ui.theme.AzulPrincipalClaro
+import com.example.wahsly.ui.theme.AzulTextoClaro
+import com.example.wahsly.ui.theme.CremaOscuro
+import com.example.wahsly.ui.theme.FondoClaro
+import com.example.wahsly.ui.theme.FondoOscuro
+import com.example.wahsly.ui.theme.RosaClaro
+import com.example.wahsly.ui.theme.RosaOscuro
+import com.example.wahsly.ui.theme.TextoBlancoClaro
+import com.example.wahsly.ui.theme.TextoSecundarioClaro
+import com.example.wahsly.ui.theme.TextoSecundarioOscuro
+import com.example.wahsly.viewmodels.RegistroViewModel
+import com.example.wahsly.viewmodels.ViewModelFactory
 import kotlinx.coroutines.delay
 
 @Composable
@@ -332,7 +351,7 @@ fun PantallaRegistro(
                         color = if (modoOscuro) AzulTextoClaro else CremaOscuro,
                         fontSize = 30.sp,
                         fontWeight = FontWeight.Bold,
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                        textAlign = TextAlign.Center,
                         lineHeight = 30.sp
                     )
                 }

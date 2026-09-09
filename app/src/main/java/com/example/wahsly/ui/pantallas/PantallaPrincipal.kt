@@ -1,4 +1,4 @@
-package com.example.wahsly
+package com.example.wahsly.ui.pantallas
 
 import android.widget.Toast
 import androidx.compose.foundation.Image
@@ -17,15 +17,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.border
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.AnimatedVisibility
@@ -38,6 +35,18 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.zIndex
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.contentDescription
+import com.example.wahsly.R
+import com.example.wahsly.datos.database.AppDatabase
+import com.example.wahsly.datos.model.Usuario
+import com.example.wahsly.datos.repository.HistorialRepository
+import com.example.wahsly.ui.theme.AzulPrincipalClaro
+import com.example.wahsly.ui.theme.AzulTextoClaro
+import com.example.wahsly.ui.theme.CremaOscuro
+import com.example.wahsly.ui.theme.FondoClaro
+import com.example.wahsly.ui.theme.FondoOscuro
+import com.example.wahsly.ui.theme.IconoSecundarioClaro
+import com.example.wahsly.ui.theme.RosaOscuro
+import com.example.wahsly.ui.theme.TarjetaRutinaClaro
 
 @Composable
 fun PantallaPrincipal(

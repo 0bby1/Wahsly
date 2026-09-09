@@ -1,4 +1,4 @@
-package com.example.wahsly
+package com.example.wahsly.ui.pantallas
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -15,6 +15,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.wahsly.datos.database.AppDatabase
+import com.example.wahsly.datos.repository.HistorialRepository
 
 // Pantalla del historial
 @Composable

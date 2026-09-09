@@ -14,6 +14,13 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.wahsly.datos.model.Usuario
+import com.example.wahsly.navegacion.NavegacionPrincipal
+import com.example.wahsly.ui.pantallas.PantallaCargaVideo
+import com.example.wahsly.ui.pantallas.PantallaConfiguracion
+import com.example.wahsly.ui.pantallas.PantallaInicioSesion
+import com.example.wahsly.ui.pantallas.PantallaRegistro
+import com.example.wahsly.ui.pantallas.PantallaSplash
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -1,7 +1,6 @@
-package com.example.wahsly
+package com.example.wahsly.ui.theme
 
 import androidx.compose.ui.graphics.Color
-
 
 // MODO CLARO
 val FondoClaro = Color(0xFFF4EFEB)

@@ -1,21 +1,21 @@
-package com.example.wahsly
+package com.example.wahsly.ui.pantallas
 
 import android.net.Uri
 import android.widget.VideoView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
+import com.example.wahsly.R
+import com.example.wahsly.ui.theme.FondoClaro
+import com.example.wahsly.ui.theme.FondoOscuro
 
 @Composable
-fun PantallaCargaVideo(
+fun PantallaSplash(
     modoOscuro: Boolean,
     onTerminar: () -> Unit
 ) {
@@ -28,18 +28,17 @@ fun PantallaCargaVideo(
         contentAlignment = Alignment.Center
     ) {
         AndroidView(
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(1422f / 2530f),
+            modifier = Modifier.fillMaxSize(),
             factory = { contexto ->
                 VideoView(contexto).apply {
-                    val videoUri = if (modoOscuro){
+                    val videoUri = if (modoOscuro) {
                         Uri.parse(
-                            "android.resource://${context.packageName}/${R.raw.washly_carga_oscuro}"
+                            "android.resource://${context.packageName}/${R.raw.washly_oscuro}"
                         )
-                    } else {
+                    }
+                    else {
                         Uri.parse(
-                            "android.resource://${context.packageName}/${R.raw.washly_carga_claro}"
+                            "android.resource://${context.packageName}/${R.raw.washly}"
                         )
                     }
                     setVideoURI(videoUri)

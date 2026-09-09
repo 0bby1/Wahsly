@@ -1,7 +1,8 @@
-package com.example.wahsly
+package com.example.wahsly.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.example.wahsly.datos.repository.UsuarioRepository
 
 class ViewModelFactory(private val usuarioRepository: UsuarioRepository) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {

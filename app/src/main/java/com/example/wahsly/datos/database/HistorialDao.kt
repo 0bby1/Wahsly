@@ -1,8 +1,9 @@
-package com.example.wahsly
+package com.example.wahsly.datos.database
 
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import com.example.wahsly.datos.model.RegistroEscaneo
 import kotlinx.coroutines.flow.Flow
 
 @Dao

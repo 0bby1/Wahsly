@@ -1,4 +1,4 @@
-package com.example.wahsly
+package com.example.wahsly.ui.pantallas
 
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -36,6 +36,21 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import com.example.wahsly.datos.model.Usuario
+import com.example.wahsly.ui.theme.AvatarFondoClaro
+import com.example.wahsly.ui.theme.AvatarFondoOscuro
+import com.example.wahsly.ui.theme.AvatarIconoClaro
+import com.example.wahsly.ui.theme.AvatarIconoOscuro
+import com.example.wahsly.ui.theme.AzulPrincipalClaro
+import com.example.wahsly.ui.theme.AzulTextoClaro
+import com.example.wahsly.ui.theme.CremaOscuro
+import com.example.wahsly.ui.theme.DivisorClaro
+import com.example.wahsly.ui.theme.DivisorOscuro
+import com.example.wahsly.ui.theme.FondoClaro
+import com.example.wahsly.ui.theme.FondoOscuro
+import com.example.wahsly.ui.theme.IconoSecundarioClaro
+import com.example.wahsly.ui.theme.RosaOscuro
+import com.example.wahsly.ui.theme.TarjetaPerfilOscuro
 
 
 // Pantalla de perfil de usuario

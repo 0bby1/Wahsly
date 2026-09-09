@@ -1,4 +1,8 @@
-package com.example.wahsly
+package com.example.wahsly.auth
+
+import com.example.wahsly.datos.model.Usuario
+import com.example.wahsly.datos.repository.UsuarioRepository
+import com.example.wahsly.utilidades.correoValido
 
 interface Autenticador {
     suspend fun iniciarSesion(correo: String, contrasena: String): Usuario

@@ -1,4 +1,7 @@
-package com.example.wahsly
+package com.example.wahsly.datos.repository
+
+import com.example.wahsly.datos.database.UsuarioDao
+import com.example.wahsly.datos.model.Usuario
 
 class UsuarioRepository(private val dao: UsuarioDao) {
     suspend fun buscarUsuario(correo: String): Usuario? = dao.buscarUsuario(correo.trim())

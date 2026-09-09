@@ -1,4 +1,4 @@
-package com.example.wahsly
+package com.example.wahsly.ui.pantallas
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -14,6 +14,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
+import com.example.wahsly.ui.theme.AzulPrincipalClaro
+import com.example.wahsly.ui.theme.AzulTextoClaro
+import com.example.wahsly.ui.theme.CremaOscuro
+import com.example.wahsly.ui.theme.FondoClaro
+import com.example.wahsly.ui.theme.FondoOscuro
+import com.example.wahsly.ui.theme.RosaOscuro
+import com.example.wahsly.ui.theme.TarjetaPerfilOscuro
 
 @Composable
 fun PantallaConfiguracion(

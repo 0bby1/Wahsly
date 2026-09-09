@@ -1,4 +1,4 @@
-package com.example.wahsly
+package com.example.wahsly.ui.pantallas
 
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -29,6 +29,22 @@ import android.net.Uri
 import android.widget.VideoView
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.runtime.rememberCoroutineScope
+import com.example.wahsly.R
+import com.example.wahsly.auth.AutenticadorLocal
+import com.example.wahsly.auth.CredencialesIncorrectasException
+import com.example.wahsly.datos.database.AppDatabase
+import com.example.wahsly.datos.model.Usuario
+import com.example.wahsly.datos.repository.UsuarioRepository
+import com.example.wahsly.ui.componentes.BotonCrearCuenta
+import com.example.wahsly.ui.componentes.BotonDegradado
+import com.example.wahsly.ui.theme.AzulPrincipalClaro
+import com.example.wahsly.ui.theme.AzulTextoClaro
+import com.example.wahsly.ui.theme.CremaOscuro
+import com.example.wahsly.ui.theme.FondoClaro
+import com.example.wahsly.ui.theme.FondoOscuro
+import com.example.wahsly.ui.theme.TextoBlancoClaro
+import com.example.wahsly.ui.theme.TextoSecundarioClaro
+import com.example.wahsly.ui.theme.TextoSecundarioOscuro
 import kotlinx.coroutines.launch
 
 // Pantalla inicio de sesion
@@ -216,11 +232,19 @@ fun PantallaInicioSesion(
                             ).show()
                             onLoginExitoso(usuario)
                         } catch (e: IllegalArgumentException) {
-                            Toast.makeText(context, e.message ?: "Datos inválidos", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                context,
+                                e.message ?: "Datos inválidos",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         } catch (e: CredencialesIncorrectasException) {
                             Toast.makeText(context, e.message ?: "Error", Toast.LENGTH_SHORT).show()
                         } catch (e: Exception) {
-                            Toast.makeText(context, "Ocurrió un error inesperado", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                context,
+                                "Ocurrió un error inesperado",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     }
                 }

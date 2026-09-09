@@ -1,4 +1,4 @@
-package com.example.wahsly
+package com.example.wahsly.datos.model
 
 import androidx.room.Entity
 import androidx.room.Index

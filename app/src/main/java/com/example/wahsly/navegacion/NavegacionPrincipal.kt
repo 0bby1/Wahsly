@@ -1,11 +1,22 @@
-package com.example.wahsly
+package com.example.wahsly.navegacion
 
 import android.widget.Toast
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import com.example.wahsly.ui.componentes.BarraInferiorAnimada
+import com.example.wahsly.ui.theme.FondoClaro
+import com.example.wahsly.ui.theme.FondoOscuro
+import com.example.wahsly.ui.pantallas.PantallaPerfil
+import com.example.wahsly.ui.pantallas.PantallaPrincipal
+import com.example.wahsly.datos.model.Usuario
 
 @Composable
 fun NavegacionPrincipal(

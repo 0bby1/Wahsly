@@ -102,6 +102,7 @@ fun PantallaInicioSesion(
             ) {
                 WashlyBienvenidaAnimado(
                     modifier = Modifier.offset(y = (-25).dp),
+                    modoOscuro = modoOscuro,
                     tamano = 350.dp
                 )
             }

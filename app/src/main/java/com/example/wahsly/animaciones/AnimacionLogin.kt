@@ -28,45 +28,61 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun WashlyBienvenidaAnimado(
+    modoOscuro: Boolean,
     modifier: Modifier = Modifier,
     tamano: Dp = 350.dp
 ) {
-
     // PARPADEO
     var ojoCerrado by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         while (true) {
+            // Ojo abierto
             delay(2800)
+
+            // Cierra el ojo
             ojoCerrado = true
+
             delay(600)
+
+            // Abre el ojo
             ojoCerrado = false
         }
     }
 
-    // CARGAR VECTORES
-    val vectorAbierto = ImageVector.vectorResource(
-        id = R.drawable.washly_bienvenida_abierto
-    )
-    val vectorCerrado = ImageVector.vectorResource(
-        id = R.drawable.washly_bienvenida_cerrado
-    )
-
-    val vectorActual = if (ojoCerrado) {
-        vectorCerrado
-    } else {
-        vectorAbierto
+    // SELECCIONAR VECTOR SEGÚN TEMA Y PARPADEO
+    val recursoVector = when {
+        modoOscuro && ojoCerrado -> {
+            R.drawable.washly_bienvenida_cerrado_oscuro
+        }
+        modoOscuro -> {
+            R.drawable.washly_bienvenida_abierto_oscuro
+        }
+        ojoCerrado -> {
+            R.drawable.washly_bienvenida_cerrado
+        } else -> {
+            R.drawable.washly_bienvenida_abierto
+        }
     }
+
+    // Cargamos el VectorDrawable como ImageVector
+    val vectorActual = ImageVector.vectorResource(
+        id = recursoVector
+    )
 
     val painterVector = rememberVectorPainter(image = vectorActual)
 
-    // ANIMACIÓN DEL BRILLO
-    val transicion = rememberInfiniteTransition(label = "MovimientoOjoWashly")
+    // ANIMACIÓN DEL BRILLO DEL OJO
+    val transicion = rememberInfiniteTransition(
+        label = "MovimientoOjoWashly"
+    )
 
     val movimientoOjo by transicion.animateFloat(
         initialValue = -3f,
         targetValue = 3f,
         animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 900),
+            animation = tween(
+                durationMillis = 900
+            ),
             repeatMode = RepeatMode.Reverse
         ),
         label = "MovimientoBrillo"
@@ -76,16 +92,33 @@ fun WashlyBienvenidaAnimado(
         initialValue = 0.45f,
         targetValue = 1f,
         animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 600),
+            animation = tween(
+                durationMillis = 600
+            ),
             repeatMode = RepeatMode.Reverse
         ),
         label = "IntensidadBrillo"
     )
 
-    // DIBUJAR
+    // DIBUJAR VECTOR
     Canvas(
         modifier = modifier.requiredSize(tamano)
     ) {
+        val escala = size.height / 792f
+        val centroLogo = Offset(
+            x = size.width / 2f,
+            y = 403.81f * escala
+        )
+        val radioLogo = 237.83f * escala
+        if (modoOscuro) {
+            drawCircle(
+                Color(0xFF6F879E),
+                radius = radioLogo,
+                center = centroLogo
+            )
+        }
+
+        // Mantiene la proporción original del vector
         val proporcion = 612f / 792f
         val anchoVector = size.height * proporcion
         val desplazamientoX = (size.width - anchoVector) / 2f
@@ -110,9 +143,16 @@ fun WashlyBienvenidaAnimado(
             val centroX = desplazamientoX + ((407f + movimientoOjo) * escala)
             val centroY = 401f * escala
 
+            val colorBrillo =
+                if (modoOscuro) {
+                    Color(0xFFF4EFEB)
+                } else {
+                    Color.White
+                }
+
             // Brillo principal
             drawCircle(
-                color = Color.White.copy(
+                color = colorBrillo.copy(
                     alpha = intensidadBrillo
                 ),
                 radius = 3.2f * escala,
@@ -124,7 +164,7 @@ fun WashlyBienvenidaAnimado(
 
             // Brillito pequeño
             drawCircle(
-                color = Color.White.copy(
+                color = colorBrillo.copy(
                     alpha = intensidadBrillo * 0.75f
                 ),
                 radius = 1.4f * escala,

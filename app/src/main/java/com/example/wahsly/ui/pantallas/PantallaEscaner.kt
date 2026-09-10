@@ -1,0 +1,983 @@
+package com.example.wahsly.ui.pantallas
+
+import android.Manifest
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.camera.core.Camera
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
+import androidx.camera.core.Preview
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FlashOff
+import androidx.compose.material.icons.filled.FlashOn
+import androidx.compose.material.icons.filled.HelpOutline
+import androidx.compose.material.icons.filled.PhotoLibrary
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.ZoomIn
+import androidx.compose.material.icons.filled.ZoomOut
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.ContextCompat
+import com.example.wahsly.ui.theme.AzulPrincipalClaro
+import com.example.wahsly.ui.theme.CremaOscuro
+import com.example.wahsly.ui.theme.FondoClaro
+import com.example.wahsly.ui.theme.FondoOscuro
+import com.example.wahsly.ui.theme.RosaClaro
+import com.example.wahsly.ui.theme.RosaOscuro
+import java.io.File
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import com.example.wahsly.ui.theme.TarjetaPerfilOscuro
+import com.example.wahsly.ui.theme.TextoBlancoClaro
+import androidx.compose.foundation.Image
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
+
+data class DatosEscaneo(
+    val fotoUri: Uri,
+    val cantidad: Int,
+    val tieneMancha: Boolean,
+    val tipoMancha: String,
+    val informacionAdicional: String
+)
+
+@Composable
+fun PantallaEscaner(
+    modoOscuro: Boolean,
+    onDatosConfirmados: (DatosEscaneo) -> Unit
+) {
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    // DATOS DEL FORMULARIO
+    var mostrarDialogoDatos by remember { mutableStateOf(false) }
+    var fotoPendiente by remember { mutableStateOf<Uri?>(null) }
+    var cantidadTexto by remember { mutableStateOf("1") }
+    var tieneMancha by remember { mutableStateOf(false) }
+    var tipoMancha by remember { mutableStateOf("") }
+    var informacionAdicional by remember { mutableStateOf("") }
+
+    fun abrirFormulario(uri: Uri) {
+        fotoPendiente = uri
+        cantidadTexto = "1"
+        tieneMancha = false
+        tipoMancha = ""
+        informacionAdicional = ""
+        mostrarDialogoDatos = true
+    }
+
+    // COLORES
+    val colorFondo = if (modoOscuro) { FondoOscuro } else { FondoClaro }
+    val colorCabecera = if (modoOscuro) { RosaOscuro } else { AzulPrincipalClaro }
+    val colorBuscador = if (modoOscuro) { FondoOscuro } else { FondoClaro }
+    val colorIconos = if (modoOscuro) { RosaOscuro } else { AzulPrincipalClaro }
+    val colorBusqueda = if (modoOscuro) { CremaOscuro } else { RosaClaro }
+
+    // PERMISO DE CAMARA
+    var tienePermisoCamara by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+
+    val launcherPermisoCamara =
+        rememberLauncherForActivityResult(
+            contract =
+                ActivityResultContracts.RequestPermission()
+        ) { permisoAceptado ->
+            tienePermisoCamara =
+                permisoAceptado
+        }
+
+    LaunchedEffect(Unit) {
+        if (!tienePermisoCamara) {
+            launcherPermisoCamara.launch(
+                Manifest.permission.CAMERA
+            )
+        }
+    }
+
+    // CAMERAX
+    val previewView = remember {
+        PreviewView(context).apply {
+            scaleType =
+                PreviewView.ScaleType.FILL_CENTER
+            implementationMode =
+                PreviewView.ImplementationMode.COMPATIBLE
+        }
+    }
+
+    var imageCapture by remember { mutableStateOf<ImageCapture?>(null) }
+    var imagenCongelada by remember { mutableStateOf<ImageBitmap?>(null) }
+    var camara by remember { mutableStateOf<Camera?>(null) }
+    var linternaEncendida by remember { mutableStateOf(false) }
+    var zoomActual by remember { mutableFloatStateOf(0f) }
+
+    DisposableEffect(
+        tienePermisoCamara,
+        lifecycleOwner
+    ) {
+        val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
+
+        if (tienePermisoCamara) {
+            cameraProviderFuture.addListener(
+                {
+                    try {
+                        val cameraProvider =
+                            cameraProviderFuture.get()
+                        // VISTA PREVIA
+                        val preview =
+                            Preview.Builder()
+                                .build()
+                                .also {
+                                    it.surfaceProvider =
+                                        previewView.surfaceProvider
+                                }
+
+                        // CAPTURA DE FOTO
+                        val captura =
+                            ImageCapture.Builder()
+                                .setCaptureMode(
+                                    ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY
+                                )
+                                .build()
+
+                        imageCapture = captura
+
+                        // CAMARA TRASERA
+                        val selector =
+                            CameraSelector.DEFAULT_BACK_CAMERA
+
+                        cameraProvider.unbindAll()
+
+                        camara =
+                            cameraProvider.bindToLifecycle(
+                                lifecycleOwner,
+                                selector,
+                                preview,
+                                captura
+                            )
+
+                    } catch (e: Exception) {
+                        Toast.makeText(
+                            context,
+                            "No se pudo iniciar la cámara",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                },
+                ContextCompat.getMainExecutor(
+                    context
+                )
+            )
+        }
+
+        onDispose {
+            if (cameraProviderFuture.isDone) {
+                try {
+                    cameraProviderFuture
+                        .get()
+                        .unbindAll()
+                } catch (_: Exception) {
+                }
+            }
+        }
+    }
+
+    // FUNCION TOMAR FOTO
+    fun tomarFoto() {
+        val captura = imageCapture
+        if (captura == null) {
+            Toast.makeText(
+                context,
+                "La cámara todavía está cargando",
+                Toast.LENGTH_SHORT
+            ).show()
+            return
+        }
+
+        previewView.bitmap?.let { bitmap ->
+            imagenCongelada =
+                bitmap.copy(
+                    bitmap.config ?: android.graphics.Bitmap.Config.ARGB_8888,
+                    false
+                ).asImageBitmap()
+        }
+
+        val archivo = File(
+            context.cacheDir,
+            "washly_${System.currentTimeMillis()}.jpg"
+        )
+
+        val opciones =
+            ImageCapture.OutputFileOptions
+                .Builder(archivo)
+                .build()
+
+        captura.takePicture(
+            opciones,
+            ContextCompat.getMainExecutor(
+                context
+            ),
+            object :
+                ImageCapture.OnImageSavedCallback {
+                override fun onImageSaved(
+                    outputFileResults:
+                    ImageCapture.OutputFileResults
+                ) {
+                    val uri = Uri.fromFile(archivo)
+                    abrirFormulario(uri)
+                }
+
+                override fun onError(
+                    exception:
+                    ImageCaptureException
+                ) {
+                    imagenCongelada = null
+                    Toast.makeText(
+                        context,
+                        "No se pudo tomar la foto",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        )
+    }
+
+    // GALERIA
+    val launcherGaleria =
+        rememberLauncherForActivityResult(
+            contract =
+                ActivityResultContracts.GetContent()
+        ) { uri ->
+            if (uri != null) {
+                abrirFormulario(uri)
+            }
+        }
+
+    // INTERFAZ
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(colorFondo)
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
+
+            // CABECERA
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(125.dp)
+                    .clip(RoundedCornerShape(
+                            bottomStart = 14.dp,
+                            bottomEnd = 14.dp
+                        )
+                    )
+                    .background(colorCabecera)
+                    .statusBarsPadding()
+            ) {
+
+                // BUSCADOR
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(
+                            start = 16.dp,
+                            end = 16.dp,
+                            bottom = 20.dp
+                        )
+                        .fillMaxWidth()
+                        .height(42.dp)
+                        .clip(RoundedCornerShape(30.dp))
+                        .background(colorBuscador)
+                ) {
+
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "Buscar",
+                        tint = colorBusqueda,
+                        modifier = Modifier
+                            .align(Alignment.CenterStart)
+                            .padding(start = 12.dp)
+                            .size(23.dp)
+                    )
+                }
+            }
+
+            // CUERPO DEL ESCANER
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+            ) {
+                // BOTONES SUPERIORES
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .fillMaxWidth()
+                        .padding(
+                            top = 38.dp,
+                            start = 38.dp,
+                            end = 38.dp
+                        ),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+
+                    // FLASH
+                    IconButton(
+                        onClick = {
+                            val camera = camara
+                            if ( camera
+                                    ?.cameraInfo
+                                    ?.hasFlashUnit() == true
+                            ) {
+                                linternaEncendida =
+                                    !linternaEncendida
+                                camera
+                                    .cameraControl
+                                    .enableTorch(
+                                        linternaEncendida
+                                    )
+                            } else {
+                                Toast.makeText(
+                                    context,
+                                    "Este dispositivo no tiene flash",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
+                    ) {
+
+                        Icon(
+                            imageVector =
+                                if (linternaEncendida) {
+                                    Icons.Default.FlashOn
+                                } else {
+                                    Icons.Default.FlashOff
+                                },
+                            contentDescription = "Flash",
+                            tint = colorIconos,
+                            modifier =
+                                Modifier.size(30.dp)
+                        )
+                    }
+
+                    // GALERIA
+                    IconButton(
+                        onClick = {
+                            launcherGaleria.launch(
+                                "image/*"
+                            )
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.PhotoLibrary,
+                            contentDescription = "Galería",
+                            tint = colorIconos,
+                            modifier =
+                                Modifier.size(30.dp)
+                        )
+                    }
+
+                    // AYUDA
+                    IconButton(
+                        onClick = {
+                            Toast.makeText(
+                                context,
+                                "Coloca toda la etiqueta de lavado dentro del marco y asegúrate de que los símbolos y el texto se vean claramente.",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.HelpOutline,
+                            contentDescription = "Ayuda",
+                            tint = colorIconos,
+                            modifier = Modifier.size(30.dp)
+                        )
+                    }
+                }
+
+                // CAMARA
+                if (tienePermisoCamara) {
+                    Column(
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+
+                        // INSTRUCCIONES
+                        Text(
+                            text = "Fotografía la etiqueta de lavado",
+                            color = colorIconos,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Text(
+                            text = "Asegúrate de que los símbolos y el texto sean visibles",
+                            color = colorIconos.copy(alpha = 0.75f),
+                            style =
+                                MaterialTheme
+                                    .typography
+                                    .bodySmall
+                        )
+
+                        Spacer(modifier = Modifier.height(14.dp))
+
+                        // CAMARA
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth(0.70f)
+                                .aspectRatio(3f / 4f)
+                        ) {
+                            if (imagenCongelada != null) {
+                                // FOTO CONGELADA
+                                Image(
+                                    bitmap = imagenCongelada!!,
+                                    contentDescription = "Foto de la etiqueta",
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .clip(RoundedCornerShape(4.dp))
+                                )
+                            } else {
+                                AndroidView(
+                                    factory = {
+                                        previewView
+                                    },
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .clip(RoundedCornerShape(4.dp))
+                                )
+                            }
+
+                            // MARCO DE ESCANEO
+                            MarcoEscaneo(
+                                color = colorIconos,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                    }
+
+                } else {
+                    Column(
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .padding(32.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+
+                        Text(
+                            text = "Washly necesita permiso para utilizar la cámara.",
+                            color = colorIconos
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Button(
+                            onClick = {
+                                launcherPermisoCamara
+                                    .launch(
+                                        Manifest.permission.CAMERA
+                                    )
+                            }
+                        ) {
+                            Text(
+                                text = "Permitir cámara"
+                            )
+                        }
+                    }
+                }
+
+                // BOTON TOMAR FOTO
+                IconButton(
+                    onClick = {
+                        if (tienePermisoCamara) {
+                            tomarFoto()
+                        } else {
+                            Toast.makeText(
+                                context,
+                                "Necesitas permitir el acceso a la cámara",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    },
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 80.dp)
+                        .size(68.dp)
+                        .background(
+                            color = colorFondo,
+                            shape = CircleShape
+                        )
+                        .border(
+                            width = 4.dp,
+                            color = colorIconos,
+                            shape = CircleShape
+                        )
+                ) {
+
+                    Icon(
+                        imageVector = Icons.Default.CameraAlt,
+                        contentDescription = "Tomar foto",
+                        tint = colorIconos,
+                        modifier = Modifier.size(34.dp)
+                    )
+                }
+
+                // ZOOM
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 15.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+
+                    // ALEJAR
+                    IconButton(
+                        onClick = {
+                            val nuevoZoom =
+                                (zoomActual - 0.10f)
+                                    .coerceIn(
+                                        0f,
+                                        1f
+                                    )
+                            zoomActual =
+                                nuevoZoom
+                            camara
+                                ?.cameraControl
+                                ?.setLinearZoom(
+                                    nuevoZoom
+                                )
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ZoomOut,
+                            contentDescription = "Alejar",
+                            tint = colorIconos,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+
+                    // ACERCAR
+                    IconButton(
+                        onClick = {
+                            val nuevoZoom =
+                                (zoomActual + 0.10f)
+                                    .coerceIn(
+                                        0f,
+                                        1f
+                                    )
+                            zoomActual =
+                                nuevoZoom
+                            camara
+                                ?.cameraControl
+                                ?.setLinearZoom(
+                                    nuevoZoom
+                                )
+                        }
+                    ) {
+
+                        Icon(
+                            imageVector = Icons.Default.ZoomIn,
+                            contentDescription = "Acercar",
+                            tint = colorIconos,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+                }
+            }
+        }
+
+        // POPUP DATOS DE LAS PRENDAS
+        if (
+            mostrarDialogoDatos &&
+            fotoPendiente != null
+        ) {
+            val colorDialogo = if (modoOscuro) { TarjetaPerfilOscuro } else { FondoClaro }
+            val colorTextoDialogo = if (modoOscuro) { RosaOscuro } else { AzulPrincipalClaro }
+            val colorBoton = if (modoOscuro) { RosaOscuro } else { AzulPrincipalClaro }
+            val colorTextoBoton = if (modoOscuro) { FondoOscuro } else { TextoBlancoClaro }
+
+            AlertDialog(
+                onDismissRequest = {
+                    mostrarDialogoDatos = false
+                    fotoPendiente = null
+                    imagenCongelada = null
+                },
+                containerColor = colorDialogo,
+
+                // TITULO
+                title = {
+                    Text(
+                        text = "Información de las prendas",
+                        color = colorTextoDialogo,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+
+                // CONTENIDO
+                text = {
+                    Column(
+                        verticalArrangement =
+                            Arrangement.spacedBy(14.dp)
+                    ) {
+                        Text(
+                            text =
+                                "Indica cuántas prendas tienen estas mismas instrucciones de lavado.",
+                            color = colorTextoDialogo
+                        )
+
+                        // CANTIDAD
+                        OutlinedTextField(
+                            value = cantidadTexto,
+                            onValueChange = { nuevoValor ->
+                                if (
+                                    nuevoValor.all {
+                                            caracter ->
+                                        caracter.isDigit()
+                                    }
+                                ) {
+                                    cantidadTexto =
+                                        nuevoValor
+                                }
+                            },
+                            label = {
+                                Text("Prendas con esta misma etiqueta")
+                                    },
+                            placeholder = { Text("Ej. 3") },
+                            singleLine = true,
+                            keyboardOptions =
+                                KeyboardOptions(
+                                    keyboardType =
+                                        KeyboardType.Number
+                                ),
+                            modifier =
+                                Modifier.fillMaxWidth(),
+                            colors =
+                                OutlinedTextFieldDefaults.colors(
+                                    focusedTextColor = colorTextoDialogo,
+                                    unfocusedTextColor = colorTextoDialogo,
+                                    focusedBorderColor = colorTextoDialogo,
+                                    unfocusedBorderColor = colorTextoDialogo.copy(alpha = 0.5f),
+                                    focusedLabelColor = colorTextoDialogo,
+                                    unfocusedLabelColor = colorTextoDialogo.copy(alpha = 0.7f),
+                                    cursorColor = colorTextoDialogo
+                                )
+                        )
+
+                        // MANCHAS
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "¿Tiene alguna mancha?",
+                                color = colorTextoDialogo,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Switch(
+                                checked = tieneMancha,
+                                onCheckedChange = {
+                                    tieneMancha = it
+                                    if (!it) {
+                                        tipoMancha = ""
+                                    }
+                                }
+                            )
+                        }
+
+                        // TIPO DE MANCHA
+                        if (tieneMancha) {
+                            OutlinedTextField(
+                                value = tipoMancha,
+                                onValueChange = {
+                                    tipoMancha = it
+                                },
+                                label = {
+                                    Text("Tipo de mancha")
+                                },
+                                placeholder = {
+                                    Text("Ej. café, grasa, tinta...")
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors =
+                                    OutlinedTextFieldDefaults.colors(
+                                        focusedTextColor = colorTextoDialogo,
+                                        unfocusedTextColor = colorTextoDialogo,
+                                        focusedBorderColor = colorTextoDialogo,
+                                        unfocusedBorderColor = colorTextoDialogo.copy(alpha = 0.5f),
+                                        focusedLabelColor = colorTextoDialogo,
+                                        unfocusedLabelColor = colorTextoDialogo.copy(alpha = 0.7f),
+                                        cursorColor = colorTextoDialogo
+                                    )
+                            )
+                        }
+
+                        // INFORMACION EXTRA
+                        OutlinedTextField(
+                            value = informacionAdicional,
+                            onValueChange = {
+                                informacionAdicional = it
+                            },
+                            label = {
+                                Text("Información adicional")
+                            },
+                            placeholder = {
+                                Text("Ej. No quiero usar secadora")
+                            },
+                            minLines = 2,
+                            maxLines = 3,
+                            modifier = Modifier.fillMaxWidth(),
+                            colors =
+                                OutlinedTextFieldDefaults.colors(
+                                    focusedTextColor = colorTextoDialogo,
+                                    unfocusedTextColor = colorTextoDialogo,
+                                    focusedBorderColor = colorTextoDialogo,
+                                    unfocusedBorderColor = colorTextoDialogo.copy(alpha = 0.5f),
+                                    focusedLabelColor = colorTextoDialogo,
+                                    unfocusedLabelColor = colorTextoDialogo.copy(alpha = 0.7f),
+                                    cursorColor = colorTextoDialogo
+                                )
+                        )
+                    }
+                },
+
+                // CONTINUAR
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            val cantidad = cantidadTexto.toIntOrNull()
+
+                            if (cantidad == null || cantidad <= 0) {
+                                Toast.makeText(
+                                    context,
+                                    "Ingresa una cantidad válida",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                return@Button
+                            }
+
+                            if (tieneMancha && tipoMancha.isBlank()) {
+                                Toast.makeText(
+                                    context,
+                                    "Indica qué tipo de mancha tiene",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                return@Button
+                            }
+
+
+                            val datos = DatosEscaneo(
+                                    fotoUri = fotoPendiente!!,
+                                    cantidad = cantidad,
+                                    tieneMancha = tieneMancha,
+                                    tipoMancha = tipoMancha.trim(),
+                                    informacionAdicional = informacionAdicional.trim()
+                                )
+                            mostrarDialogoDatos = false
+                            fotoPendiente = null
+                            onDatosConfirmados(datos)
+                        },
+                        colors =
+                            ButtonDefaults.buttonColors(
+                                containerColor = colorBoton,
+                                contentColor = colorTextoBoton
+                            )
+                    ) {
+                        Text(
+                            text = "Continuar"
+                        )
+                    }
+                },
+
+                // CANCELAR
+                dismissButton = {
+                    TextButton(
+                        onClick = {
+                            mostrarDialogoDatos = false
+                            fotoPendiente = null
+                            imagenCongelada = null
+                        }
+                    ) {
+
+                        Text(
+                            text = "Cancelar",
+                            color =
+                                colorTextoDialogo
+                        )
+                    }
+                }
+            )
+        }
+    }
+}
+
+// ESQUINAS DEL ESCANER
+@Composable
+private fun MarcoEscaneo(
+    color: Color,
+    modifier: Modifier = Modifier
+) {
+    Canvas(
+        modifier = modifier
+            .padding(3.dp)
+    ) {
+
+        val longitud =
+            24.dp.toPx()
+        val grosor =
+            4.dp.toPx()
+
+        // ARRIBA IZQUIERDA
+        drawLine(
+            color = color,
+            start = Offset(
+                0f,
+                0f
+            ),
+            end = Offset(
+                longitud,
+                0f
+            ),
+            strokeWidth = grosor,
+            cap = StrokeCap.Square
+        )
+
+        drawLine(
+            color = color,
+            start = Offset(
+                0f,
+                0f
+            ),
+            end = Offset(
+                0f,
+                longitud
+            ),
+            strokeWidth = grosor,
+            cap = StrokeCap.Square
+        )
+
+        // ARRIBA DERECHA
+        drawLine(
+            color = color,
+            start = Offset(
+                size.width,
+                0f
+            ),
+            end = Offset(
+                size.width - longitud,
+                0f
+            ),
+            strokeWidth = grosor,
+            cap = StrokeCap.Square
+        )
+
+        drawLine(
+            color = color,
+            start = Offset(
+                size.width,
+                0f
+            ),
+            end = Offset(
+                size.width,
+                longitud
+            ),
+            strokeWidth = grosor,
+            cap = StrokeCap.Square
+        )
+
+        // ABAJO IZQUIERDA
+        drawLine(
+            color = color,
+            start = Offset(
+                0f,
+                size.height
+            ),
+            end = Offset(
+                longitud,
+                size.height
+            ),
+            strokeWidth = grosor,
+            cap = StrokeCap.Square
+        )
+
+        drawLine(
+            color = color,
+            start = Offset(
+                0f,
+                size.height
+            ),
+            end = Offset(
+                0f,
+                size.height - longitud
+            ),
+            strokeWidth = grosor,
+            cap = StrokeCap.Square
+        )
+
+        // ABAJO DERECHA
+        drawLine(
+            color = color,
+            start = Offset(
+                size.width,
+                size.height
+            ),
+            end = Offset(
+                size.width - longitud,
+                size.height
+            ),
+            strokeWidth = grosor,
+            cap = StrokeCap.Square
+        )
+
+        drawLine(
+            color = color,
+            start = Offset(
+                size.width,
+                size.height
+            ),
+            end = Offset(
+                size.width,
+                size.height - longitud
+            ),
+            strokeWidth = grosor,
+            cap = StrokeCap.Square
+        )
+    }
+}

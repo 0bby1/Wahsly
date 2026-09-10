@@ -19,6 +19,7 @@ data class Usuario(
 @Entity(tableName = "historial")
 data class RegistroEscaneo(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val correoUsuario: String,
     val nombre: String,
     val fecha: String,
     val informacion: String

@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 import com.example.wahsly.datos.model.RegistroEscaneo
 import com.example.wahsly.datos.model.Usuario
 
-@Database(entities = [Usuario::class, RegistroEscaneo::class], version = 1, exportSchema = false)
+@Database(entities = [Usuario::class, RegistroEscaneo::class], version = 2, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun usuarioDao(): UsuarioDao
     abstract fun historialDao(): HistorialDao

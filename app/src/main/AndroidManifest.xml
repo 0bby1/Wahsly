@@ -2,6 +2,17 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- PERMISO PARA USAR LA CAMARA -->
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <!-- LO USAREMOS DESPUES PARA GEMINI -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Permite que la app también pueda instalarse en dispositivos que no tengan cámara -->
+    <uses-feature
+        android:name="android.hardware.camera.any"
+        android:required="false" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"

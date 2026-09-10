@@ -47,6 +47,11 @@ import com.example.wahsly.ui.theme.FondoOscuro
 import com.example.wahsly.ui.theme.IconoSecundarioClaro
 import com.example.wahsly.ui.theme.RosaOscuro
 import com.example.wahsly.ui.theme.TarjetaRutinaClaro
+import com.example.wahsly.datos.model.RegistroEscaneo
+import com.example.wahsly.ia.ResultadoLavado
+import com.example.wahsly.ia.resultadoLavadoDesdeJson
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 
 @Composable
 fun PantallaPrincipal(
@@ -61,7 +66,18 @@ fun PantallaPrincipal(
     val context = LocalContext.current
     val db = remember { AppDatabase.getDatabase(context) }
     val historialRepository = remember { HistorialRepository(db.historialDao()) }
-    val registros by historialRepository.registros.collectAsState(initial = emptyList())
+    val correoUsuario = usuario?.correo.orEmpty()
+    val registrosFlow =
+        remember(correoUsuario) {
+            historialRepository
+                .registrosPorUsuario(
+                    correoUsuario
+                )
+        }
+    val registros by registrosFlow
+        .collectAsState(
+            initial = emptyList()
+        )
     var busqueda by remember {
         mutableStateOf("")
     }
@@ -72,6 +88,10 @@ fun PantallaPrincipal(
 
     var mostrarMenu by remember {
         mutableStateOf(false)
+    }
+
+    var registroSeleccionado by remember {
+        mutableStateOf<RegistroEscaneo?>(null)
     }
 
     val scope = rememberCoroutineScope()
@@ -263,189 +283,348 @@ fun PantallaPrincipal(
                         }
                     }
 
-
-
-                    // CONTENIDO CENTRAL: "Mis Rutinas"
+                    // MIS RUTINAS REALES
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(1f)
-                            .padding(top = 16.dp) // separación de la franja del menú
+                            .padding(top = 16.dp)
                     ) {
 
-                        // Bloque de "Mis Rutinas"
-                        Column(
+                        Text(
+                            text = "Mis Rutinas",
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = colorTextoPrincipal,
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                text = "Mis Rutinas",
-                                fontSize = 22.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = colorTextoPrincipal,
-                                modifier = Modifier.padding(bottom = 8.dp)
-                            )
+                                .align(
+                                    Alignment.CenterHorizontally
+                                )
+                                .padding(bottom = 12.dp)
+                        )
 
-                            // Tarjeta 1
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(bottom = 8.dp)
-                                    .border(
-                                        width = if (modoOscuro) 2.dp else 0.dp,
-                                        color = colorBordeTarjeta,
-                                        shape = RoundedCornerShape(12.dp)
-                                    ),
-                                shape = RoundedCornerShape(12.dp),
-                                colors = CardDefaults.cardColors(
-                                    containerColor = colorTarjetaRutina
-                                ),
-                                elevation = CardDefaults.cardElevation(2.dp)
-                            ) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Image(
-                                        painter = painterResource(id = R.drawable.washlylogo_inicio),
-                                        contentDescription = "Imagen de rutina 1",
-                                        modifier = Modifier
-                                            .size(56.dp)
-                                            .clip(RoundedCornerShape(8.dp))
-                                    )
-                                    Spacer(modifier = Modifier.width(16.dp))
-                                    // Textos
-                                    Column {
-                                        Text(
-                                            "100% Polyester",
-                                            fontWeight = FontWeight.Medium,
-                                            color = colorTextoPrincipal
+
+                        // FILTRAR CON EL BUSCADOR
+                        val registrosFiltrados =
+                            registros.filter { registro ->
+
+                                if (busqueda.isBlank()) {
+
+                                    true
+
+                                } else {
+
+                                    val resultado =
+                                        resultadoLavadoDesdeJson(
+                                            registro.informacion
                                         )
-                                        Text(
-                                            "100%",
-                                            color = colorTextoSecundario,
-                                            fontSize = 14.sp
-                                        )
-                                        Text(
-                                            "TEXTO",
-                                            color = colorTextoSecundario,
-                                            fontSize = 14.sp
-                                        )
-                                    }
+
+
+                                    registro.nombre.contains(
+                                        busqueda,
+                                        ignoreCase = true
+                                    ) ||
+
+                                            resultado
+                                                ?.lavado
+                                                ?.contains(
+                                                    busqueda,
+                                                    ignoreCase = true
+                                                ) == true ||
+
+                                            resultado
+                                                ?.temperatura
+                                                ?.contains(
+                                                    busqueda,
+                                                    ignoreCase = true
+                                                ) == true ||
+
+                                            resultado
+                                                ?.composicion
+                                                ?.contains(
+                                                    busqueda,
+                                                    ignoreCase = true
+                                                ) == true
                                 }
                             }
 
-                            // Tarjeta 2
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(bottom = 8.dp)
-                                    .border(
-                                        width = if (modoOscuro) 2.dp else 0.dp,
-                                        color = colorBordeTarjeta,
-                                        shape = RoundedCornerShape(12.dp)
-                                    ),
-                                shape = RoundedCornerShape(12.dp),
-                                colors = CardDefaults.cardColors(
-                                    containerColor = colorTarjetaRutina
-                                ),
-                                elevation = CardDefaults.cardElevation(2.dp)
-                            ) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Image(
-                                        painter = painterResource(id = R.drawable.washlylogo_inicio),
-                                        contentDescription = "Imagen de rutina 2",
-                                        modifier = Modifier
-                                            .size(56.dp)
-                                            .clip(RoundedCornerShape(8.dp))
-                                    )
-                                    Spacer(modifier = Modifier.width(16.dp))
-                                    // Textos
-                                    Column {
-                                        Text(
-                                            "Algodón 100%",
-                                            fontWeight = FontWeight.Medium,
-                                            color = colorTextoPrincipal
-                                        )
-                                        Text(
-                                            "Lavado en frío",
-                                            color = colorTextoSecundario,
-                                            fontSize = 14.sp
-                                        )
-                                        Text(
-                                            "Ejemplo de rutina",
-                                            color = colorTextoSecundario,
-                                            fontSize = 14.sp
-                                        )
-                                    }
-                                }
-                            }
-                        }
 
-                        // CONTENIDO ORIGINAL: historial (si existe)
-                        if (registros.isNotEmpty()) {
+                        if (registrosFiltrados.isEmpty()) {
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(30.dp),
+
+                                contentAlignment =
+                                    Alignment.Center
+                            ) {
+
+                                Text(
+                                    text =
+                                        if (busqueda.isBlank()) {
+                                            "Aún no tienes rutinas guardadas."
+                                        } else {
+                                            "No se encontraron rutinas."
+                                        },
+
+                                    color =
+                                        colorTextoSecundario,
+
+                                    fontSize =
+                                        16.sp
+                                )
+                            }
+
+                        } else {
+
                             LazyColumn(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(200.dp)
-                                    .background(colorFondo),
-                                contentPadding = PaddingValues(
-                                    start = 32.dp,
-                                    end = 32.dp,
-                                    top = 16.dp,
-                                    bottom = 25.dp
-                                ),
-                                verticalArrangement = Arrangement.spacedBy(16.dp)
+                                modifier =
+                                    Modifier.fillMaxSize(),
+
+                                contentPadding =
+                                    PaddingValues(
+                                        start = 16.dp,
+                                        end = 16.dp,
+                                        bottom = 20.dp
+                                    ),
+
+                                verticalArrangement =
+                                    Arrangement.spacedBy(
+                                        10.dp
+                                    )
                             ) {
-                                items(registros) { registro ->
+
+                                items(
+                                    items =
+                                        registrosFiltrados,
+
+                                    key = {
+                                        it.id
+                                    }
+                                ) { registro ->
+
+
+                                    val resultado =
+                                        resultadoLavadoDesdeJson(
+                                            registro.informacion
+                                        )
+
+
                                     Card(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .height(150.dp),
-                                        shape = RoundedCornerShape(16.dp),
-                                        elevation = CardDefaults.cardElevation(4.dp),
-                                        colors = CardDefaults.cardColors(containerColor = Color.White)
+                                            .border(
+                                                width =
+                                                    if (modoOscuro) {
+                                                        2.dp
+                                                    } else {
+                                                        0.dp
+                                                    },
+
+                                                color =
+                                                    colorBordeTarjeta,
+
+                                                shape =
+                                                    RoundedCornerShape(
+                                                        12.dp
+                                                    )
+                                            )
+                                            .clickable(
+                                                enabled =
+                                                    resultado != null
+                                            ) {
+
+                                                registroSeleccionado =
+                                                    registro
+                                            },
+
+                                        shape =
+                                            RoundedCornerShape(
+                                                12.dp
+                                            ),
+
+                                        colors =
+                                            CardDefaults.cardColors(
+                                                containerColor =
+                                                    colorTarjetaRutina
+                                            ),
+
+                                        elevation =
+                                            CardDefaults.cardElevation(
+                                                2.dp
+                                            )
                                     ) {
-                                        Column(
+
+                                        Row(
                                             modifier = Modifier
-                                                .fillMaxSize()
-                                                .padding(16.dp)
+                                                .fillMaxWidth()
+                                                .padding(16.dp),
+
+                                            verticalAlignment =
+                                                Alignment.CenterVertically
                                         ) {
-                                            Text(
-                                                text = registro.nombre,
-                                                fontSize = 18.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                color = colorTextoPrincipal
+
+
+                                            Image(
+                                                painter =
+                                                    painterResource(
+                                                        id =
+                                                            R.drawable
+                                                                .washlylogo_inicio
+                                                    ),
+
+                                                contentDescription =
+                                                    "Rutina de lavado",
+
+                                                modifier =
+                                                    Modifier
+                                                        .size(56.dp)
+                                                        .clip(
+                                                            RoundedCornerShape(
+                                                                8.dp
+                                                            )
+                                                        )
                                             )
-                                            Spacer(modifier = Modifier.height(8.dp))
-                                            Text(
-                                                text = registro.fecha,
-                                                fontSize = 14.sp,
-                                                color = colorTextoSecundario
+
+
+                                            Spacer(
+                                                modifier =
+                                                    Modifier.width(
+                                                        16.dp
+                                                    )
                                             )
-                                            Spacer(modifier = Modifier.height(8.dp))
-                                            Text(
-                                                text = registro.informacion,
-                                                fontSize = 14.sp,
-                                                color = colorTextoPrincipal
-                                            )
+
+
+                                            Column(
+                                                modifier =
+                                                    Modifier.weight(
+                                                        1f
+                                                    )
+                                            ) {
+
+                                                Text(
+                                                    text =
+                                                        resultado
+                                                            ?.composicion
+                                                            ?.takeIf {
+                                                                it.isNotBlank() &&
+                                                                        !it.equals(
+                                                                            "No visible",
+                                                                            true
+                                                                        )
+                                                            }
+                                                            ?: registro.nombre,
+
+                                                    fontWeight =
+                                                        FontWeight.SemiBold,
+
+                                                    color =
+                                                        colorTextoPrincipal
+                                                )
+
+
+                                                Spacer(
+                                                    modifier =
+                                                        Modifier.height(
+                                                            3.dp
+                                                        )
+                                                )
+
+
+                                                if (resultado != null) {
+
+                                                    Text(
+                                                        text =
+                                                            "${resultado.cantidad} prenda(s)",
+
+                                                        color =
+                                                            colorTextoSecundario,
+
+                                                        fontSize =
+                                                            14.sp
+                                                    )
+
+
+                                                    Text(
+                                                        text =
+                                                            "Lavado: ${resultado.lavado}",
+
+                                                        color =
+                                                            colorTextoSecundario,
+
+                                                        fontSize =
+                                                            14.sp,
+
+                                                        maxLines =
+                                                            1
+                                                    )
+
+
+                                                    Text(
+                                                        text =
+                                                            "Temperatura: ${resultado.temperatura}",
+
+                                                        color =
+                                                            colorTextoSecundario,
+
+                                                        fontSize =
+                                                            14.sp,
+
+                                                        maxLines =
+                                                            1
+                                                    )
+
+                                                } else {
+
+                                                    // REGISTROS ANTIGUOS
+                                                    Text(
+                                                        text =
+                                                            registro.fecha,
+
+                                                        color =
+                                                            colorTextoSecundario,
+
+                                                        fontSize =
+                                                            14.sp
+                                                    )
+
+                                                    Text(
+                                                        text =
+                                                            registro.informacion,
+
+                                                        color =
+                                                            colorTextoSecundario,
+
+                                                        fontSize =
+                                                            14.sp,
+
+                                                        maxLines =
+                                                            2
+                                                    )
+                                                }
+                                            }
+
+
+                                            if (resultado != null) {
+
+                                                Icon(
+                                                    imageVector =
+                                                        Icons.Default
+                                                            .KeyboardArrowRight,
+
+                                                    contentDescription =
+                                                        "Ver recomendación",
+
+                                                    tint =
+                                                        colorTextoPrincipal
+                                                )
+                                            }
                                         }
                                     }
-
                                 }
                             }
                         }
-
-
                     }
                 }
                         AnimatedVisibility(
@@ -625,8 +804,213 @@ fun PantallaPrincipal(
                             }
                         }
                     }
-                }
+        // DETALLE DE UNA RUTINA GUARDADA
+        registroSeleccionado?.let { registro ->
+            val resultado =
+                resultadoLavadoDesdeJson(
+                    registro.informacion
+                )
+
+            if (resultado != null) {
+                val colorDialogo = if (modoOscuro) { FondoOscuro } else { FondoClaro }
+                val colorTexto = if (modoOscuro) { RosaOscuro } else { AzulPrincipalClaro }
+
+                AlertDialog(
+                    onDismissRequest = { registroSeleccionado = null },
+                    containerColor = colorDialogo,
+
+                    title = {
+                        Text(
+                            text = "Recomendación de lavado",
+                            color = colorTexto,
+                            fontWeight = FontWeight.Bold
+                        )
+                    },
+
+                    text = {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(max = 520.dp)
+                                .verticalScroll(rememberScrollState())
+                        ) {
+                            Text(
+                                text = "Prendas: ${resultado.cantidad}",
+                                color = colorTexto
+                            )
+
+                            Spacer(modifier = Modifier.height(14.dp))
+
+                            Text(
+                                text = "Composición:",
+                                fontWeight = FontWeight.Bold,
+                                color = colorTexto
+                            )
+
+                            Text(
+                                text = resultado.composicion,
+                                color = colorTexto
+                            )
+
+                            Spacer(modifier = Modifier.height(14.dp))
+
+                            Text(
+                                text = "Lavado: ",
+                                fontWeight = FontWeight.Bold,
+                                color = colorTexto
+                            )
+
+                            Text(
+                                text = resultado.lavado,
+                                color = colorTexto
+                            )
+
+                            Spacer(modifier = Modifier.height(14.dp))
+
+                            Text(
+                                text =
+                                    "Temperatura:",
+                                fontWeight = FontWeight.Bold,
+                                color = colorTexto
+                            )
+
+                            Text(
+                                text = resultado.temperatura,
+                                color = colorTexto
+                            )
+
+                            Spacer(modifier = Modifier.height(14.dp))
+
+
+                            Text(
+                                text = "Blanqueador:",
+                                fontWeight = FontWeight.Bold,
+                                color = colorTexto
+                            )
+
+                            Text(
+                                text = resultado.blanqueador,
+                                color = colorTexto
+                            )
+
+                            Spacer(modifier = Modifier.height(14.dp))
+
+                            Text(
+                                text = "Secado:",
+                                fontWeight = FontWeight.Bold,
+                                color = colorTexto
+                            )
+
+                            Text(
+                                text = resultado.secado,
+                                color = colorTexto
+                            )
+
+                            Spacer(modifier = Modifier.height(14.dp))
+
+                            Text(
+                                text = "Planchado: ",
+                                fontWeight = FontWeight.Bold,
+                                color = colorTexto
+                            )
+
+                            Text(
+                                text = resultado.planchado,
+                                color = colorTexto
+                            )
+
+                            Spacer(modifier = Modifier.height(14.dp))
+
+                            Text(
+                                text = "Limpieza profesional:",
+                                fontWeight = FontWeight.Bold,
+                                color = colorTexto
+                            )
+
+                            Text(
+                                text = resultado.limpiezaProfesional,
+                                color = colorTexto
+                            )
+
+                            if (resultado.tieneMancha) {
+                                Spacer(modifier = Modifier.height(14.dp))
+
+                                Text(
+                                    text = "Tratamiento de la mancha:",
+                                    fontWeight = FontWeight.Bold,
+                                    color = colorTexto
+                                )
+
+                                Text(
+                                    text = resultado.tratamientoMancha,
+                                    color = colorTexto
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(14.dp))
+
+                            Text(
+                                text = "⚠️ Precauciones:",
+                                fontWeight = FontWeight.Bold,
+                                color = colorTexto
+                            )
+
+                            Text(
+                                text = resultado.precauciones,
+                                color = colorTexto
+                            )
+
+                            if (
+                                resultado
+                                    .informacionAdicional
+                                    .isNotBlank()
+                            ) {
+                                Spacer(modifier = Modifier.height(14.dp))
+
+                                Text(
+                                    text =
+                                        "Información adicional:",
+                                    fontWeight = FontWeight.Bold,
+                                    color = colorTexto
+                                )
+
+                                Text(
+                                    text = resultado.informacionAdicional,
+                                    color = colorTexto
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(14.dp))
+
+                            Text(
+                                text = "Fecha: ${registro.fecha}",
+                                color =
+                                    colorTexto.copy(
+                                        alpha = 0.7f
+                                    ),
+                                fontSize = 13.sp
+                            )
+                        }
+                    },
+
+                    confirmButton = {
+                        Button(
+                            onClick = {
+                                registroSeleccionado =
+                                    null
+                            }
+                        ) {
+                            Text(
+                                "Cerrar"
+                            )
+                        }
+                    }
+                )
             }
+        }
+    }
+}
+
 @Composable
 fun OpcionMenuAnimado(
     texto: String,

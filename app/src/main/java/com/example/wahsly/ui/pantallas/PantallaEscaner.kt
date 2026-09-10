@@ -57,6 +57,14 @@ import androidx.compose.foundation.Image
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.camera.core.FocusMeteringAction
+import androidx.compose.foundation.gestures.detectTapGestures
+import java.util.concurrent.TimeUnit
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
+import kotlinx.coroutines.delay
 
 data class DatosEscaneo(
     val fotoUri: Uri,
@@ -137,9 +145,47 @@ fun PantallaEscaner(
 
     var imageCapture by remember { mutableStateOf<ImageCapture?>(null) }
     var imagenCongelada by remember { mutableStateOf<ImageBitmap?>(null) }
+    var puntoEnfoque by remember { mutableStateOf<Offset?>(null) }
+    var idEnfoque by remember { mutableIntStateOf(0) }
+    val escalaEnfoque = remember { Animatable(1f) }
+    val alphaEnfoque = remember { Animatable(0f) }
     var camara by remember { mutableStateOf<Camera?>(null) }
     var linternaEncendida by remember { mutableStateOf(false) }
     var zoomActual by remember { mutableFloatStateOf(0f) }
+
+    LaunchedEffect(idEnfoque) {
+
+        if (idEnfoque == 0) {
+            return@LaunchedEffect
+        }
+
+        // Empieza un poco más grande
+        escalaEnfoque.snapTo(1.35f)
+
+        // Aparece
+        alphaEnfoque.snapTo(1f)
+
+        // Se contrae como una cámara real
+        escalaEnfoque.animateTo(
+            targetValue = 1f,
+            animationSpec = tween(
+                durationMillis = 180
+            )
+        )
+
+        // Se queda visible un momento
+        delay(450)
+
+        // Desaparece suavemente
+        alphaEnfoque.animateTo(
+            targetValue = 0f,
+            animationSpec = tween(
+                durationMillis = 250
+            )
+        )
+
+        puntoEnfoque = null
+    }
 
     DisposableEffect(
         tienePermisoCamara,
@@ -462,6 +508,75 @@ fun PantallaEscaner(
                             modifier = Modifier
                                 .fillMaxWidth(0.70f)
                                 .aspectRatio(3f / 4f)
+                                .pointerInput(camara, imagenCongelada) {
+                                    if (imagenCongelada == null) {
+                                        detectTransformGestures { _, _, zoomCambio, _ ->
+                                            val camera = camara ?: return@detectTransformGestures
+
+                                            val zoomState =
+                                                camera.cameraInfo
+                                                    .zoomState
+                                                    .value
+                                                    ?: return@detectTransformGestures
+
+                                            val nuevoZoomRatio =
+                                                (
+                                                        zoomState.zoomRatio *
+                                                                zoomCambio
+                                                        ).coerceIn(
+                                                        zoomState.minZoomRatio,
+                                                        zoomState.maxZoomRatio
+                                                    )
+                                            camera
+                                                .cameraControl
+                                                .setZoomRatio(
+                                                    nuevoZoomRatio
+                                                )
+
+                                            val rango = zoomState.maxZoomRatio - zoomState.minZoomRatio
+
+                                            if (rango > 0f) {
+                                                zoomActual = ((nuevoZoomRatio - zoomState.minZoomRatio) / rango).coerceIn(0f, 1f)
+                                            }
+                                        }
+                                    }
+                                }
+                                .pointerInput(camara, imagenCongelada) {
+                                    if (imagenCongelada == null) {
+                                        detectTapGestures(
+                                            onTap = { posicion ->
+                                                val camera = camara ?: return@detectTapGestures
+
+                                                // MOSTRAR CUADRO DE ENFOQUE
+                                                puntoEnfoque = posicion
+                                                idEnfoque++
+
+                                                // ENFOCAR CAMARA
+                                                val punto = previewView
+                                                        .meteringPointFactory
+                                                        .createPoint(
+                                                            posicion.x,
+                                                            posicion.y
+                                                        )
+
+                                                val accionEnfoque =
+                                                    FocusMeteringAction
+                                                        .Builder(
+                                                            punto,
+                                                            FocusMeteringAction.FLAG_AF or
+                                                                    FocusMeteringAction.FLAG_AE
+                                                        )
+                                                        .setAutoCancelDuration(3, TimeUnit.SECONDS)
+                                                        .build()
+                                                camera
+                                                    .cameraControl
+                                                    .startFocusAndMetering(
+                                                        accionEnfoque
+                                                    )
+                                            }
+                                        )
+                                    }
+                                }
                         ) {
                             if (imagenCongelada != null) {
                                 // FOTO CONGELADA
@@ -482,6 +597,170 @@ fun PantallaEscaner(
                                         .fillMaxSize()
                                         .clip(RoundedCornerShape(4.dp))
                                 )
+                            }
+
+                            // =========================
+// INDICADOR DE ENFOQUE
+// =========================
+
+                            puntoEnfoque?.let { punto ->
+
+                                Canvas(
+                                    modifier = Modifier.fillMaxSize()
+                                ) {
+
+                                    val lado =
+                                        62.dp.toPx() *
+                                                escalaEnfoque.value
+
+                                    val mitad =
+                                        lado / 2f
+
+                                    val longitudEsquina =
+                                        17.dp.toPx() *
+                                                escalaEnfoque.value
+
+                                    val grosor =
+                                        2.5.dp.toPx()
+
+                                    val color =
+                                        colorIconos.copy(
+                                            alpha = alphaEnfoque.value
+                                        )
+
+
+                                    val izquierda =
+                                        punto.x - mitad
+
+                                    val derecha =
+                                        punto.x + mitad
+
+                                    val arriba =
+                                        punto.y - mitad
+
+                                    val abajo =
+                                        punto.y + mitad
+
+
+                                    // ARRIBA IZQUIERDA
+                                    drawLine(
+                                        color = color,
+                                        start = Offset(
+                                            izquierda,
+                                            arriba
+                                        ),
+                                        end = Offset(
+                                            izquierda + longitudEsquina,
+                                            arriba
+                                        ),
+                                        strokeWidth = grosor
+                                    )
+
+                                    drawLine(
+                                        color = color,
+                                        start = Offset(
+                                            izquierda,
+                                            arriba
+                                        ),
+                                        end = Offset(
+                                            izquierda,
+                                            arriba + longitudEsquina
+                                        ),
+                                        strokeWidth = grosor
+                                    )
+
+
+                                    // ARRIBA DERECHA
+                                    drawLine(
+                                        color = color,
+                                        start = Offset(
+                                            derecha,
+                                            arriba
+                                        ),
+                                        end = Offset(
+                                            derecha - longitudEsquina,
+                                            arriba
+                                        ),
+                                        strokeWidth = grosor
+                                    )
+
+                                    drawLine(
+                                        color = color,
+                                        start = Offset(
+                                            derecha,
+                                            arriba
+                                        ),
+                                        end = Offset(
+                                            derecha,
+                                            arriba + longitudEsquina
+                                        ),
+                                        strokeWidth = grosor
+                                    )
+
+
+                                    // ABAJO IZQUIERDA
+                                    drawLine(
+                                        color = color,
+                                        start = Offset(
+                                            izquierda,
+                                            abajo
+                                        ),
+                                        end = Offset(
+                                            izquierda + longitudEsquina,
+                                            abajo
+                                        ),
+                                        strokeWidth = grosor
+                                    )
+
+                                    drawLine(
+                                        color = color,
+                                        start = Offset(
+                                            izquierda,
+                                            abajo
+                                        ),
+                                        end = Offset(
+                                            izquierda,
+                                            abajo - longitudEsquina
+                                        ),
+                                        strokeWidth = grosor
+                                    )
+
+
+                                    // ABAJO DERECHA
+                                    drawLine(
+                                        color = color,
+                                        start = Offset(
+                                            derecha,
+                                            abajo
+                                        ),
+                                        end = Offset(
+                                            derecha - longitudEsquina,
+                                            abajo
+                                        ),
+                                        strokeWidth = grosor
+                                    )
+
+                                    drawLine(
+                                        color = color,
+                                        start = Offset(
+                                            derecha,
+                                            abajo
+                                        ),
+                                        end = Offset(
+                                            derecha,
+                                            abajo - longitudEsquina
+                                        ),
+                                        strokeWidth = grosor
+                                    )
+
+
+                                    // PUNTO CENTRAL
+                                    drawCircle(
+                                        color = color,
+                                        radius = 3.dp.toPx(),
+                                        center = punto
+                                    )
+                                }
                             }
 
                             // MARCO DE ESCANEO

@@ -46,6 +46,7 @@ import com.example.wahsly.ui.theme.TextoBlancoClaro
 import com.example.wahsly.ui.theme.TextoSecundarioClaro
 import com.example.wahsly.ui.theme.TextoSecundarioOscuro
 import kotlinx.coroutines.launch
+import com.example.wahsly.AnimacionesVectoriales.WashlyBienvenidaAnimado
 
 // Pantalla inicio de sesion
 @Composable
@@ -84,38 +85,24 @@ fun PantallaInicioSesion(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(start = 40.dp, end = 40.dp, top = 105.dp, bottom = 45.dp),
+                .padding(
+                    start = 40.dp,
+                    end = 40.dp,
+                    top = 90.dp,
+                    bottom = 45.dp
+                ),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(0.dp))
             Box(
-                modifier = Modifier.size(300.dp)
-                    .height(10.dp)
-                    .offset(y = (-40).dp),
-                contentAlignment = Alignment.Center
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(270.dp),
+                contentAlignment = Alignment.TopCenter
             ) {
-                AndroidView(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(16f / 9f),
-                    factory = { contexto ->
-                        VideoView(contexto).apply {
-                            val videoUri = if (modoOscuro){
-                                Uri.parse(
-                                    "android.resource://${context.packageName}/${R.raw.washly_login_oscuro}"
-                                )
-                            } else
-                            {Uri.parse(
-                                "android.resource://${context.packageName}/${R.raw.washly_login_claro}"
-                            )}
-                            setVideoURI(videoUri)
-                            setOnPreparedListener { mediaPlayer ->
-                                // Hace que la animación se repita
-                                mediaPlayer.isLooping = true
-                                start()
-                            }
-                        }
-                    }
+                WashlyBienvenidaAnimado(
+                    modifier = Modifier.offset(y = (-25).dp),
+                    tamano = 350.dp
                 )
             }
 

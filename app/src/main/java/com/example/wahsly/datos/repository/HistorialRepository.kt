@@ -20,4 +20,11 @@ class HistorialRepository(
     ) {
         dao.insertar(registro)
     }
+    suspend fun eliminarRegistro(
+        registro: RegistroEscaneo
+    ) {
+        dao.eliminar(
+            registro
+        )
+    }
 }

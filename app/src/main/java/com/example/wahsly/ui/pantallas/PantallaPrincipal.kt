@@ -52,6 +52,12 @@ import com.example.wahsly.ia.ResultadoLavado
 import com.example.wahsly.ia.resultadoLavadoDesdeJson
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
+import androidx.compose.material3.rememberSwipeToDismissBoxState
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 
 @Composable
 fun PantallaPrincipal(
@@ -64,6 +70,7 @@ fun PantallaPrincipal(
 ){
 
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     val db = remember { AppDatabase.getDatabase(context) }
     val historialRepository = remember { HistorialRepository(db.historialDao()) }
     val correoUsuario = usuario?.correo.orEmpty()
@@ -93,8 +100,6 @@ fun PantallaPrincipal(
     var registroSeleccionado by remember {
         mutableStateOf<RegistroEscaneo?>(null)
     }
-
-    val scope = rememberCoroutineScope()
 
     // Colores
     val colorFondo =
@@ -396,229 +401,295 @@ fun PantallaPrincipal(
                             ) {
 
                                 items(
-                                    items =
-                                        registrosFiltrados,
-
+                                    items = registrosFiltrados,
                                     key = {
                                         it.id
                                     }
                                 ) { registro ->
 
 
-                                    val resultado =
-                                        resultadoLavadoDesdeJson(
-                                            registro.informacion
+                                    val resultado = resultadoLavadoDesdeJson(registro.informacion)
+                                    val estadoDeslizar =
+                                        rememberSwipeToDismissBoxState(
+                                            confirmValueChange = { estado ->
+                                                if (estado == SwipeToDismissBoxValue.EndToStart) {
+                                                    scope.launch {
+                                                        historialRepository
+                                                            .eliminarRegistro(
+                                                                registro
+                                                            )
+                                                    }
+                                                    true
+                                                } else {
+                                                    false
+                                                }
+                                            }
                                         )
 
+                                    SwipeToDismissBox(
 
-                                    Card(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .border(
-                                                width =
-                                                    if (modoOscuro) {
-                                                        2.dp
-                                                    } else {
-                                                        0.dp
-                                                    },
+                                        state =
+                                            estadoDeslizar,
 
-                                                color =
-                                                    colorBordeTarjeta,
+                                        enableDismissFromStartToEnd =
+                                            false,
 
-                                                shape =
-                                                    RoundedCornerShape(
-                                                        12.dp
+                                        enableDismissFromEndToStart =
+                                            true,
+
+                                        backgroundContent = {
+
+                                            Box(
+                                                modifier = Modifier
+                                                    .fillMaxSize()
+                                                    .clip(
+                                                        RoundedCornerShape(
+                                                            12.dp
+                                                        )
                                                     )
-                                            )
-                                            .clickable(
-                                                enabled =
-                                                    resultado != null
-                                            ) {
-
-                                                registroSeleccionado =
-                                                    registro
-                                            },
-
-                                        shape =
-                                            RoundedCornerShape(
-                                                12.dp
-                                            ),
-
-                                        colors =
-                                            CardDefaults.cardColors(
-                                                containerColor =
-                                                    colorTarjetaRutina
-                                            ),
-
-                                        elevation =
-                                            CardDefaults.cardElevation(
-                                                2.dp
-                                            )
-                                    ) {
-
-                                        Row(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(16.dp),
-
-                                            verticalAlignment =
-                                                Alignment.CenterVertically
-                                        ) {
-
-
-                                            Image(
-                                                painter =
-                                                    painterResource(
-                                                        id =
-                                                            R.drawable
-                                                                .washlylogo_inicio
+                                                    .background(
+                                                        MaterialTheme
+                                                            .colorScheme
+                                                            .errorContainer
+                                                    )
+                                                    .padding(
+                                                        end = 22.dp
                                                     ),
 
-                                                contentDescription =
-                                                    "Rutina de lavado",
-
-                                                modifier =
-                                                    Modifier
-                                                        .size(56.dp)
-                                                        .clip(
-                                                            RoundedCornerShape(
-                                                                8.dp
-                                                            )
-                                                        )
-                                            )
-
-
-                                            Spacer(
-                                                modifier =
-                                                    Modifier.width(
-                                                        16.dp
-                                                    )
-                                            )
-
-
-                                            Column(
-                                                modifier =
-                                                    Modifier.weight(
-                                                        1f
-                                                    )
+                                                contentAlignment =
+                                                    Alignment.CenterEnd
                                             ) {
 
-                                                Text(
-                                                    text =
-                                                        resultado
-                                                            ?.composicion
-                                                            ?.takeIf {
-                                                                it.isNotBlank() &&
-                                                                        !it.equals(
-                                                                            "No visible",
-                                                                            true
-                                                                        )
-                                                            }
-                                                            ?: registro.nombre,
+                                                Icon(
+                                                    imageVector =
+                                                        Icons.Default.Delete,
 
-                                                    fontWeight =
-                                                        FontWeight.SemiBold,
+                                                    contentDescription =
+                                                        "Eliminar rutina",
+
+                                                    tint =
+                                                        MaterialTheme
+                                                            .colorScheme
+                                                            .onErrorContainer,
+
+                                                    modifier =
+                                                        Modifier.size(
+                                                            30.dp
+                                                        )
+                                                )
+                                            }
+                                        }
+                                    ) {
+
+                                        Card(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .border(
+                                                    width =
+                                                        if (modoOscuro) {
+                                                            2.dp
+                                                        } else {
+                                                            0.dp
+                                                        },
 
                                                     color =
-                                                        colorTextoPrincipal
+                                                        colorBordeTarjeta,
+
+                                                    shape =
+                                                        RoundedCornerShape(
+                                                            12.dp
+                                                        )
+                                                )
+                                                .clickable(
+                                                    enabled =
+                                                        resultado != null
+                                                ) {
+
+                                                    registroSeleccionado =
+                                                        registro
+                                                },
+
+                                            shape =
+                                                RoundedCornerShape(
+                                                    12.dp
+                                                ),
+
+                                            colors =
+                                                CardDefaults.cardColors(
+                                                    containerColor =
+                                                        colorTarjetaRutina
+                                                ),
+
+                                            elevation =
+                                                CardDefaults.cardElevation(
+                                                    2.dp
+                                                )
+                                        ) {
+
+                                            Row(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(16.dp),
+
+                                                verticalAlignment =
+                                                    Alignment.CenterVertically
+                                            ) {
+
+
+                                                Image(
+                                                    painter =
+                                                        painterResource(
+                                                            id =
+                                                                R.drawable
+                                                                    .washlylogo_inicio
+                                                        ),
+
+                                                    contentDescription =
+                                                        "Rutina de lavado",
+
+                                                    modifier =
+                                                        Modifier
+                                                            .size(56.dp)
+                                                            .clip(
+                                                                RoundedCornerShape(
+                                                                    8.dp
+                                                                )
+                                                            )
                                                 )
 
 
                                                 Spacer(
                                                     modifier =
-                                                        Modifier.height(
-                                                            3.dp
+                                                        Modifier.width(
+                                                            16.dp
                                                         )
                                                 )
 
 
+                                                Column(
+                                                    modifier =
+                                                        Modifier.weight(
+                                                            1f
+                                                        )
+                                                ) {
+
+                                                    Text(
+                                                        text =
+                                                            resultado
+                                                                ?.composicion
+                                                                ?.takeIf {
+                                                                    it.isNotBlank() &&
+                                                                            !it.equals(
+                                                                                "No visible",
+                                                                                true
+                                                                            )
+                                                                }
+                                                                ?: registro.nombre,
+
+                                                        fontWeight =
+                                                            FontWeight.SemiBold,
+
+                                                        color =
+                                                            colorTextoPrincipal
+                                                    )
+
+
+                                                    Spacer(
+                                                        modifier =
+                                                            Modifier.height(
+                                                                3.dp
+                                                            )
+                                                    )
+
+
+                                                    if (resultado != null) {
+
+                                                        Text(
+                                                            text =
+                                                                "${resultado.cantidad} prenda(s)",
+
+                                                            color =
+                                                                colorTextoSecundario,
+
+                                                            fontSize =
+                                                                14.sp
+                                                        )
+
+
+                                                        Text(
+                                                            text =
+                                                                "Lavado: ${resultado.lavado}",
+
+                                                            color =
+                                                                colorTextoSecundario,
+
+                                                            fontSize =
+                                                                14.sp,
+
+                                                            maxLines =
+                                                                1
+                                                        )
+
+
+                                                        Text(
+                                                            text =
+                                                                "Temperatura: ${resultado.temperatura}",
+
+                                                            color =
+                                                                colorTextoSecundario,
+
+                                                            fontSize =
+                                                                14.sp,
+
+                                                            maxLines =
+                                                                1
+                                                        )
+
+                                                    } else {
+
+                                                        // REGISTROS ANTIGUOS
+                                                        Text(
+                                                            text =
+                                                                registro.fecha,
+
+                                                            color =
+                                                                colorTextoSecundario,
+
+                                                            fontSize =
+                                                                14.sp
+                                                        )
+
+                                                        Text(
+                                                            text =
+                                                                registro.informacion,
+
+                                                            color =
+                                                                colorTextoSecundario,
+
+                                                            fontSize =
+                                                                14.sp,
+
+                                                            maxLines =
+                                                                2
+                                                        )
+                                                    }
+                                                }
+
+
                                                 if (resultado != null) {
 
-                                                    Text(
-                                                        text =
-                                                            "${resultado.cantidad} prenda(s)",
+                                                    Icon(
+                                                        imageVector =
+                                                            Icons.Default
+                                                                .KeyboardArrowRight,
 
-                                                        color =
-                                                            colorTextoSecundario,
+                                                        contentDescription =
+                                                            "Ver recomendación",
 
-                                                        fontSize =
-                                                            14.sp
-                                                    )
-
-
-                                                    Text(
-                                                        text =
-                                                            "Lavado: ${resultado.lavado}",
-
-                                                        color =
-                                                            colorTextoSecundario,
-
-                                                        fontSize =
-                                                            14.sp,
-
-                                                        maxLines =
-                                                            1
-                                                    )
-
-
-                                                    Text(
-                                                        text =
-                                                            "Temperatura: ${resultado.temperatura}",
-
-                                                        color =
-                                                            colorTextoSecundario,
-
-                                                        fontSize =
-                                                            14.sp,
-
-                                                        maxLines =
-                                                            1
-                                                    )
-
-                                                } else {
-
-                                                    // REGISTROS ANTIGUOS
-                                                    Text(
-                                                        text =
-                                                            registro.fecha,
-
-                                                        color =
-                                                            colorTextoSecundario,
-
-                                                        fontSize =
-                                                            14.sp
-                                                    )
-
-                                                    Text(
-                                                        text =
-                                                            registro.informacion,
-
-                                                        color =
-                                                            colorTextoSecundario,
-
-                                                        fontSize =
-                                                            14.sp,
-
-                                                        maxLines =
-                                                            2
+                                                        tint =
+                                                            colorTextoPrincipal
                                                     )
                                                 }
-                                            }
-
-
-                                            if (resultado != null) {
-
-                                                Icon(
-                                                    imageVector =
-                                                        Icons.Default
-                                                            .KeyboardArrowRight,
-
-                                                    contentDescription =
-                                                        "Ver recomendación",
-
-                                                    tint =
-                                                        colorTextoPrincipal
-                                                )
                                             }
                                         }
                                     }

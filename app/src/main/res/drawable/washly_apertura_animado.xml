@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animated-vector
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:drawable="@drawable/washly_bienvenida">
+
+    <!-- La lavadora aparece con un pequeño "pop", sin desplazarse -->
+    <target android:name="lavadora">
+        <aapt:attr name="android:animation">
+            <set android:ordering="together">
+                <objectAnimator
+                    android:propertyName="scaleX"
+                    android:valueFrom="0.96"
+                    android:valueTo="1"
+                    android:valueType="floatType"
+                    android:duration="420"
+                    android:interpolator="@android:interpolator/fast_out_slow_in" />
+                <objectAnimator
+                    android:propertyName="scaleY"
+                    android:valueFrom="0.96"
+                    android:valueTo="1"
+                    android:valueType="floatType"
+                    android:duration="420"
+                    android:interpolator="@android:interpolator/fast_out_slow_in" />
+            </set>
+        </aapt:attr>
+    </target>
+
+    <!-- Washly sale de la lavadora con rebote elástico -->
+    <target android:name="mascota">
+        <aapt:attr name="android:animation">
+            <set android:ordering="together">
+
+                <objectAnimator
+                    android:startOffset="120"
+                    android:duration="1150"
+                    android:valueType="floatType">
+                    <propertyValuesHolder android:propertyName="translateY">
+                        <keyframe android:fraction="0" android:value="105" />
+                        <keyframe android:fraction="0.58" android:value="-18" />
+                        <keyframe android:fraction="0.76" android:value="8" />
+                        <keyframe android:fraction="0.90" android:value="-3" />
+                        <keyframe android:fraction="1" android:value="0" />
+                    </propertyValuesHolder>
+                </objectAnimator>
+
+                <objectAnimator
+                    android:startOffset="120"
+                    android:duration="1150"
+                    android:valueType="floatType">
+                    <propertyValuesHolder android:propertyName="scaleX">
+                        <keyframe android:fraction="0" android:value="0.88" />
+                        <keyframe android:fraction="0.58" android:value="1.05" />
+                        <keyframe android:fraction="0.78" android:value="0.985" />
+                        <keyframe android:fraction="1" android:value="1" />
+                    </propertyValuesHolder>
+                </objectAnimator>
+
+                <objectAnimator
+                    android:startOffset="120"
+                    android:duration="1150"
+                    android:valueType="floatType">
+                    <propertyValuesHolder android:propertyName="scaleY">
+                        <keyframe android:fraction="0" android:value="0.82" />
+                        <keyframe android:fraction="0.58" android:value="1.07" />
+                        <keyframe android:fraction="0.78" android:value="0.98" />
+                        <keyframe android:fraction="1" android:value="1" />
+                    </propertyValuesHolder>
+                </objectAnimator>
+
+                <objectAnimator
+                    android:startOffset="250"
+                    android:duration="900"
+                    android:valueType="floatType">
+                    <propertyValuesHolder android:propertyName="rotation">
+                        <keyframe android:fraction="0" android:value="-4" />
+                        <keyframe android:fraction="0.38" android:value="3" />
+                        <keyframe android:fraction="0.72" android:value="-1.5" />
+                        <keyframe android:fraction="1" android:value="0" />
+                    </propertyValuesHolder>
+                </objectAnimator>
+
+            </set>
+        </aapt:attr>
+    </target>
+
+    <!-- La cola se mueve mientras Washly termina de salir -->
+    <target android:name="cola">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:startOffset="420"
+                android:duration="1150"
+                android:valueType="floatType">
+                <propertyValuesHolder android:propertyName="rotation">
+                    <keyframe android:fraction="0" android:value="0" />
+                    <keyframe android:fraction="0.18" android:value="-10" />
+                    <keyframe android:fraction="0.40" android:value="9" />
+                    <keyframe android:fraction="0.62" android:value="-7" />
+                    <keyframe android:fraction="0.82" android:value="4" />
+                    <keyframe android:fraction="1" android:value="0" />
+                </propertyValuesHolder>
+            </objectAnimator>
+        </aapt:attr>
+    </target>
+
+    <!-- Las patitas hacen un pequeño saludo/rebote -->
+    <target android:name="patas">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:startOffset="1120"
+                android:duration="520"
+                android:valueType="floatType">
+                <propertyValuesHolder android:propertyName="translateY">
+                    <keyframe android:fraction="0" android:value="0" />
+                    <keyframe android:fraction="0.28" android:value="-10" />
+                    <keyframe android:fraction="0.60" android:value="3" />
+                    <keyframe android:fraction="1" android:value="0" />
+                </propertyValuesHolder>
+            </objectAnimator>
+        </aapt:attr>
+    </target>
+
+    <!-- La corona/pelo responde al rebote -->
+    <target android:name="corona">
+        <aapt:attr name="android:animation">
+            <set android:ordering="together">
+                <objectAnimator
+                    android:startOffset="1030"
+                    android:duration="570"
+                    android:valueType="floatType">
+                    <propertyValuesHolder android:propertyName="translateY">
+                        <keyframe android:fraction="0" android:value="0" />
+                        <keyframe android:fraction="0.28" android:value="-9" />
+                        <keyframe android:fraction="0.58" android:value="4" />
+                        <keyframe android:fraction="1" android:value="0" />
+                    </propertyValuesHolder>
+                </objectAnimator>
+
+                <objectAnimator
+                    android:startOffset="1030"
+                    android:duration="570"
+                    android:valueType="floatType">
+                    <propertyValuesHolder android:propertyName="rotation">
+                        <keyframe android:fraction="0" android:value="0" />
+                        <keyframe android:fraction="0.30" android:value="-4" />
+                        <keyframe android:fraction="0.62" android:value="3" />
+                        <keyframe android:fraction="1" android:value="0" />
+                    </propertyValuesHolder>
+                </objectAnimator>
+            </set>
+        </aapt:attr>
+    </target>
+
+    <!-- Parpadeo real del ojo izquierdo -->
+    <target android:name="ojo_izq">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:startOffset="1640"
+                android:duration="260"
+                android:valueType="floatType">
+                <propertyValuesHolder android:propertyName="scaleY">
+                    <keyframe android:fraction="0" android:value="1" />
+                    <keyframe android:fraction="0.38" android:value="0.08" />
+                    <keyframe android:fraction="0.62" android:value="0.08" />
+                    <keyframe android:fraction="1" android:value="1" />
+                </propertyValuesHolder>
+            </objectAnimator>
+        </aapt:attr>
+    </target>
+
+    <!-- Parpadeo real del ojo derecho -->
+    <target android:name="ojo_der">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:startOffset="1640"
+                android:duration="260"
+                android:valueType="floatType">
+                <propertyValuesHolder android:propertyName="scaleY">
+                    <keyframe android:fraction="0" android:value="1" />
+                    <keyframe android:fraction="0.38" android:value="0.08" />
+                    <keyframe android:fraction="0.62" android:value="0.08" />
+                    <keyframe android:fraction="1" android:value="1" />
+                </propertyValuesHolder>
+            </objectAnimator>
+        </aapt:attr>
+    </target>
+
+    <!-- Segundo parpadeo rápido para darle vida -->
+    <target android:name="ojo_izq">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:startOffset="1990"
+                android:duration="210"
+                android:valueType="floatType">
+                <propertyValuesHolder android:propertyName="scaleY">
+                    <keyframe android:fraction="0" android:value="1" />
+                    <keyframe android:fraction="0.42" android:value="0.10" />
+                    <keyframe android:fraction="0.58" android:value="0.10" />
+                    <keyframe android:fraction="1" android:value="1" />
+                </propertyValuesHolder>
+            </objectAnimator>
+        </aapt:attr>
+    </target>
+
+    <target android:name="ojo_der">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:startOffset="1990"
+                android:duration="210"
+                android:valueType="floatType">
+                <propertyValuesHolder android:propertyName="scaleY">
+                    <keyframe android:fraction="0" android:value="1" />
+                    <keyframe android:fraction="0.42" android:value="0.10" />
+                    <keyframe android:fraction="0.58" android:value="0.10" />
+                    <keyframe android:fraction="1" android:value="1" />
+                </propertyValuesHolder>
+            </objectAnimator>
+        </aapt:attr>
+    </target>
+
+</animated-vector>

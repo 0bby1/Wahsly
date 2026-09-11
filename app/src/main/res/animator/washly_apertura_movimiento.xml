@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+    android:ordering="sequentially">
+
+    <!-- Washly sube desde dentro de la lavadora -->
+    <set android:ordering="together">
+
+        <objectAnimator
+            android:propertyName="translateY"
+            android:valueFrom="70"
+            android:valueTo="0"
+            android:valueType="floatType"
+            android:duration="550"
+            android:interpolator="@android:interpolator/fast_out_slow_in" />
+
+        <objectAnimator
+            android:propertyName="scaleX"
+            android:valueFrom="0.90"
+            android:valueTo="1"
+            android:valueType="floatType"
+            android:duration="550"
+            android:interpolator="@android:interpolator/fast_out_slow_in" />
+
+        <objectAnimator
+            android:propertyName="scaleY"
+            android:valueFrom="0.90"
+            android:valueTo="1"
+            android:valueType="floatType"
+            android:duration="550"
+            android:interpolator="@android:interpolator/fast_out_slow_in" />
+
+    </set>
+
+    <!-- Se mueve un poquito de lado a lado -->
+    <objectAnimator
+        android:duration="450"
+        android:valueType="floatType">
+
+        <propertyValuesHolder
+            android:propertyName="rotation">
+
+            <keyframe
+                android:fraction="0"
+                android:value="0" />
+
+            <keyframe
+                android:fraction="0.30"
+                android:value="-3" />
+
+            <keyframe
+                android:fraction="0.65"
+                android:value="3" />
+
+            <keyframe
+                android:fraction="1"
+                android:value="0" />
+
+        </propertyValuesHolder>
+
+    </objectAnimator>
+
+    <!-- Pequeño acomodo final -->
+    <objectAnimator
+        android:propertyName="translateY"
+        android:valueFrom="0"
+        android:valueTo="-7"
+        android:valueType="floatType"
+        android:duration="120" />
+
+    <objectAnimator
+        android:propertyName="translateY"
+        android:valueFrom="-7"
+        android:valueTo="0"
+        android:valueType="floatType"
+        android:duration="150" />
+
+</set>

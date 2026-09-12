@@ -10,4 +10,12 @@ class UsuarioRepository(private val dao: UsuarioDao) {
         if (buscarUsuario(nuevo.correo) != null) return false
         return dao.insertar(nuevo) != -1L
     }
+
+    suspend fun actualizarContrasena(correo: String, nuevaContrasena: String) {
+        dao.actualizarContrasena(correo.trim(), nuevaContrasena)
+    }
+
+    suspend fun eliminarUsuario(correo: String) {
+        dao.eliminarPorCorreo(correo.trim())
+    }
 }

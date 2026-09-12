@@ -13,4 +13,10 @@ interface UsuarioDao {
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insertar(usuario: Usuario): Long
+
+    @Query("UPDATE usuarios SET contrasena = :nuevaContrasena WHERE correo = :correo COLLATE NOCASE")
+    suspend fun actualizarContrasena(correo: String, nuevaContrasena: String)
+
+    @Query("DELETE FROM usuarios WHERE correo = :correo COLLATE NOCASE")
+    suspend fun eliminarPorCorreo(correo: String)
 }

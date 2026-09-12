@@ -18,4 +18,7 @@ interface HistorialDao {
     @Query(" SELECT * FROM historial WHERE correoUsuario = :correo ORDER BY id DESC")
     fun obtenerPorUsuario(correo: String): Flow<List<RegistroEscaneo>>
 
+    @Query("DELETE FROM historial WHERE correoUsuario = :correo COLLATE NOCASE")
+    suspend fun eliminarPorUsuario(correo: String)
+
 }

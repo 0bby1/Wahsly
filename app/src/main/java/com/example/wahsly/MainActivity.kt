@@ -208,6 +208,7 @@ class MainActivity : ComponentActivity() {
                         composable("CONFIGURACION") {
                             PantallaConfiguracion(
                                 modoOscuro = modoOscuro,
+                                usuario = usuarioActual,
 
                                 onCambiarModoOscuro = { nuevoValor ->
                                     modoOscuro = nuevoValor
@@ -238,6 +239,21 @@ class MainActivity : ComponentActivity() {
 
                                 onVolver = {
                                     navController.popBackStack()
+                                },
+
+                                onCuentaEliminada = {
+                                    usuarioActual = null
+                                    seccionActual = "INICIO"
+
+                                    navController.navigate(
+                                        "LOGIN"
+                                    ) {
+                                        popUpTo("PRINCIPAL") {
+                                            inclusive = true
+                                        }
+
+                                        launchSingleTop = true
+                                    }
                                 }
                             )
                         }

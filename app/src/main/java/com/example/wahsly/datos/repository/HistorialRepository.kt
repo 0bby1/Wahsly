@@ -27,4 +27,12 @@ class HistorialRepository(
             registro
         )
     }
+
+    suspend fun eliminarPorUsuario(
+        correo: String
+    ) {
+        dao.eliminarPorUsuario(
+            correo.trim()
+        )
+    }
 }

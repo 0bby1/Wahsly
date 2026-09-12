@@ -122,174 +122,132 @@ fun PantallaConfiguracion(
         }
     }
 
-    Column(
+    // Contenedor principal que llena toda la pantalla con el color de fondo
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(colorFondo)
-            .padding(24.dp)
+            .background(colorFondo),
+        contentAlignment = Alignment.TopCenter
     ) {
-
-        // BOTÓN VOLVER + TÍTULO
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(top = 6.dp)
-        ) {
-
-            IconButton(onClick = onVolver) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Volver",
-                    tint = colorTexto
-                )
-            }
-
-            Spacer(modifier = Modifier.width(6.dp))
-
-            Text(
-                text = "Configuración",
-                color = colorTexto,
-                fontSize = 26.sp
-            )
-        }
-
-        Column(
+        // BoxWithConstraints para detectar si está en horizontal o vertical
+        BoxWithConstraints(
             modifier = Modifier
-                .weight(1f)
-                .verticalScroll(rememberScrollState())
+                .fillMaxHeight()
+                .fillMaxWidth(),
+            contentAlignment = Alignment.TopCenter
         ) {
+            val anchoActual = maxWidth
+            val altoActual = maxHeight
+            val esHorizontal = anchoActual > altoActual
+            // Es tablet si el lado más corto mide 600dp o más
+            val esTablet = minOf(anchoActual, altoActual) >= 600.dp
 
-            Spacer(modifier = Modifier.height(30.dp))
-
-            // TARJETA MODO OSCURO
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(18.dp),
-                color = colorTarjeta,
-                shadowElevation = 4.dp
-            ) {
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(
-                            horizontal = 20.dp,
-                            vertical = 18.dp
-                        ),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-
-                    Text(
-                        text = "Modo oscuro",
-                        color = colorTexto,
-                        fontSize = 18.sp,
-                        modifier = Modifier.weight(1f)
-                    )
-
-                    Switch(
-                        checked = modoOscuro,
-
-                        onCheckedChange = { activado ->
-                            onCambiarModoOscuro(activado)
-                        },
-
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = CremaOscuro,
-                            checkedTrackColor = RosaOscuro,
-                            uncheckedThumbColor = Color.White,
-                            uncheckedTrackColor = Color(0xFFD9D9D9)
-                        )
-                    )
-                }
+            // Ancho máximo del contenido según el dispositivo
+            // En celular se limita al ancho real de la pantalla (con widthIn)
+            val anchoMaxContenido = when {
+                esTablet && esHorizontal -> 750.dp
+                esTablet -> 600.dp
+                esHorizontal -> 620.dp
+                else -> 550.dp
             }
 
+            val paddingLateral = if (esTablet) 32.dp else 20.dp
 
-            // G ACCESIBILIDAD
-            Text(
-                text = "Accesibilidad",
-                color = colorTexto,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.padding(top = 30.dp, bottom = 12.dp)
-            )
-
-
-            // G TAMAÑO DE TEXTO
-            Surface(
+            Column(
                 modifier = Modifier
+                    // fillMaxWidth para que ocupe lo que pueda, widthIn para limitar en tablets
                     .fillMaxWidth()
-                    .clickable {
-                        seleccion = tamanoTexto
-                        mostrarDialogo = true
-                    },
-
-                shape = RoundedCornerShape(18.dp),
-                color = colorTarjeta,
-                shadowElevation = 4.dp
+                    .widthIn(max = anchoMaxContenido)
+                    .fillMaxHeight()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = paddingLateral, vertical = 24.dp)
             ) {
 
+                // BOTÓN VOLVER + TÍTULO
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(
-                            horizontal = 20.dp,
-                            vertical = 18.dp
-                        ),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(top = 6.dp)
                 ) {
 
-                    Column(
-                        modifier = Modifier.weight(1f)
-                    ) {
-
-                        Text(
-                            text = "Tamaño del texto",
-                            color = colorTexto,
-                            fontSize = 18.sp
-                        )
-
-                        Spacer(
-                            modifier = Modifier.height(4.dp)
-                        )
-
-                        Text(
-                            text = nombreTamano,
-                            color = colorTexto.copy(
-                                alpha = 0.65f
-                            ),
-                            fontSize = 14.sp
+                    IconButton(onClick = onVolver) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Volver",
+                            tint = colorTexto
                         )
                     }
 
-                    Icon(
-                        imageVector =
-                            Icons.Default.KeyboardArrowRight,
+                    Spacer(modifier = Modifier.width(6.dp))
 
-                        contentDescription =
-                            "Tamaño del texto",
-
-                        tint = colorTexto
+                    Text(
+                        text = "Configuración",
+                        color = colorTexto,
+                        fontSize = 26.sp
                     )
                 }
-            }
 
-            // G CUENTA
-            if (usuario != null) {
+                Spacer(modifier = Modifier.height(24.dp))
 
+                // TARJETA MODO OSCURO
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(18.dp),
+                    color = colorTarjeta,
+                    shadowElevation = 4.dp
+                ) {
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(
+                                horizontal = 20.dp,
+                                vertical = 18.dp
+                            ),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+
+                        Text(
+                            text = "Modo oscuro",
+                            color = colorTexto,
+                            fontSize = 18.sp,
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        Switch(
+                            checked = modoOscuro,
+
+                            onCheckedChange = { activado ->
+                                onCambiarModoOscuro(activado)
+                            },
+
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = CremaOscuro,
+                                checkedTrackColor = RosaOscuro,
+                                uncheckedThumbColor = Color.White,
+                                uncheckedTrackColor = Color(0xFFD9D9D9)
+                            )
+                        )
+                    }
+                }
+
+
+                // G ACCESIBILIDAD
                 Text(
-                    text = "Cuenta",
+                    text = "Accesibilidad",
                     color = colorTexto,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.padding(top = 30.dp, bottom = 12.dp)
+                    modifier = Modifier.padding(top = 24.dp, bottom = 12.dp)
                 )
 
-                // CAMBIAR CONTRASEÑA
+
+                // G TAMAÑO DE TEXTO
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
-                            cuentaViewModel.mensajeErrorMostrado()
-                            mostrarDialogoContrasena = true
+                            seleccion = tamanoTexto
+                            mostrarDialogo = true
                         },
 
                     shape = RoundedCornerShape(18.dp),
@@ -307,80 +265,151 @@ fun PantallaConfiguracion(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
 
-                        Icon(
-                            imageVector = Icons.Default.Lock,
-                            contentDescription = null,
-                            tint = colorTexto
-                        )
-
-                        Spacer(modifier = Modifier.width(14.dp))
-
-                        Text(
-                            text = "Cambiar contraseña",
-                            color = colorTexto,
-                            fontSize = 18.sp,
+                        Column(
                             modifier = Modifier.weight(1f)
-                        )
+                        ) {
+
+                            Text(
+                                text = "Tamaño del texto",
+                                color = colorTexto,
+                                fontSize = 18.sp
+                            )
+
+                            Spacer(
+                                modifier = Modifier.height(4.dp)
+                            )
+
+                            Text(
+                                text = nombreTamano,
+                                color = colorTexto.copy(
+                                    alpha = 0.65f
+                                ),
+                                fontSize = 14.sp
+                            )
+                        }
 
                         Icon(
-                            imageVector = Icons.Default.KeyboardArrowRight,
-                            contentDescription = "Cambiar contraseña",
+                            imageVector =
+                                Icons.Default.KeyboardArrowRight,
+
+                            contentDescription =
+                                "Tamaño del texto",
+
                             tint = colorTexto
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(14.dp))
+                // G CUENTA
+                if (usuario != null) {
 
-                // ELIMINAR CUENTA
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            cuentaViewModel.mensajeErrorMostrado()
-                            mostrarDialogoEliminarCuenta = true
-                        },
+                    Text(
+                        text = "Cuenta",
+                        color = colorTexto,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.padding(top = 24.dp, bottom = 12.dp)
+                    )
 
-                    shape = RoundedCornerShape(18.dp),
-                    color = colorTarjeta,
-                    shadowElevation = 4.dp
-                ) {
-
-                    Row(
+                    // CAMBIAR CONTRASEÑA
+                    Surface(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(
-                                horizontal = 20.dp,
-                                vertical = 18.dp
-                            ),
-                        verticalAlignment = Alignment.CenterVertically
+                            .clickable {
+                                cuentaViewModel.mensajeErrorMostrado()
+                                mostrarDialogoContrasena = true
+                            },
+
+                        shape = RoundedCornerShape(18.dp),
+                        color = colorTarjeta,
+                        shadowElevation = 4.dp
                     ) {
 
-                        Icon(
-                            imageVector = Icons.Default.DeleteForever,
-                            contentDescription = null,
-                            tint = RojoPeligro
-                        )
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(
+                                    horizontal = 20.dp,
+                                    vertical = 18.dp
+                                ),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
 
-                        Spacer(modifier = Modifier.width(14.dp))
+                            Icon(
+                                imageVector = Icons.Default.Lock,
+                                contentDescription = null,
+                                tint = colorTexto
+                            )
 
-                        Text(
-                            text = "Eliminar cuenta",
-                            color = RojoPeligro,
-                            fontSize = 18.sp,
-                            modifier = Modifier.weight(1f)
-                        )
+                            Spacer(modifier = Modifier.width(14.dp))
 
-                        Icon(
-                            imageVector = Icons.Default.KeyboardArrowRight,
-                            contentDescription = "Eliminar cuenta",
-                            tint = RojoPeligro
-                        )
+                            Text(
+                                text = "Cambiar contraseña",
+                                color = colorTexto,
+                                fontSize = 18.sp,
+                                modifier = Modifier.weight(1f)
+                            )
+
+                            Icon(
+                                imageVector = Icons.Default.KeyboardArrowRight,
+                                contentDescription = "Cambiar contraseña",
+                                tint = colorTexto
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    // ELIMINAR CUENTA
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                cuentaViewModel.mensajeErrorMostrado()
+                                mostrarDialogoEliminarCuenta = true
+                            },
+
+                        shape = RoundedCornerShape(18.dp),
+                        color = colorTarjeta,
+                        shadowElevation = 4.dp
+                    ) {
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(
+                                    horizontal = 20.dp,
+                                    vertical = 18.dp
+                                ),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+
+                            Icon(
+                                imageVector = Icons.Default.DeleteForever,
+                                contentDescription = null,
+                                tint = RojoPeligro
+                            )
+
+                            Spacer(modifier = Modifier.width(14.dp))
+
+                            Text(
+                                text = "Eliminar cuenta",
+                                color = RojoPeligro,
+                                fontSize = 18.sp,
+                                modifier = Modifier.weight(1f)
+                            )
+
+                            Icon(
+                                imageVector = Icons.Default.KeyboardArrowRight,
+                                contentDescription = "Eliminar cuenta",
+                                tint = RojoPeligro
+                            )
+                        }
                     }
                 }
+
+                Spacer(modifier = Modifier.height(30.dp))
             }
-
-            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 
@@ -684,7 +713,7 @@ fun PantallaConfiguracion(
 
                     Text(
                         text = "Esta acción eliminará tu cuenta y tu historial de forma permanente. " +
-                            "Ingresa tu contraseña para confirmar.",
+                                "Ingresa tu contraseña para confirmar.",
                         color = colorTexto
                     )
 

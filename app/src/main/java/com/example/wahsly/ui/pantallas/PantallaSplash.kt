@@ -1,7 +1,7 @@
 package com.example.wahsly.ui.pantallas
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -16,8 +16,7 @@ fun PantallaSplash(
     modoOscuro: Boolean,
     onTerminar: () -> Unit
 ) {
-
-    Box(
+    BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
             .background(
@@ -26,9 +25,14 @@ fun PantallaSplash(
             ),
         contentAlignment = Alignment.Center
     ) {
+        // Detecta si está en horizontal o vertical
+        val esHorizontal = maxWidth > maxHeight
+        val medidaReferencia = if (esHorizontal) maxHeight else maxWidth
+
+        val tamanoDinamico = (medidaReferencia * 0.60f).coerceIn(240.dp, 470.dp)
 
         WashlyAperturaAnimado(
-            tamano = 470.dp,
+            tamano = tamanoDinamico,
             onTerminar = onTerminar
         )
     }

@@ -1,12 +1,19 @@
 package com.example.wahsly.ui.pantallas
 
+import android.content.res.Configuration
 import android.widget.Toast
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.Person
@@ -18,24 +25,21 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.liveRegion
-import androidx.compose.ui.semantics.LiveRegionMode
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.stateDescription
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
 import com.example.wahsly.datos.model.Usuario
 import com.example.wahsly.ui.theme.AvatarFondoClaro
 import com.example.wahsly.ui.theme.AvatarFondoOscuro
@@ -66,6 +70,65 @@ fun PantallaPerfil(
 ) {
 
     val context = LocalContext.current
+
+    // =======================================
+    // RESPONSIVE: DETECCIÓN DE DISPOSITIVO
+    // =======================================
+    val configuration = LocalConfiguration.current
+    val anchoDp = configuration.screenWidthDp
+    val altoDp = configuration.screenHeightDp
+    val esTablet = anchoDp >= 600
+    val esHorizontal = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val esCelularHorizontal = esHorizontal && !esTablet
+
+    // Tamaños adaptativos
+    val alturaCabecera = when {
+        esCelularHorizontal -> 110.dp
+        esTablet && esHorizontal -> 200.dp
+        esTablet -> 235.dp
+        else -> 200.dp // celular vertical
+    }
+
+    val tamanoAvatar = when {
+        esCelularHorizontal -> 90.dp
+        esTablet && esHorizontal -> 200.dp
+        esTablet -> 240.dp
+        else -> 170.dp
+    }
+
+    val paddingTopAvatar = when {
+        esCelularHorizontal -> 30.dp
+        esTablet && esHorizontal -> 60.dp
+        esTablet -> 85.dp
+        else -> 60.dp
+    }
+
+    val iconoAvatarTamano = when {
+        esCelularHorizontal -> 55.dp
+        esTablet && esHorizontal -> 120.dp
+        esTablet -> 145.dp
+        else -> 100.dp
+    }
+
+    val bordeAvatar = when {
+        esCelularHorizontal -> 3.dp
+        esTablet -> 5.dp
+        else -> 4.dp
+    }
+
+    val paddingLateralTarjeta = if (esTablet) 32.dp else 16.dp
+    val fontSizeOpciones = if (esTablet) 22.sp else 16.sp
+    val iconoTamanoOpcion = if (esTablet) 24.dp else 20.dp
+
+    val alturaBarraInferior = when {
+        esCelularHorizontal -> 60.dp
+        esTablet -> 78.dp
+        else -> 70.dp
+    }
+
+    val tamanoIconoBarra = if (esTablet) 34.dp else 28.dp
+    val tamanoIconoEscaner = if (esTablet) 38.dp else 32.dp
+    val fontSizeBarra = if (esTablet) 12.sp else 11.sp
 
     var mostrarDialogoCerrarSesion by remember {
         mutableStateOf(false)
@@ -170,16 +233,17 @@ fun PantallaPerfil(
         AzulTextoClaro
 
     // =======================================
-// ANIMACIÓN DE LA CABECERA DE PERFIL
-// =======================================
+    // ANIMACIÓN DE LA CABECERA DE PERFIL
+    // =======================================
 
     val alturaStatusBarPerfil =
         WindowInsets.statusBars
             .asPaddingValues()
             .calculateTopPadding()
 
+    // Altura inicial (pequeña) proporcional a la cabecera final
     val alturaInicio =
-        alturaStatusBarPerfil + 92.dp
+        alturaStatusBarPerfil + (alturaCabecera * 0.4f)
 
     var iniciarAnimacionCabecera by remember(animarCabecera) {
         mutableStateOf(!animarCabecera)
@@ -194,7 +258,7 @@ fun PantallaPerfil(
     val alturaCabeceraAnimada by animateDpAsState(
         targetValue =
             if (iniciarAnimacionCabecera)
-                235.dp
+                alturaCabecera
             else
                 alturaInicio,
 
@@ -238,7 +302,7 @@ fun PantallaPerfil(
                     Surface(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(78.dp),
+                            .height(alturaBarraInferior),
                         shape = RoundedCornerShape(45.dp),
                         color = colorBarraInferior,
                         shadowElevation = 5.dp
@@ -254,7 +318,7 @@ fun PantallaPerfil(
                             // INICIO
                             Column(
                                 modifier = Modifier
-                                    .width(105.dp)
+                                    .weight(1f)
                                     .selectable(
                                         selected = false,
                                         onClick = onVolver,
@@ -269,12 +333,12 @@ fun PantallaPerfil(
                                     imageVector = Icons.Default.Home,
                                     contentDescription = null,
                                     tint = colorIconosBarra,
-                                    modifier = Modifier.size(34.dp)
+                                    modifier = Modifier.size(tamanoIconoBarra)
                                 )
 
                                 Text(
                                     text = "Inicio",
-                                    fontSize = 12.sp,
+                                    fontSize = fontSizeBarra,
                                     color = colorTextoBarra
                                 )
                             }
@@ -282,7 +346,7 @@ fun PantallaPerfil(
                             // ESCANEAR
                             Column(
                                 modifier = Modifier
-                                    .width(105.dp)
+                                    .weight(1f)
                                     .selectable(
                                         selected = false,
                                         onClick = {
@@ -303,11 +367,11 @@ fun PantallaPerfil(
                                     imageVector = Icons.Default.Add,
                                     contentDescription = null,
                                     tint = colorIconosBarra,
-                                    modifier = Modifier.size(38.dp)
+                                    modifier = Modifier.size(tamanoIconoEscaner)
                                 )
                                 Text(
                                     text = "Escanear",
-                                    fontSize = 12.sp,
+                                    fontSize = fontSizeBarra,
                                     color = colorTextoBarra
                                 )
                             }
@@ -315,8 +379,8 @@ fun PantallaPerfil(
                             // CUENTA ACTIVA
                             Box(
                                 modifier = Modifier
-                                    .width(105.dp)
-                                    .height(65.dp)
+                                    .weight(1f)
+                                    .height(alturaBarraInferior - 12.dp)
                                     .clip(RoundedCornerShape(38.dp))
                                     .background(colorSeleccionado)
                                     .selectable(
@@ -337,11 +401,11 @@ fun PantallaPerfil(
                                         imageVector = Icons.Default.Person,
                                         contentDescription = null,
                                         tint = colorTexto,
-                                        modifier = Modifier.size(28.dp)
+                                        modifier = Modifier.size(tamanoIconoBarra - 6.dp)
                                     )
                                     Text(
                                         text = "Cuenta",
-                                        fontSize = 12.sp,
+                                        fontSize = fontSizeBarra,
                                         color = colorTexto
                                     )
                                 }
@@ -353,7 +417,7 @@ fun PantallaPerfil(
         }
 
     ) { padding ->
-        // CONTENIDO
+        // CONTENIDO SCROLLEABLE (para que quepa en celular horizontal)
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -362,115 +426,132 @@ fun PantallaPerfil(
                     bottom = padding.calculateBottomPadding()
                 )
         ) {
-
-            // CABECERA
-            Box(
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(alturaCabeceraAnimada)
-                    .clip(
-                        RoundedCornerShape(
-                            bottomStart = radioCabeceraAnimado,
-                            bottomEnd = radioCabeceraAnimado
-                        )
-                    )
-                    .background(
-                        brush = Brush.verticalGradient(
-                            colors = coloresCabecera
-                        )
-                    )
-            )
-
-            // AVATAR
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(top = 85.dp)
-                    .size(240.dp)
-                    .clip(CircleShape)
-                    .background(colorAvatarFondo)
-                    .border(
-                        width = 5.dp,
-                        color = colorBordeAvatar,
-                        shape = CircleShape
-                    )
-                    .semantics { role = Role.Image },
-                contentAlignment = Alignment.Center
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Icon(
-                    imageVector = Icons.Outlined.Person,
-                    contentDescription = "Foto de perfil de ${usuario?.nombre ?: "Usuario"}",
-                    tint = colorAvatarIcono,
-                    modifier = Modifier.size(145.dp)
-                )
-            }
 
-            // TARJETA DE OPCIONES
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(
-                        start = 32.dp,
-                        end = 32.dp,
-                        top = 395.dp
-                    ),
-                shape = RoundedCornerShape(18.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = colorTarjeta
-                ),
-                elevation = CardDefaults.cardElevation(
-                    defaultElevation = 5.dp
-                )
-            ) {
-                Column {
-                    OpcionPerfilConFlecha(
-                        icono = Icons.Default.Settings,
-                        texto = "Configuración",
-                        fontSize = 24.sp,
-                        colorContenido = colorTexto,
-                        onClick = onConfiguracion
-                    )
-                    HorizontalDivider(
-                        modifier = Modifier.padding(
-                            horizontal = 16.dp
-                        ),
-                        thickness = 1.dp,
-                        color = colorDivisor
+                // =======================================
+                // BLOQUE CABECERA + AVATAR
+                // =======================================
+                Box(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+
+                    // CABECERA (degradado)
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(alturaCabeceraAnimada)
+                            .clip(
+                                RoundedCornerShape(
+                                    bottomStart = radioCabeceraAnimado,
+                                    bottomEnd = radioCabeceraAnimado
+                                )
+                            )
+                            .background(
+                                brush = Brush.verticalGradient(
+                                    colors = coloresCabecera
+                                )
+                            )
                     )
 
-                    // AYUDA
-                    OpcionPerfilConFlecha(
-                        icono = Icons.Default.Info,
-                        texto = "Ayuda y Soporte",
-                        fontSize = 24.sp,
-                        colorContenido = colorTexto,
-                        onClick = {
-                            // Pantalla de Ayuda en un futuro
-                        }
-                    )
-
-                    HorizontalDivider(
-                        modifier = Modifier.padding(
-                            horizontal = 16.dp
-                        ),
-                        thickness = 1.dp,
-                        color = colorDivisor
-                    )
-
-                    // CERRAR SESIÓN
-                    OpcionPerfilConFlecha(
-                        icono = Icons.Default.ExitToApp,
-                        texto = "Cerrar Sesión",
-                        fontSize = 24.sp,
-                        colorContenido = colorTexto,
-                        onClick = {
-                            mostrarDialogoCerrarSesion = true
-                        }
-                    )
+                    // AVATAR (encima de la cabecera)
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .padding(top = paddingTopAvatar)
+                            .size(tamanoAvatar)
+                            .clip(CircleShape)
+                            .background(colorAvatarFondo)
+                            .border(
+                                width = bordeAvatar,
+                                color = colorBordeAvatar,
+                                shape = CircleShape
+                            )
+                            .semantics { role = Role.Image },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Person,
+                            contentDescription = "Foto de perfil de ${usuario?.nombre ?: "Usuario"}",
+                            tint = colorAvatarIcono,
+                            modifier = Modifier.size(iconoAvatarTamano)
+                        )
+                    }
                 }
+
+                // Espacio entre avatar y tarjeta
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // =======================================
+                // TARJETA DE OPCIONES
+                // =======================================
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = paddingLateralTarjeta),
+                    shape = RoundedCornerShape(18.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = colorTarjeta
+                    ),
+                    elevation = CardDefaults.cardElevation(
+                        defaultElevation = 5.dp
+                    )
+                ) {
+                    Column {
+                        OpcionPerfilConFlecha(
+                            icono = Icons.Default.Settings,
+                            texto = "Configuración",
+                            fontSize = fontSizeOpciones,
+                            iconoTamano = iconoTamanoOpcion,
+                            colorContenido = colorTexto,
+                            onClick = onConfiguracion
+                        )
+                        HorizontalDivider(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            thickness = 1.dp,
+                            color = colorDivisor
+                        )
+
+                        // AYUDA
+                        OpcionPerfilConFlecha(
+                            icono = Icons.Default.Info,
+                            texto = "Ayuda y Soporte",
+                            fontSize = fontSizeOpciones,
+                            iconoTamano = iconoTamanoOpcion,
+                            colorContenido = colorTexto,
+                            onClick = {
+                                // Pantalla de Ayuda en un futuro
+                            }
+                        )
+
+                        HorizontalDivider(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            thickness = 1.dp,
+                            color = colorDivisor
+                        )
+
+                        // CERRAR SESIÓN
+                        OpcionPerfilConFlecha(
+                            icono = Icons.Default.ExitToApp,
+                            texto = "Cerrar Sesión",
+                            fontSize = fontSizeOpciones,
+                            iconoTamano = iconoTamanoOpcion,
+                            colorContenido = colorTexto,
+                            onClick = {
+                                mostrarDialogoCerrarSesion = true
+                            }
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
             }
 
-            // POP-UP CERRAR SESIÓN
+            // POP-UP CERRAR SESIÓN (fuera del scroll para que quede fijo)
             if (mostrarDialogoCerrarSesion) {
                 Dialog(
                     onDismissRequest = {
@@ -489,9 +570,7 @@ fun PantallaPerfil(
                             onClick = {
                                 mostrarDialogoCerrarSesion = false
                             },
-                            modifier = Modifier.align(
-                                Alignment.TopEnd
-                            )
+                            modifier = Modifier.align(Alignment.TopEnd)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Close,
@@ -506,8 +585,8 @@ fun PantallaPerfil(
                                     top = 24.dp,
                                     bottom = 8.dp
                                 )
-                                .semantics { 
-                                    liveRegion = LiveRegionMode.Polite 
+                                .semantics {
+                                    liveRegion = LiveRegionMode.Polite
                                     contentDescription = "Ventana de confirmación: ¿Deseas cerrar sesión?"
                                 },
                             horizontalAlignment = Alignment.CenterHorizontally
@@ -563,6 +642,7 @@ fun OpcionPerfilConFlecha(
     icono: ImageVector,
     texto: String,
     fontSize: TextUnit = 14.sp,
+    iconoTamano: androidx.compose.ui.unit.Dp = 22.dp,
     colorContenido: Color,
     onClick: () -> Unit
 ) {
@@ -586,7 +666,7 @@ fun OpcionPerfilConFlecha(
             imageVector = icono,
             contentDescription = null,
             tint = colorContenido,
-            modifier = Modifier.size(22.dp)
+            modifier = Modifier.size(iconoTamano)
         )
 
         Spacer(modifier = Modifier.width(12.dp))
@@ -602,7 +682,7 @@ fun OpcionPerfilConFlecha(
             imageVector = Icons.Default.KeyboardArrowRight,
             contentDescription = null,
             tint = colorContenido,
-            modifier = Modifier.size(22.dp)
+            modifier = Modifier.size(iconoTamano)
         )
     }
 }

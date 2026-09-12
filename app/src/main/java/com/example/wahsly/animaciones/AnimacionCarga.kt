@@ -1,11 +1,12 @@
 package com.example.wahsly.AnimacionesVectoriales
 
+import android.content.res.Configuration
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -21,6 +22,7 @@ import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -32,9 +34,24 @@ import kotlinx.coroutines.launch
 fun WashlyLavandoAnimado(
     modoOscuro: Boolean,
     modifier: Modifier = Modifier,
-    tamano: Dp = 560.dp,
+    tamano: Dp? = null, // Si no se pasa, se calcula automáticamente
     onTerminar: () -> Unit = {}
 ) {
+
+    // ============================================
+    // RESPONSIVE: TAMAÑO SEGÚN DISPOSITIVO
+    // ============================================
+    val configuration = LocalConfiguration.current
+    val anchoDp = configuration.screenWidthDp
+    val altoDp = configuration.screenHeightDp
+    val esTablet = anchoDp >= 600
+    val esHorizontal = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
+    val tamanoFinal: Dp = tamano ?: when {
+        esTablet -> 560.dp                // Tablet (vertical u horizontal)
+        esHorizontal -> 200.dp            // Celular horizontal (pantalla bajita)
+        else -> 280.dp                    // Celular vertical
+    }
 
     // VECTORES
     val vectorLavadora = ImageVector.vectorResource(id = R.drawable.washly_lavadora_base)
@@ -82,7 +99,7 @@ fun WashlyLavandoAnimado(
 
     // DIBUJO
     Canvas(
-        modifier = modifier.requiredSize(tamano)
+        modifier = modifier.size(tamanoFinal)
     ) {
         // Hacerlo mas grande
         val escalaBase = size.height / 792f

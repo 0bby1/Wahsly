@@ -1,12 +1,13 @@
 package com.example.wahsly.AnimacionesVectoriales
 
+import android.content.res.Configuration
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -20,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -30,8 +32,23 @@ import kotlinx.coroutines.delay
 fun WashlyBienvenidaAnimado(
     modoOscuro: Boolean,
     modifier: Modifier = Modifier,
-    tamano: Dp = 350.dp
+    tamano: Dp? = null //
 ) {
+    // ============================================
+    // RESPONSIVE: TAMAÑO SEGÚN DISPOSITIVO
+    // ============================================
+    val configuration = LocalConfiguration.current
+    val anchoDp = configuration.screenWidthDp
+    val esTablet = anchoDp >= 600
+    val esHorizontal = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
+    val tamanoFinal: Dp = tamano ?: when {
+        esTablet && esHorizontal -> 380.dp   // Tablet acostada
+        esTablet -> 320.dp                    // Tablet parada
+        esHorizontal -> 220.dp                // Celular acostado
+        else -> 280.dp                        // Celular parado
+    }
+
     // PARPADEO
     var ojoCerrado by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
@@ -102,7 +119,7 @@ fun WashlyBienvenidaAnimado(
 
     // DIBUJAR VECTOR
     Canvas(
-        modifier = modifier.requiredSize(tamano)
+        modifier = modifier.size(tamanoFinal)
     ) {
         val escala = size.height / 792f
         val centroLogo = Offset(
@@ -139,9 +156,9 @@ fun WashlyBienvenidaAnimado(
 
         // BRILLO DENTRO DEL OJO
         if (!ojoCerrado) {
-            val escala = size.height / 792f
-            val centroX = desplazamientoX + ((407f + movimientoOjo) * escala)
-            val centroY = 401f * escala
+            val escalaInterna = size.height / 792f
+            val centroX = desplazamientoX + ((407f + movimientoOjo) * escalaInterna)
+            val centroY = 401f * escalaInterna
 
             val colorBrillo =
                 if (modoOscuro) {
@@ -155,7 +172,7 @@ fun WashlyBienvenidaAnimado(
                 color = colorBrillo.copy(
                     alpha = intensidadBrillo
                 ),
-                radius = 3.2f * escala,
+                radius = 3.2f * escalaInterna,
                 center = Offset(
                     x = centroX,
                     y = centroY
@@ -167,10 +184,10 @@ fun WashlyBienvenidaAnimado(
                 color = colorBrillo.copy(
                     alpha = intensidadBrillo * 0.75f
                 ),
-                radius = 1.4f * escala,
+                radius = 1.4f * escalaInterna,
                 center = Offset(
-                    x = centroX + (5f * escala),
-                    y = centroY + (5f * escala)
+                    x = centroX + (5f * escalaInterna),
+                    y = centroY + (5f * escalaInterna)
                 )
             )
         }

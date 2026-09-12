@@ -34,6 +34,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -81,6 +82,14 @@ fun PantallaEscaner(
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
+
+    // RESPONSIVE PARA TABLETAS Y ORIENTACION
+    val configuration = LocalConfiguration.current
+    val anchoPantalla = configuration.screenWidthDp
+    val altoPantalla = configuration.screenHeightDp
+    val esTablet = anchoPantalla >= 600
+    val esHorizontal = anchoPantalla > altoPantalla
+    val esCelularHorizontal = esHorizontal && !esTablet
 
     // DATOS DEL FORMULARIO
     var mostrarDialogoDatos by remember { mutableStateOf(false) }
@@ -339,15 +348,21 @@ fun PantallaEscaner(
             modifier = Modifier.fillMaxSize()
         ) {
 
-            // CABECERA
+            // CABECERA RESPONSIVA
+            val alturaCabecera = when {
+                esCelularHorizontal -> 70.dp
+                esHorizontal -> 100.dp
+                else -> 125.dp
+            }
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(125.dp)
+                    .height(alturaCabecera)
                     .clip(RoundedCornerShape(
-                            bottomStart = 14.dp,
-                            bottomEnd = 14.dp
-                        )
+                        bottomStart = 14.dp,
+                        bottomEnd = 14.dp
+                    )
                     )
                     .background(colorCabecera)
                     .statusBarsPadding()
@@ -358,11 +373,11 @@ fun PantallaEscaner(
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
                         .padding(
-                            start = 16.dp,
-                            end = 16.dp,
-                            bottom = 20.dp
+                            start = if (esHorizontal) 32.dp else 16.dp,
+                            end = if (esHorizontal) 32.dp else 16.dp,
+                            bottom = if (esHorizontal) 10.dp else 20.dp
                         )
-                        .fillMaxWidth()
+                        .fillMaxWidth(if (esHorizontal) 0.6f else 1f)
                         .height(42.dp)
                         .clip(RoundedCornerShape(30.dp))
                         .background(colorBuscador)
@@ -392,9 +407,9 @@ fun PantallaEscaner(
                         .align(Alignment.TopCenter)
                         .fillMaxWidth()
                         .padding(
-                            top = 38.dp,
-                            start = 38.dp,
-                            end = 38.dp
+                            top = if (esHorizontal) 8.dp else if (esTablet) 24.dp else 38.dp,
+                            start = if (esTablet) 48.dp else 16.dp,
+                            end = if (esTablet) 48.dp else 16.dp
                         ),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
@@ -503,11 +518,40 @@ fun PantallaEscaner(
 
                         Spacer(modifier = Modifier.height(14.dp))
 
-                        // CAMARA
+                        // CAMARA RESPONSIVA
                         Box(
                             modifier = Modifier
-                                .fillMaxWidth(0.70f)
-                                .aspectRatio(3f / 4f)
+                                .then(
+                                    when {
+                                        // Tablet Horizontal
+                                        esTablet && esHorizontal -> {
+                                            Modifier
+                                                .fillMaxWidth(0.45f)
+                                                .aspectRatio(4f / 3f)
+                                        }
+
+                                        // Tablet Vertical
+                                        esTablet -> {
+                                            Modifier
+                                                .fillMaxWidth(0.60f)
+                                                .aspectRatio(3f / 4f)
+                                        }
+
+                                        // Celular Horizontal (Evita que se salga)
+                                        esCelularHorizontal -> {
+                                            Modifier
+                                                .fillMaxHeight(0.65f)
+                                                .aspectRatio(4f / 3f)
+                                        }
+
+                                        // Celular Vertical
+                                        else -> {
+                                            Modifier
+                                                .fillMaxWidth(0.70f)
+                                                .aspectRatio(3f / 4f)
+                                        }
+                                    }
+                                )
                                 .pointerInput(camara, imagenCongelada) {
                                     if (imagenCongelada == null) {
                                         detectTransformGestures { _, _, zoomCambio, _ ->
@@ -553,11 +597,11 @@ fun PantallaEscaner(
 
                                                 // ENFOCAR CAMARA
                                                 val punto = previewView
-                                                        .meteringPointFactory
-                                                        .createPoint(
-                                                            posicion.x,
-                                                            posicion.y
-                                                        )
+                                                    .meteringPointFactory
+                                                    .createPoint(
+                                                        posicion.x,
+                                                        posicion.y
+                                                    )
 
                                                 val accionEnfoque =
                                                     FocusMeteringAction
@@ -600,9 +644,8 @@ fun PantallaEscaner(
                             }
 
                             // =========================
-// INDICADOR DE ENFOQUE
-// =========================
-
+                            // INDICADOR DE ENFOQUE
+                            // =========================
                             puntoEnfoque?.let { punto ->
 
                                 Canvas(
@@ -816,8 +859,10 @@ fun PantallaEscaner(
                     },
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
-                        .padding(bottom = 80.dp)
-                        .size(68.dp)
+                        .padding(
+                            bottom = if (esHorizontal) 60.dp else 80.dp
+                        )
+                        .size(if (esTablet) 76.dp else 68.dp)
                         .background(
                             color = colorFondo,
                             shape = CircleShape
@@ -841,7 +886,7 @@ fun PantallaEscaner(
                 Row(
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
-                        .padding(bottom = 15.dp),
+                        .padding(bottom = if (esHorizontal) 8.dp else 15.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
@@ -957,7 +1002,7 @@ fun PantallaEscaner(
                             },
                             label = {
                                 Text("Prendas con esta misma etiqueta")
-                                    },
+                            },
                             placeholder = { Text("Ej. 3") },
                             singleLine = true,
                             keyboardOptions =
@@ -1083,12 +1128,12 @@ fun PantallaEscaner(
 
 
                             val datos = DatosEscaneo(
-                                    fotoUri = fotoPendiente!!,
-                                    cantidad = cantidad,
-                                    tieneMancha = tieneMancha,
-                                    tipoMancha = tipoMancha.trim(),
-                                    informacionAdicional = informacionAdicional.trim()
-                                )
+                                fotoUri = fotoPendiente!!,
+                                cantidad = cantidad,
+                                tieneMancha = tieneMancha,
+                                tipoMancha = tipoMancha.trim(),
+                                informacionAdicional = informacionAdicional.trim()
+                            )
                             mostrarDialogoDatos = false
                             fotoPendiente = null
                             onDatosConfirmados(datos)

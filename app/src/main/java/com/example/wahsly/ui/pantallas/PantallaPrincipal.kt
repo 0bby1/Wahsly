@@ -59,12 +59,19 @@ import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.ui.unit.Dp
 import kotlinx.coroutines.launch
 
 @Composable
 fun PantallaPrincipal(
     usuario: Usuario?,
     modoOscuro: Boolean,
+    windowSizeClass: WindowSizeClass,
     onPerfil: () -> Unit,
     onCerrarSesion: () -> Unit,
     mostrarBarraInferior: Boolean = true,
@@ -104,14 +111,13 @@ fun PantallaPrincipal(
     }
 
     // ============================================
-    // RESPONSIVE: DETECCIÓN DE DISPOSITIVO
+    // RESPONSIVE: DETECCIÓN DE DISPOSITIVO CON WindowSizeClass
     // ============================================
     val configuration = LocalConfiguration.current
-    val anchoDp = configuration.screenWidthDp
-    val altoDp = configuration.screenHeightDp
-    val esTablet = anchoDp >= 600
     val esHorizontal = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-    val esCelularHorizontal = esHorizontal && !esTablet
+    val anchoCompacto = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact
+    val esTablet = !anchoCompacto
+    val esCelularHorizontal = esHorizontal && anchoCompacto
 
     // Colores
     val colorFondo =
@@ -435,316 +441,68 @@ fun PantallaPrincipal(
                         }
 
                     } else {
-
-                        LazyColumn(
-                            modifier =
-                                Modifier.fillMaxSize(),
-
-                            contentPadding =
-                                PaddingValues(
+                        if (esTablet) {
+                            LazyVerticalGrid(
+                                columns = GridCells.Fixed(2),
+                                modifier = Modifier.fillMaxSize(),
+                                contentPadding = PaddingValues(
                                     start = 16.dp,
                                     end = 16.dp,
                                     bottom = 20.dp
                                 ),
-
-                            verticalArrangement =
-                                Arrangement.spacedBy(
-                                    10.dp
-                                )
-                        ) {
-
-                            items(
-                                items = registrosFiltrados,
-                                key = {
-                                    it.id
-                                }
-                            ) { registro ->
-
-
-                                val resultado = resultadoLavadoDesdeJson(registro.informacion)
-                                val estadoDeslizar =
-                                    rememberSwipeToDismissBoxState(
-                                        confirmValueChange = { estado ->
-                                            if (estado == SwipeToDismissBoxValue.EndToStart) {
-                                                scope.launch {
-                                                    historialRepository
-                                                        .eliminarRegistro(
-                                                            registro
-                                                        )
-                                                }
-                                                true
-                                            } else {
-                                                false
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                verticalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                items(
+                                    items = registrosFiltrados,
+                                    key = { it.id }
+                                ) { registro ->
+                                    TarjetaRutina(
+                                        registro = registro,
+                                        modoOscuro = modoOscuro,
+                                        colorBordeTarjeta = colorBordeTarjeta,
+                                        colorTarjetaRutina = colorTarjetaRutina,
+                                        colorTextoPrincipal = colorTextoPrincipal,
+                                        colorTextoSecundario = colorTextoSecundario,
+                                        tamanoLogoRutina = tamanoLogoRutina,
+                                        onVerMas = { registroSeleccionado = it },
+                                        onEliminar = {
+                                            scope.launch {
+                                                historialRepository.eliminarRegistro(it)
                                             }
                                         }
                                     )
-
-                                SwipeToDismissBox(
-
-                                    state =
-                                        estadoDeslizar,
-
-                                    enableDismissFromStartToEnd =
-                                        false,
-
-                                    enableDismissFromEndToStart =
-                                        true,
-
-                                    backgroundContent = {
-
-                                        Box(
-                                            modifier = Modifier
-                                                .fillMaxSize()
-                                                .clip(
-                                                    RoundedCornerShape(
-                                                        12.dp
-                                                    )
-                                                )
-                                                .background(
-                                                    MaterialTheme
-                                                        .colorScheme
-                                                        .errorContainer
-                                                )
-                                                .padding(
-                                                    end = 22.dp
-                                                ),
-
-                                            contentAlignment =
-                                                Alignment.CenterEnd
-                                        ) {
-
-                                            Icon(
-                                                imageVector =
-                                                    Icons.Default.Delete,
-
-                                                contentDescription =
-                                                    "Eliminar rutina",
-
-                                                tint =
-                                                    MaterialTheme
-                                                        .colorScheme
-                                                        .onErrorContainer,
-
-                                                modifier =
-                                                    Modifier.size(
-                                                        30.dp
-                                                    )
-                                            )
-                                        }
-                                    }
-                                ) {
-
-                                    Card(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .border(
-                                                width =
-                                                    if (modoOscuro) {
-                                                        2.dp
-                                                    } else {
-                                                        0.dp
-                                                    },
-
-                                                color =
-                                                    colorBordeTarjeta,
-
-                                                shape =
-                                                    RoundedCornerShape(
-                                                        12.dp
-                                                    )
-                                            )
-                                            .clickable(
-                                                enabled =
-                                                    resultado != null
-                                            ) {
-
-                                                registroSeleccionado =
-                                                    registro
-                                            },
-
-                                        shape =
-                                            RoundedCornerShape(
-                                                12.dp
-                                            ),
-
-                                        colors =
-                                            CardDefaults.cardColors(
-                                                containerColor =
-                                                    colorTarjetaRutina
-                                            ),
-
-                                        elevation =
-                                            CardDefaults.cardElevation(
-                                                2.dp
-                                            )
-                                    ) {
-
-                                        Row(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(16.dp),
-
-                                            verticalAlignment =
-                                                Alignment.CenterVertically
-                                        ) {
-
-
-                                            Image(
-                                                painter =
-                                                    painterResource(
-                                                        id =
-                                                            R.drawable
-                                                                .washlylogo_inicio
-                                                    ),
-
-                                                contentDescription =
-                                                    "Rutina de lavado",
-
-                                                modifier =
-                                                    Modifier
-                                                        .size(tamanoLogoRutina)
-                                                        .clip(
-                                                            RoundedCornerShape(
-                                                                8.dp
-                                                            )
-                                                        )
-                                            )
-
-
-                                            Spacer(
-                                                modifier =
-                                                    Modifier.width(
-                                                        16.dp
-                                                    )
-                                            )
-
-
-                                            Column(
-                                                modifier =
-                                                    Modifier.weight(
-                                                        1f
-                                                    )
-                                            ) {
-
-                                                Text(
-                                                    text =
-                                                        resultado
-                                                            ?.composicion
-                                                            ?.takeIf {
-                                                                it.isNotBlank() &&
-                                                                        !it.equals(
-                                                                            "No visible",
-                                                                            true
-                                                                        )
-                                                            }
-                                                            ?: registro.nombre,
-
-                                                    fontWeight =
-                                                        FontWeight.SemiBold,
-
-                                                    color =
-                                                        colorTextoPrincipal
-                                                )
-
-
-                                                Spacer(
-                                                    modifier =
-                                                        Modifier.height(
-                                                            3.dp
-                                                        )
-                                                )
-
-
-                                                if (resultado != null) {
-
-                                                    Text(
-                                                        text =
-                                                            "${resultado.cantidad} prenda(s)",
-
-                                                        color =
-                                                            colorTextoSecundario,
-
-                                                        fontSize =
-                                                            14.sp
-                                                    )
-
-
-                                                    Text(
-                                                        text =
-                                                            "Lavado: ${resultado.lavado}",
-
-                                                        color =
-                                                            colorTextoSecundario,
-
-                                                        fontSize =
-                                                            14.sp,
-
-                                                        maxLines =
-                                                            1
-                                                    )
-
-
-                                                    Text(
-                                                        text =
-                                                            "Temperatura: ${resultado.temperatura}",
-
-                                                        color =
-                                                            colorTextoSecundario,
-
-                                                        fontSize =
-                                                            14.sp,
-
-                                                        maxLines =
-                                                            1
-                                                    )
-
-                                                } else {
-
-                                                    // REGISTROS ANTIGUOS
-                                                    Text(
-                                                        text =
-                                                            registro.fecha,
-
-                                                        color =
-                                                            colorTextoSecundario,
-
-                                                        fontSize =
-                                                            14.sp
-                                                    )
-
-                                                    Text(
-                                                        text =
-                                                            registro.informacion,
-
-                                                        color =
-                                                            colorTextoSecundario,
-
-                                                        fontSize =
-                                                            14.sp,
-
-                                                        maxLines =
-                                                            2
-                                                    )
-                                                }
-                                            }
-
-
-                                            if (resultado != null) {
-
-                                                Icon(
-                                                    imageVector =
-                                                        Icons.Default
-                                                            .KeyboardArrowRight,
-
-                                                    contentDescription =
-                                                        "Ver recomendación",
-
-                                                    tint =
-                                                        colorTextoPrincipal
-                                                )
+                                }
+                            }
+                        } else {
+                            LazyColumn(
+                                modifier = Modifier.fillMaxSize(),
+                                contentPadding = PaddingValues(
+                                    start = 16.dp,
+                                    end = 16.dp,
+                                    bottom = 20.dp
+                                ),
+                                verticalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                items(
+                                    items = registrosFiltrados,
+                                    key = { it.id }
+                                ) { registro ->
+                                    TarjetaRutina(
+                                        registro = registro,
+                                        modoOscuro = modoOscuro,
+                                        colorBordeTarjeta = colorBordeTarjeta,
+                                        colorTarjetaRutina = colorTarjetaRutina,
+                                        colorTextoPrincipal = colorTextoPrincipal,
+                                        colorTextoSecundario = colorTextoSecundario,
+                                        tamanoLogoRutina = tamanoLogoRutina,
+                                        onVerMas = { registroSeleccionado = it },
+                                        onEliminar = {
+                                            scope.launch {
+                                                historialRepository.eliminarRegistro(it)
                                             }
                                         }
-                                    }
+                                    )
                                 }
                             }
                         }
@@ -1130,6 +888,140 @@ fun PantallaPrincipal(
                         }
                     }
                 )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TarjetaRutina(
+    registro: RegistroEscaneo,
+    modoOscuro: Boolean,
+    colorBordeTarjeta: Color,
+    colorTarjetaRutina: Color,
+    colorTextoPrincipal: Color,
+    colorTextoSecundario: Color,
+    tamanoLogoRutina: Dp,
+    onVerMas: (RegistroEscaneo) -> Unit,
+    onEliminar: (RegistroEscaneo) -> Unit
+) {
+    val resultado = resultadoLavadoDesdeJson(registro.informacion)
+    val estadoDeslizar = rememberSwipeToDismissBoxState(
+        confirmValueChange = { estado ->
+            if (estado == SwipeToDismissBoxValue.EndToStart) {
+                onEliminar(registro)
+                true
+            } else {
+                false
+            }
+        }
+    )
+
+    SwipeToDismissBox(
+        state = estadoDeslizar,
+        enableDismissFromStartToEnd = false,
+        enableDismissFromEndToStart = true,
+        backgroundContent = {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.errorContainer)
+                    .padding(end = 22.dp),
+                contentAlignment = Alignment.CenterEnd
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Eliminar rutina",
+                    tint = MaterialTheme.colorScheme.onErrorContainer,
+                    modifier = Modifier.size(30.dp)
+                )
+            }
+        }
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(
+                    width = if (modoOscuro) 2.dp else 0.dp,
+                    color = colorBordeTarjeta,
+                    shape = RoundedCornerShape(12.dp)
+                )
+                .clickable(enabled = resultado != null) {
+                    onVerMas(registro)
+                },
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(containerColor = colorTarjetaRutina),
+            elevation = CardDefaults.cardElevation(2.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.washlylogo_inicio),
+                    contentDescription = "Rutina de lavado",
+                    modifier = Modifier
+                        .size(tamanoLogoRutina)
+                        .clip(RoundedCornerShape(8.dp))
+                )
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = resultado?.composicion?.takeIf {
+                            it.isNotBlank() && !it.equals("No visible", true)
+                        } ?: registro.nombre,
+                        fontWeight = FontWeight.SemiBold,
+                        color = colorTextoPrincipal
+                    )
+
+                    Spacer(modifier = Modifier.height(3.dp))
+
+                    if (resultado != null) {
+                        Text(
+                            text = "${resultado.cantidad} prenda(s)",
+                            color = colorTextoSecundario,
+                            fontSize = 14.sp
+                        )
+                        Text(
+                            text = "Lavado: ${resultado.lavado}",
+                            color = colorTextoSecundario,
+                            fontSize = 14.sp,
+                            maxLines = 1
+                        )
+                        Text(
+                            text = "Temperatura: ${resultado.temperatura}",
+                            color = colorTextoSecundario,
+                            fontSize = 14.sp,
+                            maxLines = 1
+                        )
+                    } else {
+                        Text(
+                            text = registro.fecha,
+                            color = colorTextoSecundario,
+                            fontSize = 14.sp
+                        )
+                        Text(
+                            text = registro.informacion,
+                            color = colorTextoSecundario,
+                            fontSize = 14.sp,
+                            maxLines = 2
+                        )
+                    }
+                }
+
+                if (resultado != null) {
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowRight,
+                        contentDescription = "Ver recomendación",
+                        tint = colorTextoPrincipal
+                    )
+                }
             }
         }
     }

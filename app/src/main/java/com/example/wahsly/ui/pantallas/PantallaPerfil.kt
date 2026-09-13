@@ -40,6 +40,8 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import com.example.wahsly.datos.model.Usuario
 import com.example.wahsly.ui.theme.AvatarFondoClaro
 import com.example.wahsly.ui.theme.AvatarFondoOscuro
@@ -62,6 +64,7 @@ import com.example.wahsly.ui.theme.TarjetaPerfilOscuro
 fun PantallaPerfil(
     usuario: Usuario?,
     modoOscuro: Boolean,
+    windowSizeClass: WindowSizeClass,
     onConfiguracion: () -> Unit,
     onVolver: () -> Unit,
     onCerrarSesion: () -> Unit,
@@ -72,14 +75,13 @@ fun PantallaPerfil(
     val context = LocalContext.current
 
     // =======================================
-    // RESPONSIVE: DETECCIÓN DE DISPOSITIVO
+    // RESPONSIVE: DETECCIÓN DE DISPOSITIVO CON WindowSizeClass
     // =======================================
     val configuration = LocalConfiguration.current
-    val anchoDp = configuration.screenWidthDp
-    val altoDp = configuration.screenHeightDp
-    val esTablet = anchoDp >= 600
     val esHorizontal = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-    val esCelularHorizontal = esHorizontal && !esTablet
+    val anchoCompacto = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact
+    val esTablet = !anchoCompacto
+    val esCelularHorizontal = esHorizontal && anchoCompacto
 
     // Tamaños adaptativos
     val alturaCabecera = when {
@@ -492,6 +494,7 @@ fun PantallaPerfil(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .widthIn(max = 600.dp)
                         .padding(horizontal = paddingLateralTarjeta),
                     shape = RoundedCornerShape(18.dp),
                     colors = CardDefaults.cardColors(

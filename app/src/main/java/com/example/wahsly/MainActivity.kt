@@ -6,10 +6,13 @@ import androidx.activity.compose.setContent
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
@@ -28,11 +31,13 @@ import com.example.wahsly.ui.pantallas.PantallaSplash
 
 class MainActivity : ComponentActivity() {
 
+    @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
 
         setContent {
+            val windowSizeClass = calculateWindowSizeClass(this)
 
             // PREFERENCIAS
             val preferencias = remember {
@@ -119,7 +124,7 @@ class MainActivity : ComponentActivity() {
 
                             PantallaInicioSesion(
                                 modoOscuro = modoOscuro,
-
+                                windowSizeClass = windowSizeClass,
                                 onCrearCuenta = {
 
                                     navController.navigate(
@@ -144,7 +149,7 @@ class MainActivity : ComponentActivity() {
 
                             PantallaRegistro(
                                 modoOscuro = modoOscuro,
-
+                                windowSizeClass = windowSizeClass,
                                 onRegistroExitoso = { usuario ->
 
                                     usuarioActual = usuario
@@ -218,6 +223,7 @@ class MainActivity : ComponentActivity() {
                                 seccionActual = seccionActual,
                                 usuario = usuarioActual,
                                 modoOscuro = modoOscuro,
+                                windowSizeClass = windowSizeClass,
 
                                 onCambiarSeccion = { nuevaSeccion ->
 

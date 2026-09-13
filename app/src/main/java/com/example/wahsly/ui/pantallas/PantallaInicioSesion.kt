@@ -47,11 +47,14 @@ import com.example.wahsly.ui.theme.TextoSecundarioClaro
 import com.example.wahsly.ui.theme.TextoSecundarioOscuro
 import kotlinx.coroutines.launch
 import com.example.wahsly.AnimacionesVectoriales.WashlyBienvenidaAnimado
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PantallaInicioSesion(
     modoOscuro: Boolean,
+    windowSizeClass: WindowSizeClass,
     onCrearCuenta: () -> Unit,
     onLoginExitoso: (Usuario) -> Unit
 ) {
@@ -65,18 +68,19 @@ fun PantallaInicioSesion(
     var contrasena by remember { mutableStateOf("") }
     var mostrarContrasena by remember { mutableStateOf(false) }
 
-    // Detectar configuración de pantalla
+    // Detectar configuración de pantalla usando WindowSizeClass
     val configuration = LocalConfiguration.current
-    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-    val isPhone = configuration.screenWidthDp < 600 // Si el ancho es menor a 600dp, es un celular
+    val esHorizontal = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val anchoCompacto = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact
 
     // Tamaños dinámicos según el dispositivo
-    val paddingHorizontal = if (isPhone) 24.dp else 48.dp
+    val paddingHorizontal = if (anchoCompacto) 24.dp else 64.dp
+    
     val logoSize = when {
-        isPhone && isLandscape -> 180.dp // Celular acostado
-        isPhone && !isLandscape -> 220.dp // Celular parado
-        !isPhone && isLandscape -> 380.dp // Tablet acostada
-        else -> 320.dp // Tablet parada
+        anchoCompacto && esHorizontal -> 180.dp // Celular acostado
+        anchoCompacto && !esHorizontal -> 220.dp // Celular parado
+        !anchoCompacto && esHorizontal -> 400.dp // Tablet acostada
+        else -> 350.dp // Tablet parada
     }
 
     // Colores
@@ -104,7 +108,7 @@ fun PantallaInicioSesion(
     }
 
     Box(modifier = Modifier.fillMaxSize().background(colorFondo)) {
-        if (isLandscape) {
+        if (esHorizontal) {
             // ==========================================
             // DISEÑO HORIZONTAL (Celular y Tablet acostados)
             // ==========================================

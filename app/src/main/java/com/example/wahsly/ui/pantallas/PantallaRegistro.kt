@@ -41,6 +41,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import com.example.wahsly.R
 import com.example.wahsly.datos.database.AppDatabase
 import com.example.wahsly.datos.model.Usuario
@@ -64,6 +66,7 @@ import kotlinx.coroutines.delay
 @Composable
 fun PantallaRegistro(
     modoOscuro: Boolean,
+    windowSizeClass: WindowSizeClass,
     onRegistroExitoso: (Usuario) -> Unit,
     onVolverLogin: () -> Unit
 ) {
@@ -81,14 +84,13 @@ fun PantallaRegistro(
     }
 
     // ============================================
-    // RESPONSIVE: DETECCIÓN DE DISPOSITIVO
+    // RESPONSIVE: DETECCIÓN DE DISPOSITIVO CON WindowSizeClass
     // ============================================
     val configuration = LocalConfiguration.current
-    val anchoDp = configuration.screenWidthDp
-    val altoDp = configuration.screenHeightDp
-    val esTablet = anchoDp >= 600
     val esHorizontal = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-    val esCelularHorizontal = esHorizontal && !esTablet
+    val anchoCompacto = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact
+    val esTablet = !anchoCompacto
+    val esCelularHorizontal = esHorizontal && anchoCompacto
 
     // ---- TAMAÑOS DINÁMICOS ----
     val paddingLateral = when {

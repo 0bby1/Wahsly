@@ -28,6 +28,7 @@ import com.example.wahsly.ui.pantallas.PantallaConfiguracion
 import com.example.wahsly.ui.pantallas.PantallaInicioSesion
 import com.example.wahsly.ui.pantallas.PantallaRegistro
 import com.example.wahsly.ui.pantallas.PantallaSplash
+import com.example.wahsly.utilidades.FotoPerfilStorage
 
 class MainActivity : ComponentActivity() {
 
@@ -298,6 +299,15 @@ class MainActivity : ComponentActivity() {
                                 },
 
                                 onCuentaEliminada = {
+
+
+                                    usuarioActual?.correo?.let { correo ->
+
+                                        FotoPerfilStorage.eliminarFoto(
+                                            this@MainActivity,
+                                            correo
+                                        )
+                                    }
 
                                     usuarioActual = null
                                     seccionActual = "INICIO"

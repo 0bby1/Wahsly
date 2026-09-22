@@ -66,6 +66,9 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.ui.unit.Dp
 import kotlinx.coroutines.launch
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import com.example.wahsly.utilidades.FotoPerfilStorage
 
 @Composable
 fun PantallaPrincipal(
@@ -83,6 +86,30 @@ fun PantallaPrincipal(
     val db = remember { AppDatabase.getDatabase(context) }
     val historialRepository = remember { HistorialRepository(db.historialDao()) }
     val correoUsuario = usuario?.correo.orEmpty()
+
+    var fotoPerfilMenu by remember(correoUsuario) {
+        mutableStateOf<ImageBitmap?>(null)
+    }
+
+    LaunchedEffect(correoUsuario) {
+
+        fotoPerfilMenu = null
+
+        if (correoUsuario.isNotBlank()) {
+
+            fotoPerfilMenu = try {
+
+                FotoPerfilStorage.cargarFoto(
+                    context = context,
+                    correo = correoUsuario
+                )
+
+            } catch (e: Exception) {
+                null
+            }
+        }
+    }
+
     val registrosFlow =
         remember(correoUsuario) {
             historialRepository
@@ -589,15 +616,33 @@ fun PantallaPrincipal(
                                     .size(34.dp)
                                     .clip(CircleShape)
                                     .background(Color.White),
+
                                 contentAlignment = Alignment.Center
                             ) {
 
-                                Icon(
-                                    imageVector = Icons.Default.Person,
-                                    contentDescription = null,
-                                    tint = AzulPrincipalClaro,
-                                    modifier = Modifier.size(20.dp)
-                                )
+                                if (fotoPerfilMenu != null) {
+
+                                    Image(
+                                        bitmap = fotoPerfilMenu!!,
+                                        contentDescription =
+                                            "Fotografía de perfil de ${usuario?.nombre ?: "Usuario"}",
+
+                                        contentScale = ContentScale.Crop,
+
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .clip(CircleShape)
+                                    )
+
+                                } else {
+
+                                    Icon(
+                                        imageVector = Icons.Default.Person,
+                                        contentDescription = "Perfil de usuario",
+                                        tint = AzulPrincipalClaro,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
                             }
 
                             Spacer(

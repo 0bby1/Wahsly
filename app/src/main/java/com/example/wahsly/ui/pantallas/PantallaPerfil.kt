@@ -31,7 +31,6 @@ import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
-import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
@@ -57,6 +56,14 @@ import com.example.wahsly.ui.theme.FondoOscuro
 import com.example.wahsly.ui.theme.IconoSecundarioClaro
 import com.example.wahsly.ui.theme.RosaOscuro
 import com.example.wahsly.ui.theme.TarjetaPerfilOscuro
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import com.example.wahsly.utilidades.FotoPerfilStorage
+import kotlinx.coroutines.launch
 
 
 // Pantalla de perfil de usuario
@@ -73,6 +80,69 @@ fun PantallaPerfil(
 ) {
 
     val context = LocalContext.current
+
+
+    val scopeFoto = rememberCoroutineScope()
+
+    val correoUsuario = usuario?.correo
+
+    var fotoPerfil by remember(correoUsuario) {
+        mutableStateOf<ImageBitmap?>(null)
+    }
+
+    LaunchedEffect(correoUsuario) {
+
+        fotoPerfil = null
+
+        if (!correoUsuario.isNullOrBlank()) {
+
+            try {
+
+                fotoPerfil = FotoPerfilStorage.cargarFoto(
+                    context,
+                    correoUsuario
+                )
+
+            } catch (e: Exception) {
+
+                fotoPerfil = null
+            }
+        }
+    }
+
+    val selectorFoto = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+
+        if (uri != null && correoUsuario != null) {
+
+            scopeFoto.launch {
+
+                try {
+
+                    fotoPerfil = FotoPerfilStorage.guardarFoto(
+                        context = context,
+                        correo = correoUsuario,
+                        uri = uri
+                    )
+
+                    Toast.makeText(
+                        context,
+                        "Fotografía actualizada",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                } catch (e: Exception) {
+
+                    Toast.makeText(
+                        context,
+                        "No se pudo guardar la fotografía",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
+    }
 
     // =======================================
     // RESPONSIVE: DETECCIÓN DE DISPOSITIVO CON WindowSizeClass
@@ -460,28 +530,111 @@ fun PantallaPerfil(
                             )
                     )
 
+
+
                     // AVATAR (encima de la cabecera)
                     Box(
                         modifier = Modifier
                             .align(Alignment.TopCenter)
                             .padding(top = paddingTopAvatar)
-                            .size(tamanoAvatar)
-                            .clip(CircleShape)
-                            .background(colorAvatarFondo)
-                            .border(
-                                width = bordeAvatar,
-                                color = colorBordeAvatar,
-                                shape = CircleShape
-                            )
-                            .semantics { role = Role.Image },
+                            .size(tamanoAvatar),
+
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Person,
-                            contentDescription = "Foto de perfil de ${usuario?.nombre ?: "Usuario"}",
-                            tint = colorAvatarIcono,
-                            modifier = Modifier.size(iconoAvatarTamano)
-                        )
+
+                        // CÍRCULO PRINCIPAL
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(CircleShape)
+                                .background(colorAvatarFondo)
+                                .border(
+                                    width = bordeAvatar,
+                                    color = colorBordeAvatar,
+                                    shape = CircleShape
+                                )
+                                .clickable(
+                                    enabled = usuario != null,
+                                    role = Role.Button
+                                ) {
+                                    selectorFoto.launch(
+                                        PickVisualMediaRequest(
+                                            ActivityResultContracts.PickVisualMedia.ImageOnly
+                                        )
+                                    )
+                                },
+
+                            contentAlignment = Alignment.Center
+                        ) {
+
+                            if (fotoPerfil != null) {
+
+                                Image(
+                                    bitmap = fotoPerfil!!,
+                                    contentDescription =
+                                        "Fotografía de perfil de ${usuario?.nombre ?: "Usuario"}",
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(bordeAvatar)
+                                        .clip(CircleShape)
+                                )
+
+                            } else {
+
+                                Icon(
+                                    imageVector = Icons.Outlined.Person,
+                                    contentDescription =
+                                        "Foto de perfil de ${usuario?.nombre ?: "Usuario"}",
+                                    tint = colorAvatarIcono,
+                                    modifier = Modifier.size(iconoAvatarTamano)
+                                )
+                            }
+                        }
+
+                        // BOTÓN DE CÁMARA
+                        if (usuario != null) {
+
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.BottomEnd)
+                                    .offset(
+                                        x = 4.dp,
+                                        y = 4.dp
+                                    )
+                                    .size(
+                                        if (esTablet) 48.dp else 40.dp
+                                    )
+                                    .clip(CircleShape)
+                                    .background(AzulPrincipalClaro)
+                                    .border(
+                                        width = 2.dp,
+                                        color = if (modoOscuro) CremaOscuro else FondoClaro,
+                                        shape = CircleShape
+                                    )
+                                    .clickable(
+                                        role = Role.Button
+                                    ) {
+                                        selectorFoto.launch(
+                                            PickVisualMediaRequest(
+                                                ActivityResultContracts.PickVisualMedia.ImageOnly
+                                            )
+                                        )
+                                    },
+
+                                contentAlignment = Alignment.Center
+                            ) {
+
+                                Icon(
+                                    imageVector = Icons.Default.CameraAlt,
+                                    contentDescription = "Cambiar foto de perfil",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(
+                                        if (esTablet) 26.dp else 22.dp
+                                    )
+                                )
+                            }
+                        }
                     }
                 }
 

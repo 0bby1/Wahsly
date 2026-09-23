@@ -119,7 +119,7 @@ fun BotonCrearCuenta(
 
     Box(
         modifier = Modifier
-            .width(230.dp)
+            .width(255.dp)
             .height(61.dp)
             .clip(androidx.compose.foundation.shape.RoundedCornerShape(50.dp))
             .background(

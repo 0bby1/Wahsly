@@ -109,9 +109,8 @@ fun PantallaInicioSesion(
 
     Box(modifier = Modifier.fillMaxSize().background(colorFondo)) {
         if (esHorizontal) {
-            // ==========================================
+
             // DISEÑO HORIZONTAL (Celular y Tablet acostados)
-            // ==========================================
             Row(
                 modifier = Modifier
                     .fillMaxSize()
@@ -138,7 +137,7 @@ fun PantallaInicioSesion(
                         .weight(1f)
                         .fillMaxHeight()
                         .padding(horizontal = paddingHorizontal)
-                        .verticalScroll(rememberScrollState()), // Vital para celular horizontal
+                        .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -157,7 +156,7 @@ fun PantallaInicioSesion(
                     )
 
                     Spacer(modifier = Modifier.height(32.dp))
-                    BotonesAccion(onIniciarSesionClick, onCrearCuenta, modoOscuro)
+                    BotonesAccion(onIniciarSesionClick, onCrearCuenta, modoOscuro, !anchoCompacto)
 
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
@@ -168,9 +167,9 @@ fun PantallaInicioSesion(
                 }
             }
         } else {
-            // ==========================================
+
             // DISEÑO VERTICAL (Celular y Tablet parados)
-            // ==========================================
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -187,7 +186,7 @@ fun PantallaInicioSesion(
                 Spacer(modifier = Modifier.height(32.dp))
 
                 Column(
-                    modifier = Modifier.widthIn(max = 500.dp) // En celular no hace nada, en tablet limita el ancho
+                    modifier = Modifier.widthIn(max = 500.dp)
                 ) {
                     CampoCorreo(correo, { correo = it }, colorCampo, colorTextoPrincipal, colorIcono)
                     Spacer(modifier = Modifier.height(16.dp))
@@ -204,7 +203,7 @@ fun PantallaInicioSesion(
                     )
 
                     Spacer(modifier = Modifier.height(32.dp))
-                    BotonesAccion(onIniciarSesionClick, onCrearCuenta, modoOscuro)
+                    BotonesAccion(onIniciarSesionClick, onCrearCuenta, modoOscuro, !anchoCompacto)
 
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
@@ -237,7 +236,7 @@ fun CampoCorreo(
         onValueChange = onValueChange,
         modifier = Modifier
             .fillMaxWidth()
-            .height(60.dp), // Un poquito más bajito para que quepa mejor en celular
+            .height(60.dp),
         placeholder = {
             Text("Correo electrónico", fontSize = 16.sp, color = colorTextoPrincipal)
         },
@@ -321,21 +320,41 @@ fun CampoContrasena(
 fun BotonesAccion(
     onIniciarSesionClick: () -> Unit,
     onCrearCuentaClick: () -> Unit,
-    modoOscuro: Boolean
+    modoOscuro: Boolean,
+    esTablet: Boolean
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp) // Menos espacio entre botones para celular
-    ) {
-        Box(modifier = Modifier.weight(1f)) {
+    if (esTablet) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                BotonDegradado(
+                    texto = "Iniciar Sesión",
+                    modoOscuro = modoOscuro,
+                    onClick = onIniciarSesionClick
+                )
+            }
+
+            Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                BotonCrearCuenta(
+                    onClick = onCrearCuentaClick,
+                    modoOscuro = modoOscuro
+                )
+            }
+        }
+    } else {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
             BotonDegradado(
                 texto = "Iniciar Sesión",
                 modoOscuro = modoOscuro,
                 onClick = onIniciarSesionClick
             )
-        }
 
-        Box(modifier = Modifier.weight(1f)) {
             BotonCrearCuenta(
                 onClick = onCrearCuentaClick,
                 modoOscuro = modoOscuro

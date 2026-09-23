@@ -101,8 +101,8 @@ fun PantallaRegistro(
 
     val paddingVertical = when {
         esCelularHorizontal -> 20.dp
-        esTablet -> 45.dp
-        else -> 32.dp
+        esTablet -> 50.dp
+        else -> 36.dp
     }
 
     val tamanoLogo = when {
@@ -142,9 +142,9 @@ fun PantallaRegistro(
     }
 
     val espacioEntreCampos = when {
-        esCelularHorizontal -> 10.dp
-        esTablet -> 18.dp
-        else -> 14.dp
+        esCelularHorizontal -> 6.dp
+        esTablet -> 12.dp
+        else -> 8.dp
     }
 
     val maxAnchoContenido: Dp = if (esTablet) 500.dp else Dp.Unspecified
@@ -226,7 +226,7 @@ fun PantallaRegistro(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
                 Text(
                     text = "Crea tu cuenta",
@@ -367,12 +367,6 @@ fun PantallaRegistro(
                         cursorColor = colorTextoCampo
                     )
                 )
-                Text(
-                    text = "Debe tener 8+ caracteres, mayúscula, número y símbolo",
-                    fontSize = 11.sp,
-                    color = colorTextoCampo,
-                    modifier = Modifier.padding(start = 8.dp, top = 4.dp)
-                )
 
                 Spacer(modifier = Modifier.height(espacioEntreCampos))
 
@@ -381,7 +375,7 @@ fun PantallaRegistro(
                     value = viewModel.confirmarContrasena,
                     onValueChange = viewModel::onConfirmarContrasenaChange,
                     modifier = Modifier.fillMaxWidth().height(alturaCampo),
-                    placeholder = { Text("Confirma tu contraseña", fontSize = fontSizePlaceholder, color = colorTextoCampo) },
+                    placeholder = { Text("Confirma tu contraseña", fontSize = if (esTablet) 16.sp else 13.sp, color = colorTextoCampo) },
                     leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = colorIcono) },
                     trailingIcon = {
                         IconButton(onClick = { viewModel.toggleMostrarConfirmacion() }) {

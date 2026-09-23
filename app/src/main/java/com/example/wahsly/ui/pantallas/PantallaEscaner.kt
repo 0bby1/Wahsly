@@ -1073,7 +1073,7 @@ fun PantallaEscaner(
                             )
                         }
 
-                        // INFORMACION EXTRA
+                        // INFORMACIÓN EXTRA
                         OutlinedTextField(
                             value = informacionAdicional,
                             onValueChange = {

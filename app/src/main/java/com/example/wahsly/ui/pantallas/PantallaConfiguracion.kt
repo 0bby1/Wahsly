@@ -575,7 +575,7 @@ fun PantallaConfiguracion(
                     OutlinedTextField(
                         value = contrasenaActual,
                         onValueChange = { contrasenaActual = it },
-                        label = { Text("Contraseña actual") },
+                        label = { Text("Contraseña actual", color = colorTexto.copy(alpha = 0.8f)) },
                         singleLine = true,
                         visualTransformation =
                             if (mostrarActual) VisualTransformation.None
@@ -585,10 +585,25 @@ fun PantallaConfiguracion(
                             IconButton(onClick = { mostrarActual = !mostrarActual }) {
                                 Icon(
                                     imageVector = if (mostrarActual) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                    contentDescription = null
+                                    contentDescription = null,
+                                    tint = colorTexto
                                 )
                             }
                         },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = colorTarjeta,
+                            unfocusedContainerColor = colorTarjeta,
+                            disabledContainerColor = colorTarjeta,
+                            focusedBorderColor = colorTexto.copy(alpha = 0.5f),
+                            unfocusedBorderColor = colorTexto.copy(alpha = 0.3f),
+                            focusedTextColor = colorTexto,
+                            unfocusedTextColor = colorTexto,
+                            focusedLabelColor = colorTexto,
+                            unfocusedLabelColor = colorTexto.copy(alpha = 0.8f),
+                            focusedTrailingIconColor = colorTexto,
+                            unfocusedTrailingIconColor = colorTexto.copy(alpha = 0.8f),
+                            cursorColor = colorTexto
+                        ),
                         modifier = Modifier.fillMaxWidth()
                     )
 
@@ -597,7 +612,7 @@ fun PantallaConfiguracion(
                     OutlinedTextField(
                         value = contrasenaNueva,
                         onValueChange = { contrasenaNueva = it },
-                        label = { Text("Nueva contraseña") },
+                        label = { Text("Nueva contraseña", color = colorTexto.copy(alpha = 0.8f)) },
                         singleLine = true,
                         visualTransformation =
                             if (mostrarNueva) VisualTransformation.None
@@ -607,10 +622,25 @@ fun PantallaConfiguracion(
                             IconButton(onClick = { mostrarNueva = !mostrarNueva }) {
                                 Icon(
                                     imageVector = if (mostrarNueva) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                    contentDescription = null
+                                    contentDescription = null,
+                                    tint = colorTexto
                                 )
                             }
                         },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = colorTarjeta,
+                            unfocusedContainerColor = colorTarjeta,
+                            disabledContainerColor = colorTarjeta,
+                            focusedBorderColor = colorTexto.copy(alpha = 0.5f),
+                            unfocusedBorderColor = colorTexto.copy(alpha = 0.3f),
+                            focusedTextColor = colorTexto,
+                            unfocusedTextColor = colorTexto,
+                            focusedLabelColor = colorTexto,
+                            unfocusedLabelColor = colorTexto.copy(alpha = 0.8f),
+                            focusedTrailingIconColor = colorTexto,
+                            unfocusedTrailingIconColor = colorTexto.copy(alpha = 0.8f),
+                            cursorColor = colorTexto
+                        ),
                         modifier = Modifier.fillMaxWidth()
                     )
 
@@ -619,7 +649,7 @@ fun PantallaConfiguracion(
                     OutlinedTextField(
                         value = confirmarContrasenaNueva,
                         onValueChange = { confirmarContrasenaNueva = it },
-                        label = { Text("Confirmar nueva contraseña") },
+                        label = { Text("Confirmar nueva contraseña", color = colorTexto.copy(alpha = 0.8f)) },
                         singleLine = true,
                         visualTransformation =
                             if (mostrarConfirmacion) VisualTransformation.None
@@ -629,10 +659,25 @@ fun PantallaConfiguracion(
                             IconButton(onClick = { mostrarConfirmacion = !mostrarConfirmacion }) {
                                 Icon(
                                     imageVector = if (mostrarConfirmacion) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                    contentDescription = null
+                                    contentDescription = null,
+                                    tint = colorTexto
                                 )
                             }
                         },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = colorTarjeta,
+                            unfocusedContainerColor = colorTarjeta,
+                            disabledContainerColor = colorTarjeta,
+                            focusedBorderColor = colorTexto.copy(alpha = 0.5f),
+                            unfocusedBorderColor = colorTexto.copy(alpha = 0.3f),
+                            focusedTextColor = colorTexto,
+                            unfocusedTextColor = colorTexto,
+                            focusedLabelColor = colorTexto,
+                            unfocusedLabelColor = colorTexto.copy(alpha = 0.8f),
+                            focusedTrailingIconColor = colorTexto,
+                            unfocusedTrailingIconColor = colorTexto.copy(alpha = 0.8f),
+                            cursorColor = colorTexto
+                        ),
                         modifier = Modifier.fillMaxWidth()
                     )
 
@@ -722,7 +767,7 @@ fun PantallaConfiguracion(
                     OutlinedTextField(
                         value = contrasenaConfirmacion,
                         onValueChange = { contrasenaConfirmacion = it },
-                        label = { Text("Contraseña") },
+                        label = { Text("Contraseña", color = colorTexto.copy(alpha = 0.8f)) },
                         singleLine = true,
                         visualTransformation =
                             if (mostrarContrasena) VisualTransformation.None
@@ -732,10 +777,25 @@ fun PantallaConfiguracion(
                             IconButton(onClick = { mostrarContrasena = !mostrarContrasena }) {
                                 Icon(
                                     imageVector = if (mostrarContrasena) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                    contentDescription = null
+                                    contentDescription = null,
+                                    tint = colorTexto
                                 )
                             }
                         },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = colorTarjeta,
+                            unfocusedContainerColor = colorTarjeta,
+                            disabledContainerColor = colorTarjeta,
+                            focusedBorderColor = colorTexto.copy(alpha = 0.5f),
+                            unfocusedBorderColor = colorTexto.copy(alpha = 0.3f),
+                            focusedTextColor = colorTexto,
+                            unfocusedTextColor = colorTexto,
+                            focusedLabelColor = colorTexto,
+                            unfocusedLabelColor = colorTexto.copy(alpha = 0.8f),
+                            focusedTrailingIconColor = colorTexto,
+                            unfocusedTrailingIconColor = colorTexto.copy(alpha = 0.8f),
+                            cursorColor = colorTexto
+                        ),
                         modifier = Modifier.fillMaxWidth()
                     )
 

@@ -3,8 +3,8 @@ package com.example.wahsly.ui.theme
 import androidx.compose.ui.graphics.Color
 
 // MODO CLARO
-val FondoClaro = Color(0xFFF4EFEB)
-val AzulPrincipalClaro = Color(0xFF2F4157)
+val FondoClaro = Color(0xFFEAE6DC)
+val AzulPrincipalClaro = Color(0xFF4D698F)
 val AzulTextoClaro = Color(0xFF334055)
 val RosaClaro = Color(0xFFDC9CAD)
 val TextoBlancoClaro = Color(0xFFFFFFFF)

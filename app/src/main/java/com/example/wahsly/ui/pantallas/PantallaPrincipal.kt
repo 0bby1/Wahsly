@@ -129,10 +129,6 @@ fun PantallaPrincipal(
         mutableIntStateOf(0)
     }
 
-    var mostrarMenu by remember {
-        mutableStateOf(false)
-    }
-
     var registroSeleccionado by remember {
         mutableStateOf<RegistroEscaneo?>(null)
     }
@@ -299,6 +295,12 @@ fun PantallaPrincipal(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(alturaCabeceraAnimada)
+                        .clip(
+                            RoundedCornerShape(
+                                bottomStart = 35.dp,
+                                bottomEnd = 35.dp
+                            )
+                        )
                         .background(colorEncabezado)
                 ) {
                     // BARRA DE BÚSQUEDA
@@ -340,38 +342,6 @@ fun PantallaPrincipal(
                             cursorColor = colorTextoPrincipal
                         )
                     )
-                }
-
-                // FRANJA DEL MENÚ
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(alturaFranja)
-                        .clip(
-                            RoundedCornerShape(
-                                bottomStart = 35.dp,
-                                bottomEnd = 35.dp
-                            )
-                        )
-                        .background(franja)
-                ) {
-
-                    IconButton(
-                        onClick = {
-                            mostrarMenu = !mostrarMenu
-                        },
-                        modifier = Modifier
-                            .align(Alignment.CenterStart)
-                            .padding(start = 12.dp)
-                    ) {
-
-                        Icon(
-                            imageVector = Icons.Default.Menu,
-                            contentDescription = "Menú",
-                            tint = color3Barras,
-                            modifier = Modifier.size(tamanoIconoMenu)
-                        )
-                    }
                 }
 
                 // MIS RUTINAS REALES
@@ -536,200 +506,7 @@ fun PantallaPrincipal(
                     }
                 }
             }
-            AnimatedVisibility(
-                visible = mostrarMenu,
 
-                enter =
-                    slideInHorizontally(
-                        initialOffsetX = { -it },
-                        animationSpec = spring(
-                            dampingRatio = 0.72f,
-                            stiffness = 380f
-                        )
-                    ) +
-                            fadeIn(
-                                animationSpec = tween(180)
-                            ),
-
-                exit =
-                    slideOutHorizontally(
-                        targetOffsetX = { -it },
-                        animationSpec = tween(260)
-                    ) +
-                            fadeOut(
-                                animationSpec = tween(180)
-                            ),
-
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(
-                        start = 8.dp,
-                        top = paddingTopMenu
-                    )
-                    .zIndex(20f)
-            ) {
-
-                Surface(
-                    modifier = Modifier.width(anchoMenu),
-                    shape = RoundedCornerShape(
-                        topEnd = 30.dp,
-                        bottomEnd = 30.dp
-                    ),
-                    color = franja,
-                    shadowElevation = 8.dp
-                ) {
-
-                    Column(
-                        modifier = Modifier
-                            .padding(14.dp)
-                            .clip(
-                                RoundedCornerShape(
-                                    topEnd = 24.dp,
-                                    bottomEnd = 24.dp
-                                )
-                            )
-                            .background(
-                                if (modoOscuro)
-                                    FondoOscuro
-                                else
-                                    FondoClaro
-                            )
-                            .padding(
-                                horizontal = 14.dp,
-                                vertical = 14.dp
-                            )
-                    ) {
-
-                        // SALUDO
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(50.dp)
-                                .clip(RoundedCornerShape(30.dp))
-                                .background(franja)
-                                .padding(horizontal = 10.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-
-                            Box(
-                                modifier = Modifier
-                                    .size(34.dp)
-                                    .clip(CircleShape)
-                                    .background(Color.White),
-
-                                contentAlignment = Alignment.Center
-                            ) {
-
-                                if (fotoPerfilMenu != null) {
-
-                                    Image(
-                                        bitmap = fotoPerfilMenu!!,
-                                        contentDescription =
-                                            "Fotografía de perfil de ${usuario?.nombre ?: "Usuario"}",
-
-                                        contentScale = ContentScale.Crop,
-
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                            .clip(CircleShape)
-                                    )
-
-                                } else {
-
-                                    Icon(
-                                        imageVector = Icons.Default.Person,
-                                        contentDescription = "Perfil de usuario",
-                                        tint = AzulPrincipalClaro,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                }
-                            }
-
-                            Spacer(
-                                modifier = Modifier.width(10.dp)
-                            )
-
-                            Text(
-                                text = "¡Hola, ${usuario?.nombre ?: "Usuario"}!",
-                                color = franjaTexto,
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-
-                        Spacer(
-                            modifier = Modifier.height(22.dp)
-                        )
-
-                        Text(
-                            text = "General",
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            color =
-                                if (modoOscuro)
-                                    CremaOscuro
-                                else
-                                    Color(0xFF211421)
-                        )
-
-                        Spacer(
-                            modifier = Modifier.height(10.dp)
-                        )
-
-                        OpcionMenuAnimado(
-                            texto = "Tipos de lavado",
-                            modoOscuro = modoOscuro
-                        ) {
-                            mostrarMenu = false
-
-                            Toast.makeText(
-                                context,
-                                "Tipos de lavado",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-
-                        OpcionMenuAnimado(
-                            texto = "Tipos de Tela",
-                            modoOscuro = modoOscuro
-                        ) {
-                            mostrarMenu = false
-
-                            Toast.makeText(
-                                context,
-                                "Tipos de Tela",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-
-                        OpcionMenuAnimado(
-                            texto = "Productos",
-                            modoOscuro = modoOscuro
-                        ) {
-                            mostrarMenu = false
-
-                            Toast.makeText(
-                                context,
-                                "Productos",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-
-                        OpcionMenuAnimado(
-                            texto = "Recomendaciones",
-                            modoOscuro = modoOscuro
-                        ) {
-                            mostrarMenu = false
-
-                            Toast.makeText(
-                                context,
-                                "Recomendaciones",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                    }
-                }
-            }
         }
         // DETALLE DE UNA RUTINA GUARDADA
         registroSeleccionado?.let { registro ->
@@ -1069,49 +846,5 @@ fun TarjetaRutina(
                 }
             }
         }
-    }
-}
-
-@Composable
-fun OpcionMenuAnimado(
-    texto: String,
-    modoOscuro: Boolean,
-    onClick: () -> Unit
-) {
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable {
-                onClick()
-            }
-            .padding(
-                vertical = 12.dp,
-                horizontal = 4.dp
-            ),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-
-        Text(
-            text = texto,
-            modifier = Modifier.weight(1f),
-            fontSize = 18.sp,
-            color =
-                if (modoOscuro)
-                    CremaOscuro
-                else
-                    Color(0xFF514C50)
-        )
-
-        Icon(
-            imageVector = Icons.Default.KeyboardArrowRight,
-            contentDescription = null,
-            tint =
-                if (modoOscuro)
-                    CremaOscuro
-                else
-                    Color(0xFF202020),
-            modifier = Modifier.size(26.dp)
-        )
     }
 }

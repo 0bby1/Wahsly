@@ -4,6 +4,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.wahsly.utilidades.correoValido
+import com.example.wahsly.utilidades.mensajeErrorContrasena
 import com.example.wahsly.datos.model.Usuario
 import com.example.wahsly.datos.repository.UsuarioRepository
 import kotlinx.coroutines.launch
@@ -56,6 +57,11 @@ class RegistroViewModel(private val repository: UsuarioRepository) : ViewModel()
         }
         if (!correoValido(correo)) {
             mensajeError = "Correo electrónico no válido"
+            return
+        }
+        val errorContrasena = mensajeErrorContrasena(contrasena)
+        if (errorContrasena != null) {
+            mensajeError = errorContrasena
             return
         }
         if (contrasena != confirmarContrasena) {

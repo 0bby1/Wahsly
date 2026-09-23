@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.wahsly.datos.model.Usuario
 import com.example.wahsly.datos.repository.HistorialRepository
 import com.example.wahsly.datos.repository.UsuarioRepository
+import com.example.wahsly.utilidades.mensajeErrorContrasena
 import kotlinx.coroutines.launch
 
 class CuentaViewModel(
@@ -41,8 +42,9 @@ class CuentaViewModel(
             mensajeError = "La contraseña actual no es correcta"
             return
         }
-        if (contrasenaNueva.length < 6) {
-            mensajeError = "La nueva contraseña debe tener al menos 6 caracteres"
+        val errorContrasena = mensajeErrorContrasena(contrasenaNueva)
+        if (errorContrasena != null) {
+            mensajeError = errorContrasena
             return
         }
         if (contrasenaNueva != confirmarContrasenaNueva) {

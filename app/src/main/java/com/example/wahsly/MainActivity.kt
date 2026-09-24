@@ -32,17 +32,24 @@ import com.example.wahsly.ui.pantallas.PantallaRegistro
 import com.example.wahsly.ui.pantallas.PantallaSplash
 import com.example.wahsly.utilidades.FotoPerfilStorage
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.LaunchedEffect
+import android.content.pm.ActivityInfo
 
 class MainActivity : ComponentActivity() {
-
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
+        val esTablet = resources.configuration.smallestScreenWidthDp >= 600
+        requestedOrientation =
+            if (esTablet) {
+                ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+            } else {
+                ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            }
 
         setContent {
             val windowSizeClass = calculateWindowSizeClass(this)
-
             // PREFERENCIAS
             val preferencias = remember {
                 getSharedPreferences(
@@ -78,293 +85,242 @@ class MainActivity : ComponentActivity() {
                 fontScale = densidad.fontScale * tamanoTexto
             )
 
-            CompositionLocalProvider(
-                LocalDensity provides densidadTexto
-            ) {
-
+            CompositionLocalProvider(LocalDensity provides densidadTexto) {
                 MaterialTheme {
-
                     // NAVCONTROLLER
                     val navController = rememberNavController()
-
-                    // ESTADOS DE LA APP
                     var usuarioActual by remember {
                         mutableStateOf<Usuario?>(null)
                     }
-
-                    var seccionActual by remember {
+                    var cargandoUsuarioGuardado by remember {
+                        mutableStateOf(true)
+                    }
+                    var seccionActual by rememberSaveable {
                         mutableStateOf("INICIO")
                     }
 
+                    // RESTAURAR USUARIO DESPUÉS DE ROTAR
+                    LaunchedEffect(Unit) {
+                        val correoGuardado =
+                            preferencias.getString(
+                                "correo_usuario_activo",
+                                null
+                            )
+                        usuarioActual =
+                            if (correoGuardado != null) {
+                                AppDatabase
+                                    .getDatabase(this@MainActivity)
+                                    .usuarioDao()
+                                    .buscarUsuario(correoGuardado)
+                            } else { null }
+                        cargandoUsuarioGuardado = false
+                    }
+
                     // NAVHOST
-                    NavHost(
-                        navController = navController,
-                        startDestination = "SPLASH",
-                        enterTransition = { EnterTransition.None },
-                        exitTransition = { ExitTransition.None },
-                        popEnterTransition = { EnterTransition.None },
-                        popExitTransition = { ExitTransition.None }
-                    ) {
-
-                        // SPLASH
-                        composable("SPLASH") {
-                            val scope = rememberCoroutineScope()
-
-                            PantallaSplash(
-                                modoOscuro = modoOscuro,
-                                onTerminar = {
-                                    scope.launch {
-                                        val correoGuardado = preferencias.getString("correo_usuario_activo", null)
-                                        if (correoGuardado != null) {
-                                            val usuarioDao = AppDatabase.getDatabase(this@MainActivity).usuarioDao()
-                                            val usuario = usuarioDao.buscarUsuario(correoGuardado)
-                                            if (usuario != null) {
-                                                usuarioActual = usuario
-                                                seccionActual = "INICIO"
-                                                navController.navigate("PRINCIPAL") {
-                                                    popUpTo("SPLASH") {
-                                                        inclusive = true
+                    if (!cargandoUsuarioGuardado) {
+                        NavHost(
+                            navController = navController,
+                            startDestination = "SPLASH",
+                            enterTransition = { EnterTransition.None },
+                            exitTransition = { ExitTransition.None },
+                            popEnterTransition = { EnterTransition.None },
+                            popExitTransition = { ExitTransition.None }
+                        ) {
+                            // SPLASH
+                            composable("SPLASH") {
+                                val scope = rememberCoroutineScope()
+                                PantallaSplash(
+                                    modoOscuro = modoOscuro,
+                                    onTerminar = {
+                                        scope.launch {
+                                            val correoGuardado =
+                                                preferencias.getString(
+                                                    "correo_usuario_activo",
+                                                    null
+                                                )
+                                            if (correoGuardado != null) {
+                                                val usuarioDao =
+                                                    AppDatabase
+                                                        .getDatabase(this@MainActivity)
+                                                        .usuarioDao()
+                                                val usuario =
+                                                    usuarioDao.buscarUsuario(
+                                                        correoGuardado
+                                                    )
+                                                if (usuario != null) {
+                                                    usuarioActual = usuario
+                                                    seccionActual = "INICIO"
+                                                    navController.navigate(
+                                                        "PRINCIPAL"
+                                                    ) {
+                                                        popUpTo("SPLASH") { inclusive = true }
                                                     }
+                                                    return@launch
                                                 }
-                                                return@launch
                                             }
-                                        }
-
-                                        navController.navigate("LOGIN") {
-
-                                            popUpTo("SPLASH") {
-                                                inclusive = true
+                                            navController.navigate("LOGIN") {
+                                                popUpTo("SPLASH") { inclusive = true }
                                             }
                                         }
                                     }
-                                }
-                            )
-                        }
+                                )
+                            }
 
-                        // LOGIN
-                        composable("LOGIN") {
-
-                            PantallaInicioSesion(
-                                modoOscuro = modoOscuro,
-                                windowSizeClass = windowSizeClass,
-                                onCrearCuenta = {
-
-                                    navController.navigate(
-                                        "REGISTRO"
-                                    )
-                                },
-
-                                onLoginExitoso = { usuario ->
-
-                                    preferencias
-                                        .edit()
-                                        .putString("correo_usuario_activo", usuario.correo)
-                                        .apply()
-
-                                    usuarioActual = usuario
-                                    seccionActual = "INICIO"
-
-                                    navController.navigate(
-                                        "TRANSICION_AGUA"
-                                    )
-                                }
-                            )
-                        }
-
-                        // REGISTRO
-                        composable("REGISTRO") {
-
-                            PantallaRegistro(
-                                modoOscuro = modoOscuro,
-                                windowSizeClass = windowSizeClass,
-                                onRegistroExitoso = { usuario ->
-
-                                    preferencias
-                                        .edit()
-                                        .putString("correo_usuario_activo", usuario.correo)
-                                        .apply()
-
-                                    usuarioActual = usuario
-                                    seccionActual = "INICIO"
-
-                                    navController.navigate(
-                                        "TRANSICION_AGUA"
-                                    ) {
-
-                                        popUpTo("REGISTRO") {
-                                            inclusive = true
-                                        }
-                                    }
-                                },
-
-                                onVolverLogin = {
-
-                                    navController.popBackStack()
-                                }
-                            )
-                        }
-
-                        // TRANSICION DE AGUA
-                        composable("TRANSICION_AGUA") {
-
-                            AnimacionTransicionAgua(
-                                modoOscuro = modoOscuro,
-
-                                onTerminar = {
-
-                                    navController.navigate(
-                                        "CARGA_VIDEO"
-                                    ) {
-
-                                        popUpTo("TRANSICION_AGUA") {
-                                            inclusive = true
-                                        }
-
-                                        launchSingleTop = true
-                                    }
-                                }
-                            )
-                        }
-
-                        // VIDEO DE CARGA
-                        composable("CARGA_VIDEO") {
-
-                            PantallaCargaVideo(
-                                modoOscuro = modoOscuro,
-
-                                onTerminar = {
-
-                                    navController.navigate(
-                                        "PRINCIPAL"
-                                    ) {
-
-                                        popUpTo("LOGIN") {
-                                            inclusive = true
-                                        }
-
-                                        launchSingleTop = true
-                                    }
-                                }
-                            )
-                        }
-
-                        // PRINCIPAL
-                        composable("PRINCIPAL") {
-
-                            NavegacionPrincipal(
-                                seccionActual = seccionActual,
-                                usuario = usuarioActual,
-                                modoOscuro = modoOscuro,
-                                windowSizeClass = windowSizeClass,
-
-                                onCambiarSeccion = { nuevaSeccion ->
-
-                                    seccionActual = nuevaSeccion
-                                },
-
-                                onConfiguracion = {
-
-                                    navController.navigate(
-                                        "CONFIGURACION"
-                                    )
-                                },
-
-                                onCerrarSesion = {
-
-                                    preferencias
-                                        .edit()
-                                        .remove("correo_usuario_activo")
-                                        .apply()
-
-                                    usuarioActual = null
-                                    seccionActual = "INICIO"
-
-                                    navController.navigate(
-                                        "LOGIN"
-                                    ) {
-
-                                        popUpTo("PRINCIPAL") {
-                                            inclusive = true
-                                        }
-
-                                        launchSingleTop = true
-                                    }
-                                }
-                            )
-                        }
-
-                        // CONFIGURACION
-                        composable("CONFIGURACION") {
-
-                            PantallaConfiguracion(
-                                modoOscuro = modoOscuro,
-                                usuario = usuarioActual,
-
-                                onCambiarModoOscuro = { nuevoValor ->
-
-                                    modoOscuro = nuevoValor
-
-                                    preferencias
-                                        .edit()
-                                        .putBoolean(
-                                            "modoOscuro",
-                                            nuevoValor
-                                        )
-                                        .apply()
-                                },
-
-                                // G TAMAÑO
-                                tamanoTexto = tamanoTexto,
-
-                                onCambiarTamanoTexto = { nuevoTamano ->
-
-                                    tamanoTexto = nuevoTamano
-
-                                    preferencias
-                                        .edit()
-                                        .putFloat(
-                                            "tamanoTexto",
-                                            nuevoTamano
-                                        )
-                                        .apply()
-                                },
-
-                                onVolver = {
-
-                                    navController.popBackStack()
-                                },
-
-                                onCuentaEliminada = {
-
-                                    preferencias
-                                        .edit()
-                                        .remove("correo_usuario_activo")
-                                        .apply()
-
-
-                                    usuarioActual?.correo?.let { correo ->
-
-                                        FotoPerfilStorage.eliminarFoto(
-                                            this@MainActivity,
-                                            correo
+                            // LOGIN
+                            composable("LOGIN") {
+                                PantallaInicioSesion(
+                                    modoOscuro = modoOscuro,
+                                    windowSizeClass = windowSizeClass,
+                                    onCrearCuenta = {
+                                        navController.navigate("REGISTRO")
+                                    },
+                                    onLoginExitoso = { usuario ->
+                                        preferencias
+                                            .edit()
+                                            .putString("correo_usuario_activo", usuario.correo)
+                                            .apply()
+                                        usuarioActual = usuario
+                                        seccionActual = "INICIO"
+                                        navController.navigate(
+                                            "TRANSICION_AGUA"
                                         )
                                     }
+                                )
+                            }
 
-                                    usuarioActual = null
-                                    seccionActual = "INICIO"
-
-                                    navController.navigate(
-                                        "LOGIN"
-                                    ) {
-
-                                        popUpTo("PRINCIPAL") {
-                                            inclusive = true
+                            // REGISTRO
+                            composable("REGISTRO") {
+                                PantallaRegistro(
+                                    modoOscuro = modoOscuro,
+                                    windowSizeClass = windowSizeClass,
+                                    onRegistroExitoso = { usuario ->
+                                        preferencias
+                                            .edit()
+                                            .putString("correo_usuario_activo", usuario.correo)
+                                            .apply()
+                                        usuarioActual = usuario
+                                        seccionActual = "INICIO"
+                                        navController.navigate(
+                                            "TRANSICION_AGUA"
+                                        ) {
+                                            popUpTo("REGISTRO") { inclusive = true }
                                         }
-
-                                        launchSingleTop = true
+                                    },
+                                    onVolverLogin = {
+                                        navController.popBackStack()
                                     }
-                                }
-                            )
+                                )
+                            }
+
+                            // TRANSICION DE AGUA
+                            composable("TRANSICION_AGUA") {
+                                AnimacionTransicionAgua(
+                                    modoOscuro = modoOscuro,
+                                    onTerminar = {
+                                        navController.navigate(
+                                            "CARGA_VIDEO"
+                                        ) {
+                                            popUpTo("TRANSICION_AGUA") { inclusive = true }
+                                            launchSingleTop = true
+                                        }
+                                    }
+                                )
+                            }
+
+                            // VIDEO DE CARGA
+                            composable("CARGA_VIDEO") {
+                                PantallaCargaVideo(
+                                    modoOscuro = modoOscuro,
+                                    onTerminar = {
+                                        navController.navigate(
+                                            "PRINCIPAL"
+                                        ) {
+                                            popUpTo("LOGIN") { inclusive = true }
+                                            launchSingleTop = true
+                                        }
+                                    }
+                                )
+                            }
+
+                            // PRINCIPAL
+                            composable("PRINCIPAL") {
+                                NavegacionPrincipal(
+                                    seccionActual = seccionActual,
+                                    usuario = usuarioActual,
+                                    modoOscuro = modoOscuro,
+                                    windowSizeClass = windowSizeClass,
+                                    onCambiarSeccion = { nuevaSeccion ->
+                                        seccionActual = nuevaSeccion
+                                    },
+                                    onConfiguracion = { navController.navigate("CONFIGURACION") },
+                                    onCerrarSesion = {
+                                        preferencias
+                                            .edit()
+                                            .remove("correo_usuario_activo")
+                                            .apply()
+                                        usuarioActual = null
+                                        seccionActual = "INICIO"
+                                        navController.navigate(
+                                            "LOGIN"
+                                        ) {
+                                            popUpTo("PRINCIPAL") { inclusive = true }
+                                            launchSingleTop = true
+                                        }
+                                    }
+                                )
+                            }
+
+                            // CONFIGURACION
+                            composable("CONFIGURACION") {
+                                PantallaConfiguracion(
+                                    modoOscuro = modoOscuro,
+                                    usuario = usuarioActual,
+                                    onCambiarModoOscuro = { nuevoValor ->
+                                        modoOscuro = nuevoValor
+                                        preferencias
+                                            .edit()
+                                            .putBoolean(
+                                                "modoOscuro",
+                                                nuevoValor
+                                            )
+                                            .apply()
+                                    },
+
+                                    // G TAMAÑO
+                                    tamanoTexto = tamanoTexto,
+                                    onCambiarTamanoTexto = { nuevoTamano ->
+                                        tamanoTexto = nuevoTamano
+                                        preferencias
+                                            .edit()
+                                            .putFloat(
+                                                "tamanoTexto",
+                                                nuevoTamano
+                                            )
+                                            .apply()
+                                    },
+                                    onVolver = { navController.popBackStack() },
+                                    onCuentaEliminada = {
+                                        preferencias
+                                            .edit()
+                                            .remove("correo_usuario_activo")
+                                            .apply()
+                                        usuarioActual?.correo?.let { correo ->
+                                            FotoPerfilStorage.eliminarFoto(
+                                                this@MainActivity,
+                                                correo
+                                            )
+                                        }
+                                        usuarioActual = null
+                                        seccionActual = "INICIO"
+                                        navController.navigate(
+                                            "LOGIN"
+                                        ) {
+                                            popUpTo("PRINCIPAL") { inclusive = true }
+                                            launchSingleTop = true
+                                        }
+                                    }
+                                )
+                            }
                         }
                     }
                 }

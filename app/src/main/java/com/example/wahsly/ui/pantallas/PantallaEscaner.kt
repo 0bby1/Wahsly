@@ -16,39 +16,32 @@ import androidx.camera.view.PreviewView
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FlashOff
 import androidx.compose.material.icons.filled.FlashOn
 import androidx.compose.material.icons.filled.HelpOutline
 import androidx.compose.material.icons.filled.PhotoLibrary
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ZoomIn
 import androidx.compose.material.icons.filled.ZoomOut
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import com.example.wahsly.ui.theme.AzulPrincipalClaro
-import com.example.wahsly.ui.theme.CremaOscuro
 import com.example.wahsly.ui.theme.FondoClaro
 import com.example.wahsly.ui.theme.FondoOscuro
-import com.example.wahsly.ui.theme.RosaClaro
 import com.example.wahsly.ui.theme.RosaOscuro
 import java.io.File
 import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -66,6 +59,11 @@ import java.util.concurrent.TimeUnit
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import kotlinx.coroutines.delay
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
+import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
+import com.example.wahsly.utilidades.TipoPantalla
+import com.example.wahsly.utilidades.obtenerTipoPantalla
+import androidx.compose.foundation.clickable
 
 data class DatosEscaneo(
     val fotoUri: Uri,
@@ -78,18 +76,26 @@ data class DatosEscaneo(
 @Composable
 fun PantallaEscaner(
     modoOscuro: Boolean,
+    windowSizeClass: WindowSizeClass,
     onDatosConfirmados: (DatosEscaneo) -> Unit
 ) {
+
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    // RESPONSIVE PARA TABLETAS Y ORIENTACION
-    val configuration = LocalConfiguration.current
-    val anchoPantalla = configuration.screenWidthDp
-    val altoPantalla = configuration.screenHeightDp
-    val esTablet = anchoPantalla >= 600
-    val esHorizontal = anchoPantalla > altoPantalla
-    val esCelularHorizontal = esHorizontal && !esTablet
+    val tipoPantalla = obtenerTipoPantalla(windowSizeClass)
+    val esTabletVertical =
+        tipoPantalla == TipoPantalla.TABLET_VERTICAL
+    val esTabletHorizontal =
+        tipoPantalla == TipoPantalla.TABLET_HORIZONTAL
+    val esTablet =
+        esTabletVertical || esTabletHorizontal
+    val esCelularHorizontal =
+        tipoPantalla == TipoPantalla.TELEFONO &&
+                windowSizeClass.heightSizeClass ==
+                WindowHeightSizeClass.Compact
+    val esHorizontal =
+        esTabletHorizontal || esCelularHorizontal
 
     // DATOS DEL FORMULARIO
     var mostrarDialogoDatos by remember { mutableStateOf(false) }
@@ -110,10 +116,50 @@ fun PantallaEscaner(
 
     // COLORES
     val colorFondo = if (modoOscuro) { FondoOscuro } else { FondoClaro }
-    val colorCabecera = if (modoOscuro) { RosaOscuro } else { AzulPrincipalClaro }
-    val colorBuscador = if (modoOscuro) { FondoOscuro } else { FondoClaro }
     val colorIconos = if (modoOscuro) { RosaOscuro } else { AzulPrincipalClaro }
-    val colorBusqueda = if (modoOscuro) { CremaOscuro } else { RosaClaro }
+
+    // MEDIDAS RESPONSIVAS DEL ESCÁNER
+    val paddingSuperiorIconos = when (tipoPantalla) {
+        TipoPantalla.TELEFONO -> 22.dp
+        TipoPantalla.TABLET_VERTICAL -> 24.dp
+        TipoPantalla.TABLET_HORIZONTAL -> 18.dp
+    }
+
+    val paddingHorizontalIconos = when (tipoPantalla) {
+        TipoPantalla.TELEFONO -> 62.dp
+        TipoPantalla.TABLET_VERTICAL -> 120.dp
+        TipoPantalla.TABLET_HORIZONTAL -> 180.dp
+    }
+
+    val tamanoIconosSuperiores = when (tipoPantalla) {
+        TipoPantalla.TELEFONO -> 34.dp
+        TipoPantalla.TABLET_VERTICAL -> 38.dp
+        TipoPantalla.TABLET_HORIZONTAL -> 28.dp
+    }
+
+    val fraccionMarco = when (tipoPantalla) {
+        TipoPantalla.TELEFONO -> 0.58f
+        TipoPantalla.TABLET_VERTICAL -> 0.52f
+        TipoPantalla.TABLET_HORIZONTAL -> 0.48f
+    }
+
+    val desplazamientoMarcoY = when (tipoPantalla) {
+        TipoPantalla.TELEFONO -> (-15).dp
+        TipoPantalla.TABLET_VERTICAL -> (-10).dp
+        TipoPantalla.TABLET_HORIZONTAL -> (-8).dp
+    }
+
+    val tamanoBotonFoto = when (tipoPantalla) {
+        TipoPantalla.TELEFONO -> 74.dp
+        TipoPantalla.TABLET_VERTICAL -> 78.dp
+        TipoPantalla.TABLET_HORIZONTAL -> 70.dp
+    }
+
+    val tamanoIconosZoom = when (tipoPantalla) {
+        TipoPantalla.TELEFONO -> 30.dp
+        TipoPantalla.TABLET_VERTICAL -> 32.dp
+        TipoPantalla.TABLET_HORIZONTAL -> 24.dp
+    }
 
     // PERMISO DE CAMARA
     var tienePermisoCamara by remember {
@@ -163,11 +209,9 @@ fun PantallaEscaner(
     var zoomActual by remember { mutableFloatStateOf(0f) }
 
     LaunchedEffect(idEnfoque) {
-
         if (idEnfoque == 0) {
             return@LaunchedEffect
         }
-
         // Empieza un poco más grande
         escalaEnfoque.snapTo(1.35f)
 
@@ -181,7 +225,6 @@ fun PantallaEscaner(
                 durationMillis = 180
             )
         )
-
         // Se queda visible un momento
         delay(450)
 
@@ -192,7 +235,6 @@ fun PantallaEscaner(
                 durationMillis = 250
             )
         )
-
         puntoEnfoque = null
     }
 
@@ -224,15 +266,12 @@ fun PantallaEscaner(
                                     ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY
                                 )
                                 .build()
-
                         imageCapture = captura
 
                         // CAMARA TRASERA
                         val selector =
                             CameraSelector.DEFAULT_BACK_CAMERA
-
                         cameraProvider.unbindAll()
-
                         camara =
                             cameraProvider.bindToLifecycle(
                                 lifecycleOwner,
@@ -311,7 +350,6 @@ fun PantallaEscaner(
                     val uri = Uri.fromFile(archivo)
                     abrirFormulario(uri)
                 }
-
                 override fun onError(
                     exception:
                     ImageCaptureException
@@ -339,613 +377,388 @@ fun PantallaEscaner(
         }
 
     // INTERFAZ
+    val modificadorGestosCamara =
+        if (
+            tienePermisoCamara &&
+            imagenCongelada == null
+        ) {
+            Modifier
+                // ZOOM CON GESTO
+                .pointerInput(camara, imagenCongelada) {
+                    detectTransformGestures { _, _, zoomCambio, _ ->
+                        val camera = camara ?: return@detectTransformGestures
+                        val zoomState =
+                            camera.cameraInfo.zoomState.value ?: return@detectTransformGestures
+                        val nuevoZoomRatio =
+                            (
+                                    zoomState.zoomRatio * zoomCambio
+                                    ).coerceIn(
+                                    zoomState.minZoomRatio,
+                                    zoomState.maxZoomRatio
+                                )
+                        camera.cameraControl.setZoomRatio(nuevoZoomRatio)
+                        val rango =
+                            zoomState.maxZoomRatio - zoomState.minZoomRatio
+
+                        if (rango > 0f) {
+                            zoomActual = ((nuevoZoomRatio - zoomState.minZoomRatio) / rango).coerceIn(0f, 1f)
+                        }
+                    }
+                }
+
+                // TOCAR PARA ENFOCAR
+                .pointerInput(camara, imagenCongelada) {
+                    detectTapGestures(
+                        onTap = { posicion ->
+                            val camera = camara ?: return@detectTapGestures
+                            puntoEnfoque = posicion
+                            idEnfoque++
+                            val punto =
+                                previewView.meteringPointFactory
+                                    .createPoint(
+                                        posicion.x,
+                                        posicion.y
+                                    )
+                            val accionEnfoque =
+                                FocusMeteringAction.Builder(
+                                    punto,
+                                    FocusMeteringAction.FLAG_AF or
+                                            FocusMeteringAction.FLAG_AE
+                                )
+                                    .setAutoCancelDuration(3, TimeUnit.SECONDS)
+                                    .build()
+
+                            camera.cameraControl.startFocusAndMetering(accionEnfoque)
+                        }
+                    )
+                }
+        } else {
+            Modifier
+        }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(colorFondo)
+            .background(
+                if (tienePermisoCamara) {
+                    Color.Black
+                } else {
+                    colorFondo
+                }
+            )
+            .then(modificadorGestosCamara)
     ) {
-        Column(
+
+        // FONDO DE CÁMARA
+        if (tienePermisoCamara) {
+            if (imagenCongelada != null) {
+                Image(
+                    bitmap = imagenCongelada!!,
+                    contentDescription = "Foto de la etiqueta",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+            } else {
+                AndroidView(
+                    factory = { previewView },
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+        }
+
+        // COLOR DE CONTROLES
+        val colorControles =
+            if (tienePermisoCamara) {
+                Color.White
+            } else {
+                colorIconos
+            }
+
+        // INDICADOR ANIMADO DE ENFOQUE
+        puntoEnfoque?.let { punto ->
+            Canvas(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                val lado = 62.dp.toPx() * escalaEnfoque.value
+                val mitad = lado / 2f
+                val longitudEsquina = 17.dp.toPx() * escalaEnfoque.value
+                val grosor = 2.5.dp.toPx()
+                val color = colorControles.copy(alpha = alphaEnfoque.value)
+                val izquierda = punto.x - mitad
+                val derecha = punto.x + mitad
+                val arriba = punto.y - mitad
+                val abajo = punto.y + mitad
+
+                // ARRIBA IZQUIERDA
+                drawLine(
+                    color = color,
+                    start = Offset(izquierda, arriba),
+                    end = Offset(izquierda + longitudEsquina, arriba),
+                    strokeWidth = grosor
+                )
+
+                drawLine(
+                    color = color,
+                    start = Offset(izquierda, arriba),
+                    end = Offset(izquierda, arriba + longitudEsquina),
+                    strokeWidth = grosor
+                )
+
+                // ARRIBA DERECHA
+                drawLine(
+                    color = color,
+                    start = Offset(derecha, arriba),
+                    end = Offset(derecha - longitudEsquina, arriba),
+                    strokeWidth = grosor
+                )
+
+                drawLine(
+                    color = color,
+                    start = Offset(derecha, arriba),
+                    end = Offset(derecha, arriba + longitudEsquina),
+                    strokeWidth = grosor
+                )
+
+                // ABAJO IZQUIERDA
+                drawLine(
+                    color = color,
+                    start = Offset(izquierda, abajo),
+                    end = Offset(izquierda + longitudEsquina, abajo),
+                    strokeWidth = grosor
+                )
+
+                drawLine(
+                    color = color,
+                    start = Offset(izquierda, abajo),
+                    end = Offset(izquierda, abajo - longitudEsquina),
+                    strokeWidth = grosor
+                )
+
+                // ABAJO DERECHA
+                drawLine(
+                    color = color,
+                    start = Offset(derecha, abajo),
+                    end = Offset(derecha - longitudEsquina, abajo),
+                    strokeWidth = grosor
+                )
+
+                drawLine(
+                    color = color,
+                    start = Offset(derecha, abajo),
+                    end = Offset(derecha, abajo - longitudEsquina),
+                    strokeWidth = grosor
+                )
+
+                // PUNTO CENTRAL
+                drawCircle(
+                    color = color,
+                    radius = 3.dp.toPx(),
+                    center = punto
+                )
+            }
+        }
+
+        // ICONOS SUPERIORES
+        Row(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .statusBarsPadding()
+                .fillMaxWidth()
+                .padding(
+                    top = paddingSuperiorIconos,
+                    start = paddingHorizontalIconos,
+                    end = paddingHorizontalIconos
+                ),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // FLASH
+            IconButton(
+                onClick = {
+                    val camera = camara
+                    if (camera?.cameraInfo?.hasFlashUnit() == true) {
+                        linternaEncendida = !linternaEncendida
+                        camera.cameraControl.enableTorch(
+                            linternaEncendida
+                        )
+                    } else {
+                        Toast.makeText(
+                            context,
+                            "Este dispositivo no tiene flash",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            ) {
+                Icon(
+                    imageVector =
+                        if (linternaEncendida) {
+                            Icons.Default.FlashOn
+                        } else {
+                            Icons.Default.FlashOff
+                        },
+                    contentDescription = "Flash",
+                    tint = colorControles,
+                    modifier = Modifier.size(tamanoIconosSuperiores)
+                )
+            }
+
+            // GALERÍA
+            IconButton(
+                onClick = {
+                    launcherGaleria.launch("image/*")
+                }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.PhotoLibrary,
+                    contentDescription = "Galería",
+                    tint = colorControles,
+                    modifier = Modifier.size(tamanoIconosSuperiores)
+                )
+            }
+
+            // AYUDA
+            IconButton(
+                onClick = {
+                    Toast.makeText(
+                        context,
+                        "Coloca toda la etiqueta de lavado dentro del marco y asegúrate de que los símbolos y el texto se vean claramente.",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.HelpOutline,
+                    contentDescription = "Ayuda",
+                    tint = colorControles,
+                    modifier = Modifier.size(tamanoIconosSuperiores)
+                )
+            }
+        }
+
+        // MARCO DE ESCANEO
+        BoxWithConstraints(
             modifier = Modifier.fillMaxSize()
         ) {
 
-            // CABECERA RESPONSIVA
-            val alturaCabecera = when {
-                esCelularHorizontal -> 70.dp
-                esHorizontal -> 100.dp
-                else -> 125.dp
-            }
+            val anchoMarco =
+                maxWidth * fraccionMarco
+
+            val altoMarco =
+                anchoMarco * 0.75f
 
             Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(alturaCabecera)
-                    .clip(RoundedCornerShape(
-                        bottomStart = 14.dp,
-                        bottomEnd = 14.dp
+                    .align(Alignment.Center)
+                    .offset(y = desplazamientoMarcoY)
+                    .width(anchoMarco)
+                    .height(altoMarco)
+                    .then(
+                        if (!tienePermisoCamara) {
+                            Modifier.clickable {
+                                launcherPermisoCamara.launch(
+                                    Manifest.permission.CAMERA
+                                )
+                            }
+                        } else {
+                            Modifier
+                        }
                     )
-                    )
-                    .background(colorCabecera)
-                    .statusBarsPadding()
             ) {
-
-                // BUSCADOR
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(
-                            start = if (esHorizontal) 32.dp else 16.dp,
-                            end = if (esHorizontal) 32.dp else 16.dp,
-                            bottom = if (esHorizontal) 10.dp else 20.dp
-                        )
-                        .fillMaxWidth(if (esHorizontal) 0.6f else 1f)
-                        .height(42.dp)
-                        .clip(RoundedCornerShape(30.dp))
-                        .background(colorBuscador)
-                ) {
-
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = "Buscar",
-                        tint = colorBusqueda,
-                        modifier = Modifier
-                            .align(Alignment.CenterStart)
-                            .padding(start = 12.dp)
-                            .size(23.dp)
-                    )
-                }
+                MarcoEscaneo(
+                    color = colorControles,
+                    modifier = Modifier.fillMaxSize()
+                )
             }
+        }
 
-            // CUERPO DEL ESCANER
-            Box(
+        // BOTÓN DE FOTO
+        if (tipoPantalla != TipoPantalla.TABLET_HORIZONTAL) {
+            IconButton(
+                onClick = {
+                    if (tienePermisoCamara) {
+                        tomarFoto()
+                    } else {
+                        launcherPermisoCamara.launch(
+                            Manifest.permission.CAMERA
+                        )
+                    }
+                },
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
+                    .align(Alignment.BottomCenter)
+                    .navigationBarsPadding()
+                    .padding(
+                        bottom = when (tipoPantalla) {
+                            TipoPantalla.TELEFONO -> 92.dp
+                            TipoPantalla.TABLET_VERTICAL -> 105.dp
+                            TipoPantalla.TABLET_HORIZONTAL -> 80.dp
+                        }
+                    )
+                    .size(tamanoBotonFoto)
+                    .background(
+                        color = FondoClaro,
+                        shape = CircleShape
+                    )
+                    .border(
+                        width = 3.dp,
+                        color = Color.White,
+                        shape = CircleShape
+                    )
             ) {
-                // BOTONES SUPERIORES
-                Row(
-                    modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .fillMaxWidth()
-                        .padding(
-                            top = if (esHorizontal) 8.dp else if (esTablet) 24.dp else 38.dp,
-                            start = if (esTablet) 48.dp else 16.dp,
-                            end = if (esTablet) 48.dp else 16.dp
-                        ),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
+                // botón vacío a propósito
+            }
+        }
 
-                    // FLASH
-                    IconButton(
-                        onClick = {
-                            val camera = camara
-                            if ( camera
-                                    ?.cameraInfo
-                                    ?.hasFlashUnit() == true
-                            ) {
-                                linternaEncendida =
-                                    !linternaEncendida
-                                camera
-                                    .cameraControl
-                                    .enableTorch(
-                                        linternaEncendida
-                                    )
-                            } else {
-                                Toast.makeText(
-                                    context,
-                                    "Este dispositivo no tiene flash",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-                        }
-                    ) {
-
-                        Icon(
-                            imageVector =
-                                if (linternaEncendida) {
-                                    Icons.Default.FlashOn
-                                } else {
-                                    Icons.Default.FlashOff
-                                },
-                            contentDescription = "Flash",
-                            tint = colorIconos,
-                            modifier =
-                                Modifier.size(30.dp)
-                        )
-                    }
-
-                    // GALERIA
-                    IconButton(
-                        onClick = {
-                            launcherGaleria.launch(
-                                "image/*"
-                            )
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.PhotoLibrary,
-                            contentDescription = "Galería",
-                            tint = colorIconos,
-                            modifier =
-                                Modifier.size(30.dp)
-                        )
-                    }
-
-                    // AYUDA
-                    IconButton(
-                        onClick = {
-                            Toast.makeText(
-                                context,
-                                "Coloca toda la etiqueta de lavado dentro del marco y asegúrate de que los símbolos y el texto se vean claramente.",
-                                Toast.LENGTH_LONG
-                            ).show()
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.HelpOutline,
-                            contentDescription = "Ayuda",
-                            tint = colorIconos,
-                            modifier = Modifier.size(30.dp)
-                        )
-                    }
-                }
-
-                // CAMARA
-                if (tienePermisoCamara) {
-                    Column(
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-
-                        // INSTRUCCIONES
-                        Text(
-                            text = "Fotografía la etiqueta de lavado",
-                            color = colorIconos,
-                            fontWeight = FontWeight.Bold
-                        )
-
-                        Spacer(modifier = Modifier.height(4.dp))
-
-                        Text(
-                            text = "Asegúrate de que los símbolos y el texto sean visibles",
-                            color = colorIconos.copy(alpha = 0.75f),
-                            style =
-                                MaterialTheme
-                                    .typography
-                                    .bodySmall
-                        )
-
-                        Spacer(modifier = Modifier.height(14.dp))
-
-                        // CAMARA RESPONSIVA
-                        Box(
-                            modifier = Modifier
-                                .then(
-                                    when {
-                                        // Tablet Horizontal
-                                        esTablet && esHorizontal -> {
-                                            Modifier
-                                                .fillMaxWidth(0.45f)
-                                                .aspectRatio(4f / 3f)
-                                        }
-
-                                        // Tablet Vertical
-                                        esTablet -> {
-                                            Modifier
-                                                .fillMaxWidth(0.60f)
-                                                .aspectRatio(3f / 4f)
-                                        }
-
-                                        // Celular Horizontal (Evita que se salga)
-                                        esCelularHorizontal -> {
-                                            Modifier
-                                                .fillMaxHeight(0.65f)
-                                                .aspectRatio(4f / 3f)
-                                        }
-
-                                        // Celular Vertical
-                                        else -> {
-                                            Modifier
-                                                .fillMaxWidth(0.70f)
-                                                .aspectRatio(3f / 4f)
-                                        }
-                                    }
-                                )
-                                .pointerInput(camara, imagenCongelada) {
-                                    if (imagenCongelada == null) {
-                                        detectTransformGestures { _, _, zoomCambio, _ ->
-                                            val camera = camara ?: return@detectTransformGestures
-
-                                            val zoomState =
-                                                camera.cameraInfo
-                                                    .zoomState
-                                                    .value
-                                                    ?: return@detectTransformGestures
-
-                                            val nuevoZoomRatio =
-                                                (
-                                                        zoomState.zoomRatio *
-                                                                zoomCambio
-                                                        ).coerceIn(
-                                                        zoomState.minZoomRatio,
-                                                        zoomState.maxZoomRatio
-                                                    )
-                                            camera
-                                                .cameraControl
-                                                .setZoomRatio(
-                                                    nuevoZoomRatio
-                                                )
-
-                                            val rango = zoomState.maxZoomRatio - zoomState.minZoomRatio
-
-                                            if (rango > 0f) {
-                                                zoomActual = ((nuevoZoomRatio - zoomState.minZoomRatio) / rango).coerceIn(0f, 1f)
-                                            }
-                                        }
-                                    }
-                                }
-                                .pointerInput(camara, imagenCongelada) {
-                                    if (imagenCongelada == null) {
-                                        detectTapGestures(
-                                            onTap = { posicion ->
-                                                val camera = camara ?: return@detectTapGestures
-
-                                                // MOSTRAR CUADRO DE ENFOQUE
-                                                puntoEnfoque = posicion
-                                                idEnfoque++
-
-                                                // ENFOCAR CAMARA
-                                                val punto = previewView
-                                                    .meteringPointFactory
-                                                    .createPoint(
-                                                        posicion.x,
-                                                        posicion.y
-                                                    )
-
-                                                val accionEnfoque =
-                                                    FocusMeteringAction
-                                                        .Builder(
-                                                            punto,
-                                                            FocusMeteringAction.FLAG_AF or
-                                                                    FocusMeteringAction.FLAG_AE
-                                                        )
-                                                        .setAutoCancelDuration(3, TimeUnit.SECONDS)
-                                                        .build()
-                                                camera
-                                                    .cameraControl
-                                                    .startFocusAndMetering(
-                                                        accionEnfoque
-                                                    )
-                                            }
-                                        )
-                                    }
-                                }
-                        ) {
-                            if (imagenCongelada != null) {
-                                // FOTO CONGELADA
-                                Image(
-                                    bitmap = imagenCongelada!!,
-                                    contentDescription = "Foto de la etiqueta",
-                                    contentScale = ContentScale.Crop,
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .clip(RoundedCornerShape(4.dp))
-                                )
-                            } else {
-                                AndroidView(
-                                    factory = {
-                                        previewView
-                                    },
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .clip(RoundedCornerShape(4.dp))
-                                )
-                            }
-
-                            // =========================
-                            // INDICADOR DE ENFOQUE
-                            // =========================
-                            puntoEnfoque?.let { punto ->
-
-                                Canvas(
-                                    modifier = Modifier.fillMaxSize()
-                                ) {
-
-                                    val lado =
-                                        62.dp.toPx() *
-                                                escalaEnfoque.value
-
-                                    val mitad =
-                                        lado / 2f
-
-                                    val longitudEsquina =
-                                        17.dp.toPx() *
-                                                escalaEnfoque.value
-
-                                    val grosor =
-                                        2.5.dp.toPx()
-
-                                    val color =
-                                        colorIconos.copy(
-                                            alpha = alphaEnfoque.value
-                                        )
-
-
-                                    val izquierda =
-                                        punto.x - mitad
-
-                                    val derecha =
-                                        punto.x + mitad
-
-                                    val arriba =
-                                        punto.y - mitad
-
-                                    val abajo =
-                                        punto.y + mitad
-
-
-                                    // ARRIBA IZQUIERDA
-                                    drawLine(
-                                        color = color,
-                                        start = Offset(
-                                            izquierda,
-                                            arriba
-                                        ),
-                                        end = Offset(
-                                            izquierda + longitudEsquina,
-                                            arriba
-                                        ),
-                                        strokeWidth = grosor
-                                    )
-
-                                    drawLine(
-                                        color = color,
-                                        start = Offset(
-                                            izquierda,
-                                            arriba
-                                        ),
-                                        end = Offset(
-                                            izquierda,
-                                            arriba + longitudEsquina
-                                        ),
-                                        strokeWidth = grosor
-                                    )
-
-
-                                    // ARRIBA DERECHA
-                                    drawLine(
-                                        color = color,
-                                        start = Offset(
-                                            derecha,
-                                            arriba
-                                        ),
-                                        end = Offset(
-                                            derecha - longitudEsquina,
-                                            arriba
-                                        ),
-                                        strokeWidth = grosor
-                                    )
-
-                                    drawLine(
-                                        color = color,
-                                        start = Offset(
-                                            derecha,
-                                            arriba
-                                        ),
-                                        end = Offset(
-                                            derecha,
-                                            arriba + longitudEsquina
-                                        ),
-                                        strokeWidth = grosor
-                                    )
-
-
-                                    // ABAJO IZQUIERDA
-                                    drawLine(
-                                        color = color,
-                                        start = Offset(
-                                            izquierda,
-                                            abajo
-                                        ),
-                                        end = Offset(
-                                            izquierda + longitudEsquina,
-                                            abajo
-                                        ),
-                                        strokeWidth = grosor
-                                    )
-
-                                    drawLine(
-                                        color = color,
-                                        start = Offset(
-                                            izquierda,
-                                            abajo
-                                        ),
-                                        end = Offset(
-                                            izquierda,
-                                            abajo - longitudEsquina
-                                        ),
-                                        strokeWidth = grosor
-                                    )
-
-
-                                    // ABAJO DERECHA
-                                    drawLine(
-                                        color = color,
-                                        start = Offset(
-                                            derecha,
-                                            abajo
-                                        ),
-                                        end = Offset(
-                                            derecha - longitudEsquina,
-                                            abajo
-                                        ),
-                                        strokeWidth = grosor
-                                    )
-
-                                    drawLine(
-                                        color = color,
-                                        start = Offset(
-                                            derecha,
-                                            abajo
-                                        ),
-                                        end = Offset(
-                                            derecha,
-                                            abajo - longitudEsquina
-                                        ),
-                                        strokeWidth = grosor
-                                    )
-
-
-                                    // PUNTO CENTRAL
-                                    drawCircle(
-                                        color = color,
-                                        radius = 3.dp.toPx(),
-                                        center = punto
-                                    )
-                                }
-                            }
-
-                            // MARCO DE ESCANEO
-                            MarcoEscaneo(
-                                color = colorIconos,
-                                modifier = Modifier.fillMaxSize()
-                            )
-                        }
-                    }
-
-                } else {
-                    Column(
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .padding(32.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-
-                        Text(
-                            text = "Washly necesita permiso para utilizar la cámara.",
-                            color = colorIconos
-                        )
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        Button(
-                            onClick = {
-                                launcherPermisoCamara
-                                    .launch(
-                                        Manifest.permission.CAMERA
-                                    )
-                            }
-                        ) {
-                            Text(
-                                text = "Permitir cámara"
-                            )
-                        }
-                    }
-                }
-
-                // BOTON TOMAR FOTO
+        // ZOOM SOLO EN HORIZONTAL
+        if (tipoPantalla == TipoPantalla.TABLET_HORIZONTAL) {
+            Row(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .navigationBarsPadding()
+                    .padding(bottom = 74.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
                 IconButton(
                     onClick = {
-                        if (tienePermisoCamara) {
-                            tomarFoto()
-                        } else {
-                            Toast.makeText(
-                                context,
-                                "Necesitas permitir el acceso a la cámara",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                    },
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(
-                            bottom = if (esHorizontal) 60.dp else 80.dp
-                        )
-                        .size(if (esTablet) 76.dp else 68.dp)
-                        .background(
-                            color = colorFondo,
-                            shape = CircleShape
-                        )
-                        .border(
-                            width = 4.dp,
-                            color = colorIconos,
-                            shape = CircleShape
-                        )
+                        val nuevoZoom =
+                            (zoomActual - 0.10f)
+                                .coerceIn(0f, 1f)
+                        zoomActual = nuevoZoom
+                        camara
+                            ?.cameraControl
+                            ?.setLinearZoom(nuevoZoom)
+                    }
                 ) {
-
                     Icon(
-                        imageVector = Icons.Default.CameraAlt,
-                        contentDescription = "Tomar foto",
-                        tint = colorIconos,
-                        modifier = Modifier.size(34.dp)
+                        imageVector = Icons.Default.ZoomOut,
+                        contentDescription = "Alejar",
+                        tint = colorControles,
+                        modifier = Modifier.size(tamanoIconosZoom)
                     )
                 }
 
-                // ZOOM
-                Row(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(bottom = if (esHorizontal) 8.dp else 15.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                IconButton(
+                    onClick = {
+                        val nuevoZoom =
+                            (zoomActual + 0.10f)
+                                .coerceIn(0f, 1f)
+                        zoomActual = nuevoZoom
+                        camara
+                            ?.cameraControl
+                            ?.setLinearZoom(nuevoZoom)
+                    }
                 ) {
-
-                    // ALEJAR
-                    IconButton(
-                        onClick = {
-                            val nuevoZoom =
-                                (zoomActual - 0.10f)
-                                    .coerceIn(
-                                        0f,
-                                        1f
-                                    )
-                            zoomActual =
-                                nuevoZoom
-                            camara
-                                ?.cameraControl
-                                ?.setLinearZoom(
-                                    nuevoZoom
-                                )
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.ZoomOut,
-                            contentDescription = "Alejar",
-                            tint = colorIconos,
-                            modifier = Modifier.size(32.dp)
-                        )
-                    }
-
-                    // ACERCAR
-                    IconButton(
-                        onClick = {
-                            val nuevoZoom =
-                                (zoomActual + 0.10f)
-                                    .coerceIn(
-                                        0f,
-                                        1f
-                                    )
-                            zoomActual =
-                                nuevoZoom
-                            camara
-                                ?.cameraControl
-                                ?.setLinearZoom(
-                                    nuevoZoom
-                                )
-                        }
-                    ) {
-
-                        Icon(
-                            imageVector = Icons.Default.ZoomIn,
-                            contentDescription = "Acercar",
-                            tint = colorIconos,
-                            modifier = Modifier.size(32.dp)
-                        )
-                    }
+                    Icon(
+                        imageVector = Icons.Default.ZoomIn,
+                        contentDescription = "Acercar",
+                        tint = colorControles,
+                        modifier = Modifier.size(tamanoIconosZoom)
+                    )
                 }
             }
         }
+    }
 
         // POPUP DATOS DE LAS PRENDAS
         if (
@@ -1162,15 +975,14 @@ fun PantallaEscaner(
 
                         Text(
                             text = "Cancelar",
-                            color =
-                                colorTextoDialogo
+                            color = colorTextoDialogo
                         )
                     }
                 }
             )
         }
     }
-}
+
 
 // ESQUINAS DEL ESCANER
 @Composable
@@ -1182,11 +994,8 @@ private fun MarcoEscaneo(
         modifier = modifier
             .padding(3.dp)
     ) {
-
-        val longitud =
-            24.dp.toPx()
-        val grosor =
-            4.dp.toPx()
+        val longitud = 24.dp.toPx()
+        val grosor = 4.dp.toPx()
 
         // ARRIBA IZQUIERDA
         drawLine(

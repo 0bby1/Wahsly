@@ -1,7 +1,5 @@
 package com.example.wahsly.ui.pantallas
 
-import android.content.res.Configuration
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -27,14 +25,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.border
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.ui.zIndex
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.contentDescription
 import com.example.wahsly.R
@@ -50,7 +40,6 @@ import com.example.wahsly.ui.theme.IconoSecundarioClaro
 import com.example.wahsly.ui.theme.RosaOscuro
 import com.example.wahsly.ui.theme.TarjetaRutinaClaro
 import com.example.wahsly.datos.model.RegistroEscaneo
-import com.example.wahsly.ia.ResultadoLavado
 import com.example.wahsly.ia.resultadoLavadoDesdeJson
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -60,15 +49,16 @@ import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.ui.unit.Dp
 import kotlinx.coroutines.launch
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.layout.ContentScale
 import com.example.wahsly.utilidades.FotoPerfilStorage
+import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
+import com.example.wahsly.utilidades.TipoPantalla
+import com.example.wahsly.utilidades.obtenerTipoPantalla
 
 @Composable
 fun PantallaPrincipal(
@@ -92,18 +82,13 @@ fun PantallaPrincipal(
     }
 
     LaunchedEffect(correoUsuario) {
-
         fotoPerfilMenu = null
-
         if (correoUsuario.isNotBlank()) {
-
             fotoPerfilMenu = try {
-
                 FotoPerfilStorage.cargarFoto(
                     context = context,
                     correo = correoUsuario
                 )
-
             } catch (e: Exception) {
                 null
             }
@@ -121,103 +106,74 @@ fun PantallaPrincipal(
         .collectAsState(
             initial = emptyList()
         )
-    var busqueda by remember {
-        mutableStateOf("")
-    }
+    var busqueda by remember { mutableStateOf("") }
+    var tabSeleccionado by remember { mutableIntStateOf(0) }
+    var registroSeleccionado by remember { mutableStateOf<RegistroEscaneo?>(null) }
 
-    var tabSeleccionado by remember {
-        mutableIntStateOf(0)
-    }
-
-    var registroSeleccionado by remember {
-        mutableStateOf<RegistroEscaneo?>(null)
-    }
-
-    // ============================================
     // RESPONSIVE: DETECCIÓN DE DISPOSITIVO CON WindowSizeClass
-    // ============================================
     val configuration = LocalConfiguration.current
-    val esHorizontal = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-    val anchoCompacto = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact
-    val esTablet = !anchoCompacto
-    val esCelularHorizontal = esHorizontal && anchoCompacto
+    val tipoPantalla = obtenerTipoPantalla(windowSizeClass)
+    val esTabletVertical = tipoPantalla == TipoPantalla.TABLET_VERTICAL
+    val esTabletHorizontal = tipoPantalla == TipoPantalla.TABLET_HORIZONTAL
+    val esTablet = esTabletVertical || esTabletHorizontal
+    val esCelularHorizontal = tipoPantalla == TipoPantalla.TELEFONO && windowSizeClass.heightSizeClass == WindowHeightSizeClass.Compact
+    val esHorizontal = esCelularHorizontal || esTabletHorizontal
+    val columnasRutinas = when (tipoPantalla) {
+        TipoPantalla.TELEFONO -> 1
+        TipoPantalla.TABLET_VERTICAL -> 2
+        TipoPantalla.TABLET_HORIZONTAL -> 3
+    }
 
     // Colores
-    val colorFondo =
-        if (modoOscuro) FondoOscuro else FondoClaro
-
-    val colorEncabezado =
-        if (modoOscuro) RosaOscuro else AzulPrincipalClaro
-
-    val colorFranjaMenu =
-        if (modoOscuro) RosaOscuro else AzulPrincipalClaro
-
-    val colorBarraInferior =
-        if (modoOscuro) RosaOscuro else AzulPrincipalClaro
-
-    val colorTextoPrincipal =
-        if (modoOscuro) RosaOscuro else AzulTextoClaro
-
-    val colorTextoSecundario =
-        if (modoOscuro) CremaOscuro else Color.Gray
-
-    val colorLupa =
-        if (modoOscuro) RosaOscuro else FondoOscuro
-
-    val color3Barras =
-        if (modoOscuro) FondoOscuro else CremaOscuro
-
-    val colorBuscador =
-        if (modoOscuro) FondoOscuro else CremaOscuro
-
-    val colorTarjetaRutina =
-        if (modoOscuro) FondoOscuro else TarjetaRutinaClaro
-
-    val colorBordeTarjeta =
-        if (modoOscuro) RosaOscuro else Color.Transparent
-
-    val colorSeleccionado =
-        if (modoOscuro) CremaOscuro else Color.White
-
-    val colorIconosBarra =
-        if (modoOscuro) FondoOscuro else IconoSecundarioClaro
-
-    val colorTextoBarra =
-        if (modoOscuro) FondoOscuro else Color.White
-
-    val franja =
-        if (modoOscuro) RosaOscuro else FondoOscuro
-
-    val franjaTexto =
-        if (modoOscuro) FondoOscuro else CremaOscuro
+    val colorFondo = if (modoOscuro) FondoOscuro else FondoClaro
+    val colorEncabezado = if (modoOscuro) RosaOscuro else AzulPrincipalClaro
+    val colorTextoPrincipal = if (modoOscuro) RosaOscuro else AzulTextoClaro
+    val colorTextoSecundario = if (modoOscuro) CremaOscuro else Color.Gray
+    val colorLupa = if (modoOscuro) RosaOscuro else FondoOscuro
+    val colorBuscador = if (modoOscuro) FondoOscuro else CremaOscuro
+    val colorTarjetaRutina = if (modoOscuro) FondoOscuro else TarjetaRutinaClaro
+    val colorBordeTarjeta = if (modoOscuro) RosaOscuro else Color.Transparent
 
     // Altura donde Android muestra hora, batería, WiFi, etc.
     val alturaStatusBar = WindowInsets.statusBars
         .asPaddingValues()
         .calculateTopPadding()
 
-    // ============================================
-    // TAMAÑOS DINÁMICOS SEGÚN DISPOSITIVO
-    // ============================================
-    // Cabecera: la grande (inicio) y a la que se encoge (final)
+    // TAMAÑOS RESPONSIVOS
     val alturaCabeceraInicial = when {
-        esCelularHorizontal -> 110.dp
-        esTablet && esHorizontal -> 170.dp
-        esTablet -> 235.dp
+        esCelularHorizontal -> 105.dp
+        esTabletHorizontal -> 195.dp
+        esTabletVertical -> 215.dp
         else -> 190.dp
     }
 
     val alturaNormalInicio = when {
-        esCelularHorizontal -> alturaStatusBar + 45.dp
-        esTablet && esHorizontal -> alturaStatusBar + 65.dp
-        esTablet -> alturaStatusBar + 92.dp
-        else -> alturaStatusBar + 75.dp
+        esCelularHorizontal ->
+            alturaStatusBar + 55.dp
+        esTabletHorizontal ->
+            alturaStatusBar + 105.dp
+        esTabletVertical ->
+            alturaStatusBar + 105.dp
+        else -> alturaStatusBar + 85.dp
     }
 
     val alturaBuscador = when {
         esCelularHorizontal -> 44.dp
-        esTablet -> 58.dp
+        esTabletHorizontal -> 58.dp
+        esTabletVertical -> 62.dp
         else -> 52.dp
+    }
+
+    val alturaTarjetaRutina = when (tipoPantalla) {
+        TipoPantalla.TELEFONO -> 210.dp
+        TipoPantalla.TABLET_VERTICAL -> 170.dp
+        TipoPantalla.TABLET_HORIZONTAL -> 145.dp
+    }
+
+    val alturaImagenRutina = when (tipoPantalla) {
+        TipoPantalla.TELEFONO -> 105.dp
+        TipoPantalla.TABLET_VERTICAL -> 78.dp
+        TipoPantalla.TABLET_HORIZONTAL -> 68.dp
     }
 
     val alturaFranja = when {
@@ -238,10 +194,45 @@ fun PantallaPrincipal(
         else -> alturaStatusBar + 130.dp
     }
 
-    val tamanoIconoMenu = if (esTablet) 34.dp else 30.dp
-    val tamanoLogoRutina = if (esTablet) 56.dp else 48.dp
-    val fontSizeTituloRutinas = if (esTablet) 22.sp else 18.sp
-    val maxAltoDialogo = if (esCelularHorizontal) 220.dp else 520.dp
+    val tamanoIconoMenu =
+        if (esTablet) 34.dp else 30.dp
+
+    val tamanoLogoRutina =
+        if (esTablet) 56.dp else 48.dp
+
+    val fontSizeTituloRutinas = when (tipoPantalla) {
+        TipoPantalla.TELEFONO -> 28.sp
+        TipoPantalla.TABLET_VERTICAL -> 30.sp
+        TipoPantalla.TABLET_HORIZONTAL -> 28.sp
+    }
+
+    val maxAltoDialogo =
+        if (esCelularHorizontal) { 220.dp
+        } else { 520.dp }
+
+    val espacioSuperiorRutinas = when (tipoPantalla) {
+        TipoPantalla.TELEFONO -> 24.dp
+        TipoPantalla.TABLET_VERTICAL -> 22.dp
+        TipoPantalla.TABLET_HORIZONTAL -> 22.dp
+    }
+
+    val paddingHorizontalGrid = when (tipoPantalla) {
+        TipoPantalla.TELEFONO -> 32.dp
+        TipoPantalla.TABLET_VERTICAL -> 48.dp
+        TipoPantalla.TABLET_HORIZONTAL -> 60.dp
+    }
+
+    val espacioHorizontalGrid = when (tipoPantalla) {
+        TipoPantalla.TELEFONO -> 0.dp
+        TipoPantalla.TABLET_VERTICAL -> 42.dp
+        TipoPantalla.TABLET_HORIZONTAL -> 52.dp
+    }
+
+    val espacioVerticalGrid = when (tipoPantalla) {
+        TipoPantalla.TELEFONO -> 24.dp
+        TipoPantalla.TABLET_VERTICAL -> 46.dp
+        TipoPantalla.TABLET_HORIZONTAL -> 28.dp
+    }
 
     // ANIMACIÓN DE LA CABECERA AZUL
     var iniciarAnimacionCabecera by remember(animarCabecera) {
@@ -265,30 +256,22 @@ fun PantallaPrincipal(
             dampingRatio = 0.78f,
             stiffness = 220f
         ),
-
         label = "AlturaCabeceraInicio"
     )
-
     Scaffold(
         containerColor = colorFondo,
         contentWindowInsets = WindowInsets.systemBars,
-
-        // BARRA INFERIOR
     ) { padding ->
-
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(colorFondo)
         ) {
-
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(colorFondo)
-                    .padding(
-                        bottom = padding.calculateBottomPadding()
-                    )
+                    .padding(bottom = padding.calculateBottomPadding())
             ) {
                 // CABECERA
                 Box(
@@ -310,12 +293,15 @@ fun PantallaPrincipal(
                             busqueda = it
                         },
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(
-                                start = 15.dp,
-                                end = 15.dp,
-                                top = alturaStatusBar + 12.dp
+                            .fillMaxWidth(
+                                when (tipoPantalla) {
+                                    TipoPantalla.TELEFONO -> 0.94f
+                                    TipoPantalla.TABLET_VERTICAL -> 0.90f
+                                    TipoPantalla.TABLET_HORIZONTAL -> 0.82f
+                                }
                             )
+                            .align(Alignment.TopCenter)
+                            .padding(top = alturaStatusBar + 12.dp)
                             .height(alturaBuscador)
                             .shadow(
                                 elevation = 5.dp,
@@ -349,43 +335,36 @@ fun PantallaPrincipal(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f)
-                        .padding(top = 16.dp)
+                        .padding(top = espacioSuperiorRutinas)
                 ) {
-
                     Text(
                         text = "Mis Rutinas",
                         fontSize = fontSizeTituloRutinas,
                         fontWeight = FontWeight.Bold,
                         color = colorTextoPrincipal,
                         modifier = Modifier
-                            .align(
-                                Alignment.CenterHorizontally
+                            .align(Alignment.CenterHorizontally)
+                            .padding(
+                                bottom = when (tipoPantalla) {
+                                    TipoPantalla.TELEFONO -> 18.dp
+                                    TipoPantalla.TABLET_VERTICAL -> 28.dp
+                                    TipoPantalla.TABLET_HORIZONTAL -> 16.dp
+                                }
                             )
-                            .padding(bottom = 12.dp)
                     )
-
 
                     // FILTRAR CON EL BUSCADOR
                     val registrosFiltrados =
                         registros.filter { registro ->
-
                             if (busqueda.isBlank()) {
-
                                 true
-
                             } else {
-
-                                val resultado =
-                                    resultadoLavadoDesdeJson(
-                                        registro.informacion
-                                    )
-
+                                val resultado = resultadoLavadoDesdeJson(registro.informacion)
 
                                 registro.nombre.contains(
                                     busqueda,
                                     ignoreCase = true
                                 ) ||
-
                                         resultado
                                             ?.lavado
                                             ?.contains(
@@ -409,18 +388,13 @@ fun PantallaPrincipal(
                             }
                         }
 
-
                     if (registrosFiltrados.isEmpty()) {
-
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .padding(30.dp),
-
-                            contentAlignment =
-                                Alignment.Center
+                            contentAlignment = Alignment.Center
                         ) {
-
                             Text(
                                 text =
                                     if (busqueda.isBlank()) {
@@ -428,27 +402,22 @@ fun PantallaPrincipal(
                                     } else {
                                         "No se encontraron rutinas."
                                     },
-
-                                color =
-                                    colorTextoSecundario,
-
-                                fontSize =
-                                    16.sp
+                                color = colorTextoSecundario,
+                                fontSize = 16.sp
                             )
                         }
-
                     } else {
                         if (esTablet) {
                             LazyVerticalGrid(
-                                columns = GridCells.Fixed(2),
+                                columns = GridCells.Fixed(columnasRutinas),
                                 modifier = Modifier.fillMaxSize(),
                                 contentPadding = PaddingValues(
-                                    start = 16.dp,
-                                    end = 16.dp,
+                                    start = paddingHorizontalGrid,
+                                    end = paddingHorizontalGrid,
                                     bottom = 20.dp
                                 ),
-                                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                verticalArrangement = Arrangement.spacedBy(10.dp)
+                                horizontalArrangement = Arrangement.spacedBy(espacioHorizontalGrid),
+                                verticalArrangement = Arrangement.spacedBy(espacioVerticalGrid)
                             ) {
                                 items(
                                     items = registrosFiltrados,
@@ -475,11 +444,11 @@ fun PantallaPrincipal(
                             LazyColumn(
                                 modifier = Modifier.fillMaxSize(),
                                 contentPadding = PaddingValues(
-                                    start = 16.dp,
-                                    end = 16.dp,
+                                    start = paddingHorizontalGrid,
+                                    end = paddingHorizontalGrid,
                                     bottom = 20.dp
                                 ),
-                                verticalArrangement = Arrangement.spacedBy(10.dp)
+                                verticalArrangement = Arrangement.spacedBy(espacioVerticalGrid)
                             ) {
                                 items(
                                     items = registrosFiltrados,
@@ -508,21 +477,19 @@ fun PantallaPrincipal(
             }
 
         }
+
         // DETALLE DE UNA RUTINA GUARDADA
         registroSeleccionado?.let { registro ->
             val resultado =
                 resultadoLavadoDesdeJson(
                     registro.informacion
                 )
-
             if (resultado != null) {
                 val colorDialogo = if (modoOscuro) { FondoOscuro } else { FondoClaro }
                 val colorTexto = if (modoOscuro) { RosaOscuro } else { AzulPrincipalClaro }
-
                 AlertDialog(
                     onDismissRequest = { registroSeleccionado = null },
                     containerColor = colorDialogo,
-
                     title = {
                         Text(
                             text = "Recomendación de lavado",
@@ -530,7 +497,6 @@ fun PantallaPrincipal(
                             fontWeight = FontWeight.Bold
                         )
                     },
-
                     text = {
                         Column(
                             modifier = Modifier

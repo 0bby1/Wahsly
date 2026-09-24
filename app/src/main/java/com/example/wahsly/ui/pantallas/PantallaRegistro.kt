@@ -1,6 +1,5 @@
 package com.example.wahsly.ui.pantallas
 
-import android.content.res.Configuration
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -23,31 +22,26 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.liveRegion
-import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import com.example.wahsly.R
 import com.example.wahsly.datos.database.AppDatabase
 import com.example.wahsly.datos.model.Usuario
 import com.example.wahsly.datos.repository.UsuarioRepository
-import com.example.wahsly.ui.componentes.BotonDegradado
 import com.example.wahsly.ui.theme.AzulGradienteOscuro
 import com.example.wahsly.ui.theme.AzulPrincipalClaro
 import com.example.wahsly.ui.theme.AzulTextoClaro
@@ -62,6 +56,8 @@ import com.example.wahsly.ui.theme.TextoSecundarioOscuro
 import com.example.wahsly.viewmodels.RegistroViewModel
 import com.example.wahsly.viewmodels.ViewModelFactory
 import kotlinx.coroutines.delay
+import com.example.wahsly.utilidades.TipoPantalla
+import com.example.wahsly.utilidades.obtenerTipoPantalla
 
 @Composable
 fun PantallaRegistro(
@@ -83,82 +79,78 @@ fun PantallaRegistro(
         }
     }
 
-    // ============================================
-    // RESPONSIVE: DETECCIÓN DE DISPOSITIVO CON WindowSizeClass
-    // ============================================
-    val configuration = LocalConfiguration.current
-    val esHorizontal = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-    val anchoCompacto = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact
-    val esTablet = !anchoCompacto
-    val esCelularHorizontal = esHorizontal && anchoCompacto
+    val tipoPantalla = obtenerTipoPantalla(windowSizeClass)
 
-    // ---- TAMAÑOS DINÁMICOS ----
-    val paddingLateral = when {
-        esTablet -> 40.dp
-        esCelularHorizontal -> 48.dp
-        else -> 24.dp
+    val paddingHorizontal = when (tipoPantalla) {
+        TipoPantalla.TELEFONO -> 30.dp
+        TipoPantalla.TABLET_VERTICAL -> 50.dp
+        TipoPantalla.TABLET_HORIZONTAL -> 60.dp
     }
 
-    val paddingVertical = when {
-        esCelularHorizontal -> 20.dp
-        esTablet -> 50.dp
-        else -> 36.dp
+    val paddingSuperior = when (tipoPantalla) {
+        TipoPantalla.TELEFONO -> 20.dp
+        TipoPantalla.TABLET_VERTICAL -> 30.dp
+        TipoPantalla.TABLET_HORIZONTAL -> 18.dp
     }
 
-    val tamanoLogo = when {
-        esCelularHorizontal -> 60.dp
-        esTablet -> 80.dp
-        else -> 70.dp
+    val tamanoLogo = when (tipoPantalla) {
+        TipoPantalla.TELEFONO -> 52.dp
+        TipoPantalla.TABLET_VERTICAL -> 58.dp
+        TipoPantalla.TABLET_HORIZONTAL -> 58.dp
     }
 
-    val fontSizeTitulo = when {
-        esCelularHorizontal -> 22.sp
-        esTablet -> 26.sp
-        else -> 24.sp
+    val anchoFormulario = when (tipoPantalla) {
+        TipoPantalla.TELEFONO -> 390.dp
+        TipoPantalla.TABLET_VERTICAL -> 600.dp
+        TipoPantalla.TABLET_HORIZONTAL -> 515.dp
     }
 
-    val fontSizeTexto = when {
-        esCelularHorizontal -> 15.sp
-        esTablet -> 18.sp
-        else -> 16.sp
+    val alturaCampo = when (tipoPantalla) {
+        TipoPantalla.TELEFONO -> 58.dp
+        TipoPantalla.TABLET_VERTICAL -> 80.dp
+        TipoPantalla.TABLET_HORIZONTAL -> 62.dp
     }
 
-    val fontSizeTextoGrande = when {
-        esCelularHorizontal -> 17.sp
-        esTablet -> 20.sp
-        else -> 18.sp
+    val espacioEntreCampos = when (tipoPantalla) {
+        TipoPantalla.TELEFONO -> 16.dp
+        TipoPantalla.TABLET_VERTICAL -> 40.dp
+        TipoPantalla.TABLET_HORIZONTAL -> 28.dp
     }
 
-    val fontSizePlaceholder = when {
-        esCelularHorizontal -> 16.sp
-        esTablet -> 19.sp
-        else -> 17.sp
+    val fontSizeTitulo = when (tipoPantalla) {
+        TipoPantalla.TELEFONO -> 30.sp
+        TipoPantalla.TABLET_VERTICAL -> 34.sp
+        TipoPantalla.TABLET_HORIZONTAL -> 36.sp
     }
 
-    val alturaCampo = when {
-        esCelularHorizontal -> 52.dp
-        esTablet -> 60.dp
-        else -> 56.dp
+    val fontSizePlaceholder = when (tipoPantalla) {
+        TipoPantalla.TELEFONO -> 18.sp
+        TipoPantalla.TABLET_VERTICAL -> 20.sp
+        TipoPantalla.TABLET_HORIZONTAL -> 18.sp
     }
 
-    val espacioEntreCampos = when {
-        esCelularHorizontal -> 6.dp
-        esTablet -> 12.dp
-        else -> 8.dp
+    val anchoBoton = when (tipoPantalla) {
+        TipoPantalla.TELEFONO -> 230.dp
+        TipoPantalla.TABLET_VERTICAL -> 260.dp
+        TipoPantalla.TABLET_HORIZONTAL -> 360.dp
     }
 
-    val maxAnchoContenido: Dp = if (esTablet) 500.dp else Dp.Unspecified
-
-    val altoDialogo = when {
-        esCelularHorizontal -> 140.dp
-        esTablet -> 200.dp
-        else -> 180.dp
+    val altoBoton = when (tipoPantalla) {
+        TipoPantalla.TELEFONO -> 56.dp
+        TipoPantalla.TABLET_VERTICAL -> 68.dp
+        TipoPantalla.TABLET_HORIZONTAL -> 68.dp
     }
 
-    val fontSizeDialogo = when {
-        esCelularHorizontal -> 22.sp
-        esTablet -> 30.sp
-        else -> 26.sp
+    val altoDialogo = when (tipoPantalla) {
+        TipoPantalla.TELEFONO -> 180.dp
+        TipoPantalla.TABLET_VERTICAL -> 200.dp
+        TipoPantalla.TABLET_HORIZONTAL -> 180.dp
+    }
+
+    val fontSizeDialogo = when (tipoPantalla) {
+        TipoPantalla.TELEFONO -> 26.sp
+        TipoPantalla.TABLET_VERTICAL -> 30.sp
+        TipoPantalla.TABLET_HORIZONTAL -> 28.sp
     }
 
     // Colores
@@ -174,79 +166,186 @@ fun PantallaRegistro(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .statusBarsPadding()
+                .navigationBarsPadding()
                 .verticalScroll(rememberScrollState())
                 .padding(
-                    start = paddingLateral,
-                    end = paddingLateral,
-                    top = paddingVertical,
-                    bottom = paddingVertical
+                    start = paddingHorizontal,
+                    end = paddingHorizontal,
+                    top = paddingSuperior,
+                    bottom = 24.dp
                 ),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Contenedor para limitar el ancho en tablets
-            Column(
-                modifier = Modifier
-                    .then(
-                        if (maxAnchoContenido != Dp.Unspecified) {
-                            Modifier.widthIn(max = maxAnchoContenido)
-                        } else {
-                            Modifier
-                        }
-                    )
-                    .fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
 
-                Spacer(modifier = Modifier.height(20.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+            // CABECERA
+            if (tipoPantalla == TipoPantalla.TABLET_HORIZONTAL) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(90.dp)
                 ) {
+                    // Logo a la izquierda
                     Image(
-                        painter = if (modoOscuro) painterResource(id = R.drawable.icono_washly_crear_cuenta_oscuro)
-                        else painterResource(id = R.drawable.icono_washly_crear_cuenta_claro),
+                        painter = if (modoOscuro) {
+                            painterResource(
+                                id = R.drawable.icono_washly_crear_cuenta_oscuro
+                            )
+                        } else {
+                            painterResource(
+                                id = R.drawable.icono_washly_crear_cuenta_claro
+                            )
+                        },
                         contentDescription = "Logo de Wahsly",
-                        modifier = Modifier.size(tamanoLogo)
+                        modifier = Modifier
+                            .size(tamanoLogo)
+                            .align(Alignment.CenterStart)
                     )
-                    Column(horizontalAlignment = Alignment.End) {
+
+                    // Título centrado
+                    Text(
+                        text = "Crea tu cuenta",
+                        fontSize = fontSizeTitulo,
+                        fontWeight = FontWeight.Bold,
+                        color = colorTitulo,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+
+                    // Ya tienes cuenta / Iniciar sesión
+                    Column(
+                        modifier = Modifier.align(Alignment.CenterEnd),
+                        horizontalAlignment = Alignment.End
+                    ) {
                         Text(
                             text = "¿Ya tienes una cuenta?",
                             color = colorTextoSecundario,
-                            fontSize = fontSizeTexto
+                            fontSize = 15.sp
                         )
+
+                        Spacer(modifier = Modifier.height(2.dp))
+
                         Text(
-                            text = "Iniciar sesión",
+                            text = "Iniciar Sesión",
                             color = colorRosa,
-                            fontSize = fontSizeTextoGrande,
+                            fontSize = 18.sp,
                             fontWeight = FontWeight.SemiBold,
-                            modifier = Modifier.clickable(role = Role.Button, onClick = onVolverLogin)
+                            modifier = Modifier.clickable(
+                                role = Role.Button,
+                                onClick = onVolverLogin
+                            )
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(14.dp))
+            } else {
+                // Teléfono y tablet vertical:
+                // logo izquierda + iniciar sesión derecha.
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.Top,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Image(
+                        painter = if (modoOscuro) {
+                            painterResource(
+                                id = R.drawable.icono_washly_crear_cuenta_oscuro
+                            )
+                        } else {
+                            painterResource(
+                                id = R.drawable.icono_washly_crear_cuenta_claro
+                            )
+                        },
+                        contentDescription = "Logo de Wahsly",
+                        modifier = Modifier.size(tamanoLogo)
+                    )
+                    Column(
+                        horizontalAlignment = Alignment.End
+                    ) {
+                        Text(
+                            text = "¿Ya tienes una cuenta?",
+                            color = colorTextoSecundario,
+                            fontSize = if (
+                                tipoPantalla == TipoPantalla.TELEFONO
+                            ) 13.sp else 15.sp
+                        )
+
+                        Text(
+                            text = "Iniciar Sesión",
+                            color = colorRosa,
+                            fontSize = if (
+                                tipoPantalla == TipoPantalla.TELEFONO
+                            ) 16.sp else 18.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier.clickable(
+                                role = Role.Button,
+                                onClick = onVolverLogin
+                            )
+                        )
+                    }
+                }
+
+                Spacer(
+                    modifier = Modifier.height(
+                        if (tipoPantalla == TipoPantalla.TELEFONO) {
+                            28.dp
+                        } else {
+                            42.dp
+                        }
+                    )
+                )
 
                 Text(
                     text = "Crea tu cuenta",
                     fontSize = fontSizeTitulo,
                     fontWeight = FontWeight.Bold,
                     color = colorTitulo,
-                    modifier = Modifier.align(Alignment.Start)
+                    textAlign = TextAlign.Center
                 )
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(
+                    modifier = Modifier.height(
+                        if (tipoPantalla == TipoPantalla.TELEFONO) {
+                            28.dp
+                        } else {
+                            38.dp
+                        }
+                    )
+                )
+            }
 
-                // Nombre
+
+            // FORMULARIO
+            Column(
+                modifier = Modifier
+                    .widthIn(max = anchoFormulario)
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // NOMBRE
                 OutlinedTextField(
                     value = viewModel.nombre,
                     onValueChange = viewModel::onNombreChange,
-                    modifier = Modifier.fillMaxWidth().height(alturaCampo),
-                    placeholder = { Text("Tu nombre", fontSize = fontSizePlaceholder, color = colorTextoCampo) },
-                    leadingIcon = { Icon(Icons.Default.Person, contentDescription = null, tint = colorIcono) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(alturaCampo),
+                    placeholder = {
+                        Text(
+                            text = "Nombre",
+                            fontSize = fontSizePlaceholder,
+                            color = colorTextoCampo
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.Person,
+                            contentDescription = null,
+                            tint = colorIcono
+                        )
+                    },
                     singleLine = true,
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedCornerShape(10.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedContainerColor = colorCampo,
                         unfocusedContainerColor = colorCampo,
@@ -254,29 +353,39 @@ fun PantallaRegistro(
                         unfocusedBorderColor = colorCampo,
                         focusedTextColor = colorTextoCampo,
                         unfocusedTextColor = colorTextoCampo,
-                        focusedLabelColor = colorTextoCampo,
-                        unfocusedLabelColor = colorTextoCampo,
                         focusedPlaceholderColor = colorTextoCampo,
                         unfocusedPlaceholderColor = colorTextoCampo,
                         focusedLeadingIconColor = colorIcono,
                         unfocusedLeadingIconColor = colorIcono,
-                        focusedTrailingIconColor = colorIcono,
-                        unfocusedTrailingIconColor = colorIcono,
                         cursorColor = colorTextoCampo
                     )
                 )
 
                 Spacer(modifier = Modifier.height(espacioEntreCampos))
 
-                // Apellido
+                // APELLIDO
                 OutlinedTextField(
                     value = viewModel.apellido,
                     onValueChange = viewModel::onApellidoChange,
-                    modifier = Modifier.fillMaxWidth().height(alturaCampo),
-                    placeholder = { Text("Tu apellido", fontSize = fontSizePlaceholder, color = colorTextoCampo) },
-                    leadingIcon = { Icon(Icons.Default.Person, contentDescription = null, tint = colorIcono) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(alturaCampo),
+                    placeholder = {
+                        Text(
+                            text = "Apellido",
+                            fontSize = fontSizePlaceholder,
+                            color = colorTextoCampo
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.Person,
+                            contentDescription = null,
+                            tint = colorIcono
+                        )
+                    },
                     singleLine = true,
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedCornerShape(10.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedContainerColor = colorCampo,
                         unfocusedContainerColor = colorCampo,
@@ -284,30 +393,42 @@ fun PantallaRegistro(
                         unfocusedBorderColor = colorCampo,
                         focusedTextColor = colorTextoCampo,
                         unfocusedTextColor = colorTextoCampo,
-                        focusedLabelColor = colorTextoCampo,
-                        unfocusedLabelColor = colorTextoCampo,
                         focusedPlaceholderColor = colorTextoCampo,
                         unfocusedPlaceholderColor = colorTextoCampo,
                         focusedLeadingIconColor = colorIcono,
                         unfocusedLeadingIconColor = colorIcono,
-                        focusedTrailingIconColor = colorIcono,
-                        unfocusedTrailingIconColor = colorIcono,
                         cursorColor = colorTextoCampo
                     )
                 )
 
                 Spacer(modifier = Modifier.height(espacioEntreCampos))
 
-                // Correo
+                // CORREO
                 OutlinedTextField(
                     value = viewModel.correo,
                     onValueChange = viewModel::onCorreoChange,
-                    modifier = Modifier.fillMaxWidth().height(alturaCampo),
-                    placeholder = { Text("ejemplo@correo.com", fontSize = fontSizePlaceholder, color = colorTextoCampo) },
-                    leadingIcon = { Icon(Icons.Default.Email, contentDescription = null, tint = colorIcono) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(alturaCampo),
+                    placeholder = {
+                        Text(
+                            text = "Correo electrónico",
+                            fontSize = fontSizePlaceholder,
+                            color = colorTextoCampo
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.Email,
+                            contentDescription = null,
+                            tint = colorIcono
+                        )
+                    },
                     singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                    shape = RoundedCornerShape(16.dp),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Email
+                    ),
+                    shape = RoundedCornerShape(10.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedContainerColor = colorCampo,
                         unfocusedContainerColor = colorCampo,
@@ -315,40 +436,66 @@ fun PantallaRegistro(
                         unfocusedBorderColor = colorCampo,
                         focusedTextColor = colorTextoCampo,
                         unfocusedTextColor = colorTextoCampo,
-                        focusedLabelColor = colorTextoCampo,
-                        unfocusedLabelColor = colorTextoCampo,
                         focusedPlaceholderColor = colorTextoCampo,
                         unfocusedPlaceholderColor = colorTextoCampo,
                         focusedLeadingIconColor = colorIcono,
                         unfocusedLeadingIconColor = colorIcono,
-                        focusedTrailingIconColor = colorIcono,
-                        unfocusedTrailingIconColor = colorIcono,
                         cursorColor = colorTextoCampo
                     )
                 )
 
                 Spacer(modifier = Modifier.height(espacioEntreCampos))
 
-                // Contraseña
+                // CONTRASEÑA
                 OutlinedTextField(
                     value = viewModel.contrasena,
                     onValueChange = viewModel::onContrasenaChange,
-                    modifier = Modifier.fillMaxWidth().height(alturaCampo),
-                    placeholder = { Text("Crea tu contraseña", fontSize = fontSizePlaceholder, color = colorTextoCampo) },
-                    leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = colorIcono) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(alturaCampo),
+                    placeholder = {
+                        Text(
+                            text = "Crea tu contraseña",
+                            fontSize = fontSizePlaceholder,
+                            color = colorTextoCampo
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.Lock,
+                            contentDescription = null,
+                            tint = colorIcono
+                        )
+                    },
                     trailingIcon = {
-                        IconButton(onClick = { viewModel.toggleMostrarContrasena() }) {
+                        IconButton(
+                            onClick = {
+                                viewModel.toggleMostrarContrasena()
+                            }
+                        ) {
                             Icon(
-                                imageVector = if (viewModel.mostrarContrasena) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                imageVector =
+                                    if (viewModel.mostrarContrasena) {
+                                        Icons.Default.VisibilityOff
+                                    } else {
+                                        Icons.Default.Visibility
+                                    },
                                 contentDescription = null,
                                 tint = colorTextoCampo
                             )
                         }
                     },
-                    visualTransformation = if (viewModel.mostrarContrasena) VisualTransformation.None else PasswordVisualTransformation(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    visualTransformation =
+                        if (viewModel.mostrarContrasena) {
+                            VisualTransformation.None
+                        } else {
+                            PasswordVisualTransformation()
+                        },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Password
+                    ),
                     singleLine = true,
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedCornerShape(10.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedContainerColor = colorCampo,
                         unfocusedContainerColor = colorCampo,
@@ -356,8 +503,6 @@ fun PantallaRegistro(
                         unfocusedBorderColor = colorCampo,
                         focusedTextColor = colorTextoCampo,
                         unfocusedTextColor = colorTextoCampo,
-                        focusedLabelColor = colorTextoCampo,
-                        unfocusedLabelColor = colorTextoCampo,
                         focusedPlaceholderColor = colorTextoCampo,
                         unfocusedPlaceholderColor = colorTextoCampo,
                         focusedLeadingIconColor = colorIcono,
@@ -370,26 +515,56 @@ fun PantallaRegistro(
 
                 Spacer(modifier = Modifier.height(espacioEntreCampos))
 
-                // Confirmar contraseña
+                // CONFIRMAR CONTRASEÑA
                 OutlinedTextField(
                     value = viewModel.confirmarContrasena,
                     onValueChange = viewModel::onConfirmarContrasenaChange,
-                    modifier = Modifier.fillMaxWidth().height(alturaCampo),
-                    placeholder = { Text("Confirma tu contraseña", fontSize = if (esTablet) 16.sp else 13.sp, color = colorTextoCampo) },
-                    leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = colorIcono) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(alturaCampo),
+                    placeholder = {
+                        Text(
+                            text = "Confirma tu contraseña",
+                            fontSize = fontSizePlaceholder,
+                            color = colorTextoCampo
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.Lock,
+                            contentDescription = null,
+                            tint = colorIcono
+                        )
+                    },
                     trailingIcon = {
-                        IconButton(onClick = { viewModel.toggleMostrarConfirmacion() }) {
+                        IconButton(
+                            onClick = {
+                                viewModel.toggleMostrarConfirmacion()
+                            }
+                        ) {
                             Icon(
-                                imageVector = if (viewModel.mostrarConfirmacion) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                imageVector =
+                                    if (viewModel.mostrarConfirmacion) {
+                                        Icons.Default.VisibilityOff
+                                    } else {
+                                        Icons.Default.Visibility
+                                    },
                                 contentDescription = null,
                                 tint = colorTextoCampo
                             )
                         }
                     },
-                    visualTransformation = if (viewModel.mostrarConfirmacion) VisualTransformation.None else PasswordVisualTransformation(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    visualTransformation =
+                        if (viewModel.mostrarConfirmacion) {
+                            VisualTransformation.None
+                        } else {
+                            PasswordVisualTransformation()
+                        },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Password
+                    ),
                     singleLine = true,
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedCornerShape(10.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedContainerColor = colorCampo,
                         unfocusedContainerColor = colorCampo,
@@ -397,8 +572,6 @@ fun PantallaRegistro(
                         unfocusedBorderColor = colorCampo,
                         focusedTextColor = colorTextoCampo,
                         unfocusedTextColor = colorTextoCampo,
-                        focusedLabelColor = colorTextoCampo,
-                        unfocusedLabelColor = colorTextoCampo,
                         focusedPlaceholderColor = colorTextoCampo,
                         unfocusedPlaceholderColor = colorTextoCampo,
                         focusedLeadingIconColor = colorIcono,
@@ -408,45 +581,68 @@ fun PantallaRegistro(
                         cursorColor = colorTextoCampo
                     )
                 )
-
-                Spacer(modifier = Modifier.height(espacioEntreCampos))
-
-                // Checkbox política
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .semantics(mergeDescendants = true) { }
-                        .clickable(role = Role.Checkbox, onClick = { viewModel.toggleAceptaPolitica() })
-                ) {
-                    Switch(
-                        checked = viewModel.aceptaPolitica,
-                        onCheckedChange = null,
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = Color.White,
-                            checkedTrackColor = Color(0xFF487A32)
-                        )
-                    )
-                    Text(
-                        text = "  Acepta la Política de Privacidad",
-                        fontSize = fontSizeTexto,
-                        color = colorCampo
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                // Botón Regístrate
-                Box(modifier = Modifier.semantics { role = Role.Button }) {
-                    BotonDegradado(
-                        texto = "Regístrate",
-                        modoOscuro = modoOscuro,
-                        onClick = { viewModel.registrar() }
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(20.dp))
             }
+
+            // PARTE INFERIOR
+            if (tipoPantalla == TipoPantalla.TELEFONO) {
+                Spacer(modifier = Modifier.height(22.dp))
+                PoliticaPrivacidadRegistro(
+                    aceptada = viewModel.aceptaPolitica,
+                    onClick = {
+                        viewModel.toggleAceptaPolitica()
+                    },
+                    colorRosa = colorRosa,
+                    colorTexto = colorCampo
+                )
+
+                Spacer(modifier = Modifier.height(26.dp))
+
+                BotonRegistroResponsivo(
+                    texto = "Regístrate",
+                    modoOscuro = modoOscuro,
+                    modifier = Modifier
+                        .width(anchoBoton)
+                        .height(altoBoton),
+                    onClick = {
+                        viewModel.registrar()
+                    }
+                )
+
+            } else {
+                Spacer(
+                    modifier = Modifier.height(
+                        if (tipoPantalla == TipoPantalla.TABLET_VERTICAL) {
+                            32.dp
+                        } else {
+                            26.dp
+                        }
+                    )
+                )
+
+                BotonRegistroResponsivo(
+                    texto = "Crear Cuenta",
+                    modoOscuro = modoOscuro,
+                    modifier = Modifier
+                        .width(anchoBoton)
+                        .height(altoBoton),
+                    onClick = {
+                        viewModel.registrar()
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                PoliticaPrivacidadRegistro(
+                    aceptada = viewModel.aceptaPolitica,
+                    onClick = {
+                        viewModel.toggleAceptaPolitica()
+                    },
+                    colorRosa = colorRosa,
+                    colorTexto = colorCampo
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
         }
 
         if (viewModel.mostrarRegistroExitoso) {
@@ -483,5 +679,94 @@ fun PantallaRegistro(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun PoliticaPrivacidadRegistro(
+    aceptada: Boolean,
+    onClick: () -> Unit,
+    colorRosa: Color,
+    colorTexto: Color
+) {
+    Row(
+        modifier = Modifier
+            .wrapContentWidth()
+            .semantics(mergeDescendants = true) { }
+            .clickable(
+                role = Role.Checkbox,
+                onClick = onClick
+            ),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+
+        Switch(
+            checked = aceptada,
+            onCheckedChange = null,
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = Color.White,
+                uncheckedThumbColor = Color.White,
+                checkedTrackColor = colorRosa,
+                checkedBorderColor = Color.Transparent,
+                uncheckedBorderColor = Color.Transparent
+            )
+        )
+
+        Spacer(modifier = Modifier.width(8.dp))
+
+        Text(
+            text = "Acepto la Política de Privacidad",
+            fontSize = 16.sp,
+            color = colorTexto
+        )
+    }
+}
+
+@Composable
+private fun BotonRegistroResponsivo(
+    texto: String,
+    modoOscuro: Boolean,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+
+    val coloresBoton = if (modoOscuro) {
+        listOf(
+            RosaOscuro,
+            CremaOscuro
+        )
+    } else {
+        listOf(
+            Color(0xFF8AA6B8),
+            Color(0xFF4F73A0)
+        )
+    }
+
+    val colorTexto = if (modoOscuro) {
+        FondoOscuro
+    } else {
+        Color.White
+    }
+
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(50.dp))
+            .background(
+                brush = Brush.horizontalGradient(
+                    colors = coloresBoton
+                )
+            )
+            .clickable {
+                onClick()
+            },
+        contentAlignment = Alignment.Center
+    ) {
+
+        Text(
+            text = texto,
+            color = colorTexto,
+            fontSize = 21.sp,
+            fontWeight = FontWeight.SemiBold
+        )
     }
 }

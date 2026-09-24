@@ -8,7 +8,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import com.example.wahsly.ui.componentes.BarraInferiorAnimada
@@ -48,6 +47,8 @@ import com.example.wahsly.ia.aJson
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import com.example.wahsly.utilidades.obtenerTipoPantalla
+import com.example.wahsly.utilidades.TipoPantalla
 
 @Composable
 fun NavegacionPrincipal(
@@ -61,10 +62,9 @@ fun NavegacionPrincipal(
 ) {
 
     val context = LocalContext.current
-
+    val tipoPantalla = obtenerTipoPantalla(windowSizeClass)
     val db = remember { AppDatabase.getDatabase(context) }
     val historialRepository = remember { HistorialRepository(db.historialDao()) }
-
     val scope = rememberCoroutineScope()
     var analizandoEtiqueta by remember { mutableStateOf(false) }
     var resultadoLavado by remember { mutableStateOf<ResultadoLavado?>(null) }
@@ -76,7 +76,6 @@ fun NavegacionPrincipal(
     }
 
     val animarCambioCabecera = !primeraCarga
-
     val seleccionado = when (seccionActual) {
         "INICIO" -> 0
         "ESCANER" -> 1
@@ -85,142 +84,168 @@ fun NavegacionPrincipal(
     }
 
     val colorFondo = if (modoOscuro) FondoOscuro else FondoClaro
+    val espacioBarraInferior = when (tipoPantalla) {
+        TipoPantalla.TELEFONO -> 86.dp
+        TipoPantalla.TABLET_VERTICAL -> 94.dp
+        TipoPantalla.TABLET_HORIZONTAL -> 92.dp
+    }
 
     Scaffold(
         containerColor = colorFondo,
-        bottomBar = {
-            BarraInferiorAnimada(
-                seleccionado = seleccionado,
-                modoOscuro = modoOscuro,
-                onInicio = {
-                    if (seccionActual != "INICIO") {
-                        onCambiarSeccion("INICIO")
-                    }
-                },
-                onEscanear = {
-                    if (seccionActual != "ESCANER") {
-                        onCambiarSeccion("ESCANER")
-                    }
-                },
-                onCuenta = {
-                    if (seccionActual != "PERFIL") {
-                        onCambiarSeccion("PERFIL")
-                    }
-                }
-            )
-        }
-
     ) { padding ->
-
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(
-                    bottom = padding.calculateBottomPadding()
-                )
+            modifier = Modifier.fillMaxSize()
         ) {
-
-            when (seccionActual) {
-                "INICIO" -> {
-                    PantallaPrincipal(
-                        usuario = usuario,
-                        modoOscuro = modoOscuro,
-                        windowSizeClass = windowSizeClass,
-                        mostrarBarraInferior = false,
-                        animarCabecera = animarCambioCabecera,
-                        onPerfil = {
-                            onCambiarSeccion("PERFIL")
-                        },
-                        onCerrarSesion = onCerrarSesion
+            // CONTENIDO
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .then(
+                        if (seccionActual == "ESCANER") {
+                            Modifier
+                        } else {
+                            Modifier.padding(
+                                bottom = espacioBarraInferior
+                            )
+                        }
                     )
-                }
+            ) {
+                when (seccionActual) {
 
-                "ESCANER" -> {
-                    PantallaEscaner(
-                        modoOscuro = modoOscuro,
-                        onDatosConfirmados = { datos ->
-                            if (!analizandoEtiqueta) {
-                                scope.launch {
-                                    analizandoEtiqueta = true
-                                    resultadoLavado = null
-                                    errorGemini = null
-                                    try {
-                                        val resultado =
-                                            GeminiLavado.analizarEtiqueta(
-                                                context = context,
-                                                datos = datos
-                                            )
+                    // INICIO
+                    "INICIO" -> {
+                        PantallaPrincipal(
+                            usuario = usuario,
+                            modoOscuro = modoOscuro,
+                            windowSizeClass = windowSizeClass,
+                            mostrarBarraInferior = false,
+                            animarCabecera = animarCambioCabecera,
+                            onPerfil = {
+                                onCambiarSeccion("PERFIL")
+                            },
+                            onCerrarSesion = onCerrarSesion
+                        )
+                    }
 
-                                        // SOLO GUARDAMOS SI GEMINI
-                                        // PUDO LEER LA ETIQUETA
-                                        if (resultado.etiquetaLegible) {
-                                            val nombreRutina =
-                                                if (resultado.composicion.isNotBlank() && !resultado.composicion.equals(
-                                                        "No visible",
-                                                        ignoreCase = true
+                    // ESCÁNER
+                    "ESCANER" -> {
+                        PantallaEscaner(
+                            modoOscuro = modoOscuro,
+                            windowSizeClass = windowSizeClass,
+                            onDatosConfirmados = { datos ->
+                                if (!analizandoEtiqueta) {
+                                    scope.launch {
+                                        analizandoEtiqueta = true
+                                        resultadoLavado = null
+                                        errorGemini = null
+                                        try {
+                                            val resultado =
+                                                GeminiLavado.analizarEtiqueta(
+                                                    context = context,
+                                                    datos = datos
+                                                )
+
+                                            // SOLO GUARDAMOS SI GEMINI
+                                            // PUDO LEER LA ETIQUETA
+                                            if (resultado.etiquetaLegible) {
+                                                val nombreRutina =
+                                                    if (
+                                                        resultado.composicion.isNotBlank() &&
+                                                        !resultado.composicion.equals(
+                                                            "No visible",
+                                                            ignoreCase = true
+                                                        )
+                                                    ) {
+                                                        resultado.composicion
+                                                    } else {
+                                                        "Rutina de lavado"
+                                                    }
+
+                                                val fechaActual =
+                                                    SimpleDateFormat(
+                                                        "dd/MM/yyyy HH:mm",
+                                                        Locale.getDefault()
+                                                    ).format(Date())
+
+                                                val correoUsuario = usuario?.correo
+
+                                                if (correoUsuario.isNullOrBlank()) {
+                                                    throw IllegalStateException(
+                                                        "No hay un usuario activo."
                                                     )
-                                                ) {
-                                                    resultado.composicion
-                                                } else {
-                                                    "Rutina de lavado"
                                                 }
 
-                                            val fechaActual = SimpleDateFormat(
-                                                    "dd/MM/yyyy HH:mm",
-                                                    Locale.getDefault()
-                                                ).format(Date())
+                                                val registro =
+                                                    RegistroEscaneo(
+                                                        correoUsuario = correoUsuario,
+                                                        nombre = nombreRutina,
+                                                        fecha = fechaActual,
+                                                        informacion = resultado.aJson()
+                                                    )
 
-                                            val correoUsuario = usuario?.correo
-
-                                            if (correoUsuario.isNullOrBlank()) {
-                                                throw IllegalStateException(
-                                                    "No hay un usuario activo."
-                                                )
+                                                historialRepository.agregarRegistro(registro)
                                             }
-
-                                            val registro =
-                                                RegistroEscaneo(
-                                                    correoUsuario = correoUsuario,
-                                                    nombre = nombreRutina,
-                                                    fecha = fechaActual,
-                                                    informacion = resultado.aJson()
-                                                )
-                                            historialRepository
-                                                .agregarRegistro(registro)
+                                            resultadoLavado = resultado
+                                        } catch (e: Exception) {
+                                            errorGemini =
+                                                e.message
+                                                    ?: "No se pudo analizar la etiqueta."
+                                        } finally {
+                                            analizandoEtiqueta = false
                                         }
-
-                                        resultadoLavado =
-                                            resultado
-                                    } catch (e: Exception) {
-                                        errorGemini =
-                                            e.message
-                                                ?: "No se pudo analizar la etiqueta."
-                                    } finally {
-                                        analizandoEtiqueta = false
                                     }
                                 }
                             }
-                        }
-                    )
-                }
+                        )
+                    }
 
-                "PERFIL" -> {
-                    PantallaPerfil(
-                        usuario = usuario,
-                        modoOscuro = modoOscuro,
-                        windowSizeClass = windowSizeClass,
-                        mostrarBarraInferior = false,
-                        animarCabecera = animarCambioCabecera,
-                        onConfiguracion = onConfiguracion,
-                        onVolver = {
-                            onCambiarSeccion("INICIO")
-                        },
-                        onCerrarSesion = onCerrarSesion
-                    )
+                    // PERFIL
+                    "PERFIL" -> {
+                        PantallaPerfil(
+                            usuario = usuario,
+                            modoOscuro = modoOscuro,
+                            windowSizeClass = windowSizeClass,
+                            mostrarBarraInferior = false,
+                            animarCabecera = animarCambioCabecera,
+                            onConfiguracion = onConfiguracion,
+                            onVolver = {
+                                onCambiarSeccion("INICIO")
+                            },
+                            onCerrarSesion = onCerrarSesion
+                        )
+                    }
                 }
+            }
+
+            // ÚNICA BARRA INFERIOR
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+            ) {
+                BarraInferiorAnimada(
+                    seleccionado = seleccionado,
+                    modoOscuro = modoOscuro,
+                    tipoPantalla = tipoPantalla,
+                    onInicio = {
+                        if (seccionActual != "INICIO") {
+                            onCambiarSeccion("INICIO")
+                        }
+                    },
+                    onEscanear = {
+                        if (seccionActual != "ESCANER") {
+                            onCambiarSeccion("ESCANER")
+                        }
+                    },
+                    onCuenta = {
+                        if (seccionActual != "PERFIL") {
+                            onCambiarSeccion("PERFIL")
+                        }
+                    }
+                )
             }
         }
     }
+
 
     // CARGANDO - GEMINI
     if (analizandoEtiqueta) {
@@ -264,7 +289,6 @@ fun NavegacionPrincipal(
     resultadoLavado?.let { resultado ->
         val colorDialogo = if (modoOscuro) { TarjetaPerfilOscuro } else { FondoClaro }
         val colorTexto = if (modoOscuro) { RosaOscuro } else { AzulPrincipalClaro }
-
 
         AlertDialog(
             onDismissRequest = {
@@ -449,9 +473,7 @@ fun NavegacionPrincipal(
             onDismissRequest = {
                 errorGemini = null
             },
-
             containerColor = colorDialogo,
-
             title = {
                 Text(
                     text = "No se pudo analizar",

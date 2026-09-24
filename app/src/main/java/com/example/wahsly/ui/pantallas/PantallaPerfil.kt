@@ -1,6 +1,5 @@
 package com.example.wahsly.ui.pantallas
 
-import android.content.res.Configuration
 import android.widget.Toast
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
@@ -10,7 +9,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -25,14 +23,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
@@ -40,7 +36,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import com.example.wahsly.datos.model.Usuario
 import com.example.wahsly.ui.theme.AvatarFondoClaro
 import com.example.wahsly.ui.theme.AvatarFondoOscuro
@@ -64,6 +59,9 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import com.example.wahsly.utilidades.FotoPerfilStorage
 import kotlinx.coroutines.launch
+import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
+import com.example.wahsly.utilidades.TipoPantalla
+import com.example.wahsly.utilidades.obtenerTipoPantalla
 
 
 // Pantalla de perfil de usuario
@@ -80,31 +78,19 @@ fun PantallaPerfil(
 ) {
 
     val context = LocalContext.current
-
-
     val scopeFoto = rememberCoroutineScope()
-
     val correoUsuario = usuario?.correo
-
-    var fotoPerfil by remember(correoUsuario) {
-        mutableStateOf<ImageBitmap?>(null)
-    }
+    var fotoPerfil by remember(correoUsuario) { mutableStateOf<ImageBitmap?>(null) }
 
     LaunchedEffect(correoUsuario) {
-
         fotoPerfil = null
-
         if (!correoUsuario.isNullOrBlank()) {
-
             try {
-
                 fotoPerfil = FotoPerfilStorage.cargarFoto(
                     context,
                     correoUsuario
                 )
-
             } catch (e: Exception) {
-
                 fotoPerfil = null
             }
         }
@@ -113,27 +99,20 @@ fun PantallaPerfil(
     val selectorFoto = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
     ) { uri ->
-
         if (uri != null && correoUsuario != null) {
-
             scopeFoto.launch {
-
                 try {
-
                     fotoPerfil = FotoPerfilStorage.guardarFoto(
                         context = context,
                         correo = correoUsuario,
                         uri = uri
                     )
-
                     Toast.makeText(
                         context,
                         "Fotografía actualizada",
                         Toast.LENGTH_SHORT
                     ).show()
-
                 } catch (e: Exception) {
-
                     Toast.makeText(
                         context,
                         "No se pudo guardar la fotografía",
@@ -144,42 +123,39 @@ fun PantallaPerfil(
         }
     }
 
-    // =======================================
-    // RESPONSIVE: DETECCIÓN DE DISPOSITIVO CON WindowSizeClass
-    // =======================================
-    val configuration = LocalConfiguration.current
-    val esHorizontal = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-    val anchoCompacto = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact
-    val esTablet = !anchoCompacto
-    val esCelularHorizontal = esHorizontal && anchoCompacto
+    // RESPONSIVE CON WindowSizeClass
+    val tipoPantalla = obtenerTipoPantalla(windowSizeClass)
+    val esTabletVertical = tipoPantalla == TipoPantalla.TABLET_VERTICAL
+    val esTabletHorizontal = tipoPantalla == TipoPantalla.TABLET_HORIZONTAL
+    val esTablet = esTabletVertical || esTabletHorizontal
+    val esCelularHorizontal =
+        tipoPantalla == TipoPantalla.TELEFONO &&
+                windowSizeClass.heightSizeClass ==
+                WindowHeightSizeClass.Compact
 
-    // Tamaños adaptativos
+    // TAMAÑOS RESPONSIVOS
+    // Altura de la parte azul
     val alturaCabecera = when {
-        esCelularHorizontal -> 110.dp
-        esTablet && esHorizontal -> 200.dp
-        esTablet -> 235.dp
-        else -> 200.dp // celular vertical
+        esCelularHorizontal -> 125.dp
+        esTabletHorizontal -> 245.dp
+        esTabletVertical -> 315.dp
+        else -> 285.dp
     }
 
+    // Tamaño del avatar
     val tamanoAvatar = when {
-        esCelularHorizontal -> 90.dp
-        esTablet && esHorizontal -> 200.dp
-        esTablet -> 240.dp
-        else -> 170.dp
+        esCelularHorizontal -> 120.dp
+        esTabletHorizontal -> 190.dp
+        esTabletVertical -> 240.dp
+        else -> 220.dp
     }
 
-    val paddingTopAvatar = when {
-        esCelularHorizontal -> 30.dp
-        esTablet && esHorizontal -> 60.dp
-        esTablet -> 85.dp
-        else -> 60.dp
-    }
-
+    // Icono de persona dentro del avatar
     val iconoAvatarTamano = when {
-        esCelularHorizontal -> 55.dp
-        esTablet && esHorizontal -> 120.dp
-        esTablet -> 145.dp
-        else -> 100.dp
+        esCelularHorizontal -> 72.dp
+        esTabletHorizontal -> 110.dp
+        esTabletVertical -> 140.dp
+        else -> 130.dp
     }
 
     val bordeAvatar = when {
@@ -188,88 +164,79 @@ fun PantallaPerfil(
         else -> 4.dp
     }
 
-    val paddingLateralTarjeta = if (esTablet) 32.dp else 16.dp
-    val fontSizeOpciones = if (esTablet) 22.sp else 16.sp
-    val iconoTamanoOpcion = if (esTablet) 24.dp else 20.dp
-
-    val alturaBarraInferior = when {
-        esCelularHorizontal -> 60.dp
-        esTablet -> 78.dp
-        else -> 70.dp
+    // Tamaño del pequeño botón de cámara
+    val tamanoBotonCamaraAvatar = when {
+        esCelularHorizontal -> 34.dp
+        esTabletHorizontal -> 42.dp
+        esTabletVertical -> 48.dp
+        else -> 44.dp
     }
 
-    val tamanoIconoBarra = if (esTablet) 34.dp else 28.dp
-    val tamanoIconoEscaner = if (esTablet) 38.dp else 32.dp
-    val fontSizeBarra = if (esTablet) 12.sp else 11.sp
-
-    var mostrarDialogoCerrarSesion by remember {
-        mutableStateOf(false)
+    val tamanoIconoCamaraAvatar = when {
+        esCelularHorizontal -> 18.dp
+        esTabletHorizontal -> 23.dp
+        esTabletVertical -> 26.dp
+        else -> 24.dp
     }
+
+    // Separación entre avatar y tarjeta
+    val espacioAvatarTarjeta = when {
+        esCelularHorizontal -> 16.dp
+        esTabletHorizontal -> 24.dp
+        esTabletVertical -> 46.dp
+        else -> 52.dp
+    }
+
+    // Ancho de la tarjeta blanca
+    val fraccionAnchoTarjeta = when {
+        esCelularHorizontal -> 0.68f
+        esTabletHorizontal -> 0.50f
+        esTabletVertical -> 0.78f
+        else -> 0.86f
+    }
+
+    val anchoMaximoTarjeta = when {
+        esCelularHorizontal -> 520.dp
+        esTabletHorizontal -> 590.dp
+        esTabletVertical -> 620.dp
+        else -> 540.dp
+    }
+
+    val fontSizeOpciones = when {
+        esCelularHorizontal -> 15.sp
+        esTabletHorizontal -> 18.sp
+        esTabletVertical -> 19.sp
+        else -> 18.sp
+    }
+
+    val iconoTamanoOpcion = when {
+        esCelularHorizontal -> 28.dp
+        esTabletHorizontal -> 34.dp
+        esTabletVertical -> 36.dp
+        else -> 34.dp
+    }
+
+    val paddingVerticalOpcion = when {
+        esCelularHorizontal -> 10.dp
+        esTabletHorizontal -> 15.dp
+        esTabletVertical -> 30.dp
+        else -> 17.dp
+    }
+
+    var mostrarDialogoCerrarSesion by remember { mutableStateOf(false) }
 
     // COLORES SEGÚN EL MODO
-    val colorFondo =
-        if (modoOscuro)
-            FondoOscuro
-        else
-            FondoClaro
-
-    val colorTexto =
-        if (modoOscuro)
-            RosaOscuro
-        else
-            AzulTextoClaro
-
-    val colorBarraInferior =
-        if (modoOscuro)
-            RosaOscuro
-        else
-            AzulPrincipalClaro
-
-    val colorTarjeta =
-        if (modoOscuro)
-            TarjetaPerfilOscuro
-        else
-            Color.White
-
-    val colorSeleccionado =
-        if (modoOscuro)
-            CremaOscuro
-        else
-            Color.White
-
-    val colorDivisor =
-        if (modoOscuro)
-            DivisorOscuro
-        else
-            DivisorClaro
-
-    val colorAvatarFondo =
-        if (modoOscuro)
-            AvatarFondoOscuro
-        else
-            AvatarFondoClaro
-
-    val colorAvatarIcono =
-        if (modoOscuro)
-            AvatarIconoOscuro
-        else
-            AvatarIconoClaro
-
-    val colorBordeAvatar =
-        AzulPrincipalClaro
-
-    val colorIconosBarra =
-        if (modoOscuro)
-            CremaOscuro
-        else
-            IconoSecundarioClaro
-
-    val colorTextoBarra =
-        if (modoOscuro)
-            CremaOscuro
-        else
-            Color.White
-
+    val colorFondo = if (modoOscuro) FondoOscuro else FondoClaro
+    val colorTexto = if (modoOscuro) RosaOscuro else AzulTextoClaro
+    val colorBarraInferior = if (modoOscuro) RosaOscuro else AzulPrincipalClaro
+    val colorTarjeta = if (modoOscuro) TarjetaPerfilOscuro else Color.White
+    val colorSeleccionado = if (modoOscuro) CremaOscuro else Color.White
+    val colorDivisor = if (modoOscuro) DivisorOscuro else DivisorClaro
+    val colorAvatarFondo = if (modoOscuro) AvatarFondoOscuro else AvatarFondoClaro
+    val colorAvatarIcono = if (modoOscuro) AvatarIconoOscuro else AvatarIconoClaro
+    val colorBordeAvatar = AzulPrincipalClaro
+    val colorIconosBarra = if (modoOscuro) CremaOscuro else IconoSecundarioClaro
+    val colorTextoBarra = if (modoOscuro) CremaOscuro else Color.White
     val coloresCabecera =
         if (modoOscuro) {
             listOf(
@@ -283,40 +250,19 @@ fun PantallaPerfil(
             )
         }
 
-    val colorDialogo =
-        if (modoOscuro)
-            RosaOscuro
-        else
-            AzulPrincipalClaro
+    val colorDialogo = if (modoOscuro) RosaOscuro else AzulPrincipalClaro
+    val colorTextoDialogo = if (modoOscuro) AzulTextoClaro else Color.White
+    val colorBotonDialogo = if (modoOscuro) RosaOscuro else FondoClaro
+    val colorTextoBotonDialogo = AzulTextoClaro
 
-    val colorTextoDialogo =
-        if (modoOscuro)
-            AzulTextoClaro
-        else
-            Color.White
-
-    val colorBotonDialogo =
-        if (modoOscuro)
-            RosaOscuro
-        else
-            FondoClaro
-
-    val colorTextoBotonDialogo =
-        AzulTextoClaro
-
-    // =======================================
     // ANIMACIÓN DE LA CABECERA DE PERFIL
-    // =======================================
-
     val alturaStatusBarPerfil =
         WindowInsets.statusBars
             .asPaddingValues()
             .calculateTopPadding()
 
     // Altura inicial (pequeña) proporcional a la cabecera final
-    val alturaInicio =
-        alturaStatusBarPerfil + (alturaCabecera * 0.4f)
-
+    val alturaInicio = alturaStatusBarPerfil + (alturaCabecera * 0.4f)
     var iniciarAnimacionCabecera by remember(animarCabecera) {
         mutableStateOf(!animarCabecera)
     }
@@ -333,12 +279,10 @@ fun PantallaPerfil(
                 alturaCabecera
             else
                 alturaInicio,
-
         animationSpec = spring(
             dampingRatio = 0.78f,
             stiffness = 220f
         ),
-
         label = "AlturaCabeceraPerfil"
     )
 
@@ -349,145 +293,13 @@ fun PantallaPerfil(
             else
                 0.dp,
 
-        animationSpec = tween(
-            durationMillis = 320
-        ),
-
+        animationSpec = tween(durationMillis = 320),
         label = "RadioCabeceraPerfil"
     )
 
     Scaffold(
         containerColor = colorFondo,
         contentWindowInsets = WindowInsets.systemBars,
-        bottomBar = {
-            if (mostrarBarraInferior) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(colorFondo)
-                        .padding(
-                            start = 10.dp,
-                            end = 10.dp,
-                            bottom = 8.dp
-                        )
-                ) {
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(alturaBarraInferior),
-                        shape = RoundedCornerShape(45.dp),
-                        color = colorBarraInferior,
-                        shadowElevation = 5.dp
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(horizontal = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-
-                            // INICIO
-                            Column(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .selectable(
-                                        selected = false,
-                                        onClick = onVolver,
-                                        role = Role.Tab
-                                    )
-                                    .semantics(mergeDescendants = true) {
-                                        contentDescription = "Ir a la pantalla de Inicio"
-                                    },
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Home,
-                                    contentDescription = null,
-                                    tint = colorIconosBarra,
-                                    modifier = Modifier.size(tamanoIconoBarra)
-                                )
-
-                                Text(
-                                    text = "Inicio",
-                                    fontSize = fontSizeBarra,
-                                    color = colorTextoBarra
-                                )
-                            }
-
-                            // ESCANEAR
-                            Column(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .selectable(
-                                        selected = false,
-                                        onClick = {
-                                            Toast.makeText(
-                                                context,
-                                                "Escáner próximamente",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-                                        },
-                                        role = Role.Tab
-                                    )
-                                    .semantics(mergeDescendants = true) {
-                                        contentDescription = "Abrir escáner de códigos"
-                                    },
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Add,
-                                    contentDescription = null,
-                                    tint = colorIconosBarra,
-                                    modifier = Modifier.size(tamanoIconoEscaner)
-                                )
-                                Text(
-                                    text = "Escanear",
-                                    fontSize = fontSizeBarra,
-                                    color = colorTextoBarra
-                                )
-                            }
-
-                            // CUENTA ACTIVA
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .height(alturaBarraInferior - 12.dp)
-                                    .clip(RoundedCornerShape(38.dp))
-                                    .background(colorSeleccionado)
-                                    .selectable(
-                                        selected = true,
-                                        onClick = { },
-                                        role = Role.Tab
-                                    )
-                                    .semantics(mergeDescendants = true) {
-                                        contentDescription = "Pestaña de Cuenta"
-                                        stateDescription = "Seleccionada"
-                                    },
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Person,
-                                        contentDescription = null,
-                                        tint = colorTexto,
-                                        modifier = Modifier.size(tamanoIconoBarra - 6.dp)
-                                    )
-                                    Text(
-                                        text = "Cuenta",
-                                        fontSize = fontSizeBarra,
-                                        color = colorTexto
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
     ) { padding ->
         // CONTENIDO SCROLLEABLE (para que quepa en celular horizontal)
         Box(
@@ -504,15 +316,13 @@ fun PantallaPerfil(
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-
-                // =======================================
                 // BLOQUE CABECERA + AVATAR
-                // =======================================
                 Box(
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(alturaCabeceraAnimada + (tamanoAvatar / 2))
                 ) {
-
-                    // CABECERA (degradado)
+                    // CABECERA
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -524,24 +334,20 @@ fun PantallaPerfil(
                                 )
                             )
                             .background(
-                                brush = Brush.verticalGradient(
-                                    colors = coloresCabecera
-                                )
+                                brush =
+                                    Brush.verticalGradient(
+                                        colors = coloresCabecera
+                                    )
                             )
                     )
 
-
-
-                    // AVATAR (encima de la cabecera)
+                    // AVATAR
                     Box(
                         modifier = Modifier
-                            .align(Alignment.TopCenter)
-                            .padding(top = paddingTopAvatar)
+                            .align(Alignment.BottomCenter)
                             .size(tamanoAvatar),
-
                         contentAlignment = Alignment.Center
                     ) {
-
                         // CÍRCULO PRINCIPAL
                         Box(
                             modifier = Modifier
@@ -559,33 +365,28 @@ fun PantallaPerfil(
                                 ) {
                                     selectorFoto.launch(
                                         PickVisualMediaRequest(
-                                            ActivityResultContracts.PickVisualMedia.ImageOnly
+                                            ActivityResultContracts
+                                                .PickVisualMedia
+                                                .ImageOnly
                                         )
                                     )
                                 },
-
                             contentAlignment = Alignment.Center
                         ) {
-
                             if (fotoPerfil != null) {
-
                                 Image(
                                     bitmap = fotoPerfil!!,
-                                    contentDescription =
-                                        "Fotografía de perfil de ${usuario?.nombre ?: "Usuario"}",
+                                    contentDescription = "Fotografía de perfil de ${usuario?.nombre ?: "Usuario"}",
                                     contentScale = ContentScale.Crop,
                                     modifier = Modifier
                                         .fillMaxSize()
                                         .padding(bordeAvatar)
                                         .clip(CircleShape)
                                 )
-
                             } else {
-
                                 Icon(
                                     imageVector = Icons.Outlined.Person,
-                                    contentDescription =
-                                        "Foto de perfil de ${usuario?.nombre ?: "Usuario"}",
+                                    contentDescription = "Foto de perfil de ${usuario?.nombre ?: "Usuario"}",
                                     tint = colorAvatarIcono,
                                     modifier = Modifier.size(iconoAvatarTamano)
                                 )
@@ -594,44 +395,38 @@ fun PantallaPerfil(
 
                         // BOTÓN DE CÁMARA
                         if (usuario != null) {
-
                             Box(
                                 modifier = Modifier
                                     .align(Alignment.BottomEnd)
                                     .offset(
-                                        x = 4.dp,
-                                        y = 4.dp
+                                        x = 2.dp,
+                                        y = 2.dp
                                     )
-                                    .size(
-                                        if (esTablet) 48.dp else 40.dp
-                                    )
+                                    .size(tamanoBotonCamaraAvatar)
                                     .clip(CircleShape)
                                     .background(AzulPrincipalClaro)
                                     .border(
                                         width = 2.dp,
-                                        color = if (modoOscuro) CremaOscuro else FondoClaro,
+                                        color = if (modoOscuro) { CremaOscuro } else { FondoClaro },
                                         shape = CircleShape
                                     )
-                                    .clickable(
-                                        role = Role.Button
+                                    .clickable(role = Role.Button
                                     ) {
                                         selectorFoto.launch(
                                             PickVisualMediaRequest(
-                                                ActivityResultContracts.PickVisualMedia.ImageOnly
+                                                ActivityResultContracts
+                                                    .PickVisualMedia
+                                                    .ImageOnly
                                             )
                                         )
                                     },
-
                                 contentAlignment = Alignment.Center
                             ) {
-
                                 Icon(
                                     imageVector = Icons.Default.CameraAlt,
                                     contentDescription = "Cambiar foto de perfil",
                                     tint = Color.White,
-                                    modifier = Modifier.size(
-                                        if (esTablet) 26.dp else 22.dp
-                                    )
+                                    modifier = Modifier.size(tamanoIconoCamaraAvatar)
                                 )
                             }
                         }
@@ -639,22 +434,16 @@ fun PantallaPerfil(
                 }
 
                 // Espacio entre avatar y tarjeta
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(espacioAvatarTarjeta))
 
-                // =======================================
                 // TARJETA DE OPCIONES
-                // =======================================
                 Card(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .widthIn(max = 600.dp)
-                        .padding(horizontal = paddingLateralTarjeta),
+                        .fillMaxWidth(fraccionAnchoTarjeta)
+                        .widthIn(max = anchoMaximoTarjeta),
                     shape = RoundedCornerShape(18.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = colorTarjeta
-                    ),
-                    elevation = CardDefaults.cardElevation(
-                        defaultElevation = 5.dp
+                    colors = CardDefaults.cardColors(containerColor = colorTarjeta),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 5.dp
                     )
                 ) {
                     Column {
@@ -663,6 +452,7 @@ fun PantallaPerfil(
                             texto = "Configuración",
                             fontSize = fontSizeOpciones,
                             iconoTamano = iconoTamanoOpcion,
+                            paddingVertical = paddingVerticalOpcion,
                             colorContenido = colorTexto,
                             onClick = onConfiguracion
                         )
@@ -671,13 +461,13 @@ fun PantallaPerfil(
                             thickness = 1.dp,
                             color = colorDivisor
                         )
-
                         // AYUDA
                         OpcionPerfilConFlecha(
                             icono = Icons.Default.Info,
                             texto = "Ayuda y Soporte",
                             fontSize = fontSizeOpciones,
                             iconoTamano = iconoTamanoOpcion,
+                            paddingVertical = paddingVerticalOpcion,
                             colorContenido = colorTexto,
                             onClick = {
                                 // Pantalla de Ayuda en un futuro
@@ -696,6 +486,7 @@ fun PantallaPerfil(
                             texto = "Cerrar Sesión",
                             fontSize = fontSizeOpciones,
                             iconoTamano = iconoTamanoOpcion,
+                            paddingVertical = paddingVerticalOpcion,
                             colorContenido = colorTexto,
                             onClick = {
                                 mostrarDialogoCerrarSesion = true
@@ -799,10 +590,10 @@ fun OpcionPerfilConFlecha(
     texto: String,
     fontSize: TextUnit = 14.sp,
     iconoTamano: androidx.compose.ui.unit.Dp = 22.dp,
+    paddingVertical: androidx.compose.ui.unit.Dp = 12.dp,
     colorContenido: Color,
     onClick: () -> Unit
 ) {
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -812,10 +603,11 @@ fun OpcionPerfilConFlecha(
                 onClick = onClick
             )
             .padding(
-                horizontal = 16.dp,
-                vertical = 12.dp
+                horizontal = 24.dp,
+                vertical = paddingVertical
             )
-            .semantics(mergeDescendants = true) { },
+            .semantics(mergeDescendants = true
+            ) { },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
@@ -825,7 +617,7 @@ fun OpcionPerfilConFlecha(
             modifier = Modifier.size(iconoTamano)
         )
 
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(20.dp))
 
         Text(
             text = texto,

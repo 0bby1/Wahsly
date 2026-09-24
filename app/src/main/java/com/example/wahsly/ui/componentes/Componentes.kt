@@ -39,6 +39,7 @@ import com.example.wahsly.ui.theme.FondoClaro
 import com.example.wahsly.ui.theme.FondoOscuro
 import com.example.wahsly.ui.theme.RosaOscuro
 import androidx.compose.runtime.getValue
+import com.example.wahsly.utilidades.TipoPantalla
 
 // BOTÓN DEGRADADO
 @Composable
@@ -148,13 +149,17 @@ fun BotonCrearCuenta(
 fun BarraInferiorAnimada(
     seleccionado: Int,
     modoOscuro: Boolean,
+    tipoPantalla: TipoPantalla,
     onInicio: () -> Unit,
     onEscanear: () -> Unit,
     onCuenta: () -> Unit
 ) {
 
-    // Evita valores menores de 0 o mayores de 2
     val opcionSeleccionada = seleccionado.coerceIn(0, 2)
+
+    // =====================================================
+    // COLORES
+    // =====================================================
 
     val colorFondo = if (modoOscuro) {
         FondoOscuro
@@ -174,14 +179,12 @@ fun BarraInferiorAnimada(
         CremaOscuro
     }
 
-    // Color de la opción seleccionada
     val colorSeleccionado = if (modoOscuro) {
         CremaOscuro
     } else {
         AzulPrincipalClaro
     }
 
-    // Color de las opciones NO seleccionadas
     val colorInactivo = if (modoOscuro) {
         FondoOscuro
     } else {
@@ -189,22 +192,109 @@ fun BarraInferiorAnimada(
     }
 
 
+    // =====================================================
+    // TAMAÑOS RESPONSIVOS
+    // =====================================================
+
+    val fraccionAnchoBarra = when (tipoPantalla) {
+
+        TipoPantalla.TELEFONO ->
+            0.96f
+
+        TipoPantalla.TABLET_VERTICAL ->
+            0.82f
+
+        TipoPantalla.TABLET_HORIZONTAL ->
+            0.62f
+    }
+
+    val alturaBarra = when (tipoPantalla) {
+
+        TipoPantalla.TELEFONO ->
+            78.dp
+
+        TipoPantalla.TABLET_VERTICAL ->
+            82.dp
+
+        TipoPantalla.TABLET_HORIZONTAL ->
+            80.dp
+    }
+
+    val anchoPastilla = when (tipoPantalla) {
+
+        TipoPantalla.TELEFONO ->
+            105.dp
+
+        TipoPantalla.TABLET_VERTICAL ->
+            118.dp
+
+        TipoPantalla.TABLET_HORIZONTAL ->
+            100.dp
+    }
+
+    val tamanoIconoInicio = when (tipoPantalla) {
+
+        TipoPantalla.TELEFONO ->
+            34.dp
+
+        TipoPantalla.TABLET_VERTICAL ->
+            38.dp
+
+        TipoPantalla.TABLET_HORIZONTAL ->
+            42.dp
+    }
+
+    val tamanoIconoEscanear = when (tipoPantalla) {
+
+        TipoPantalla.TELEFONO ->
+            38.dp
+
+        TipoPantalla.TABLET_VERTICAL ->
+            42.dp
+
+        TipoPantalla.TABLET_HORIZONTAL ->
+            48.dp
+    }
+
+    val tamanoIconoCuenta = when (tipoPantalla) {
+
+        TipoPantalla.TELEFONO ->
+            30.dp
+
+        TipoPantalla.TABLET_VERTICAL ->
+            34.dp
+
+        TipoPantalla.TABLET_HORIZONTAL ->
+            38.dp
+    }
+
+    // En horizontal tus capturas muestran solamente iconos.
+    val mostrarTexto = true
+
+
+    // =====================================================
+    // BARRA
+    // =====================================================
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(colorFondo)
             .padding(
-                start = 10.dp,
-                end = 10.dp,
-                bottom = 8.dp
-            )
+                bottom = when (tipoPantalla) {
+                    TipoPantalla.TELEFONO -> 8.dp
+                    TipoPantalla.TABLET_VERTICAL -> 12.dp
+                    TipoPantalla.TABLET_HORIZONTAL -> 10.dp
+                }
+            ),
+        contentAlignment = Alignment.Center
     ) {
 
         Surface(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(78.dp),
-            shape = androidx.compose.foundation.shape.RoundedCornerShape(45.dp),
+                .fillMaxWidth(fraccionAnchoBarra)
+                .height(alturaBarra),
+
+            shape = RoundedCornerShape(45.dp),
             color = colorBarra,
             shadowElevation = 5.dp
         ) {
@@ -218,10 +308,17 @@ fun BarraInferiorAnimada(
                 val anchoElemento = maxWidth / 3
 
 
+                // =================================================
                 // POSICIÓN DE LA PASTILLA
-                val posicionPastilla by animateDpAsState(
-                    targetValue = anchoElemento * opcionSeleccionada.toFloat(),
+                // =================================================
 
+                val posicionPastilla by animateDpAsState(
+
+                    targetValue =
+                        (anchoElemento * opcionSeleccionada.toFloat()) +
+                                ((anchoElemento - anchoPastilla) / 2),
+
+                    // MISMA ANIMACIÓN QUE YA TENÍAS
                     animationSpec = spring(
                         dampingRatio = 0.70f,
                         stiffness = 300f
@@ -231,26 +328,37 @@ fun BarraInferiorAnimada(
                 )
 
 
-                // PASTILLA ANIMADA
+                // =================================================
+                // PASTILLA SELECCIONADA
+                // =================================================
+
                 Box(
                     modifier = Modifier
                         .offset(x = posicionPastilla)
-                        .width(anchoElemento)
+                        .width(anchoPastilla)
                         .fillMaxHeight()
                         .padding(vertical = 6.dp)
-                        .clip(androidx.compose.foundation.shape.RoundedCornerShape(38.dp))
+                        .clip(
+                            RoundedCornerShape(30.dp)
+                        )
                         .background(colorPastilla)
                 )
 
 
+                // =================================================
                 // OPCIONES
+                // =================================================
+
                 Row(
                     modifier = Modifier.fillMaxSize(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
 
 
+                    // =========================
                     // INICIO
+                    // =========================
+
                     Column(
                         modifier = Modifier
                             .width(anchoElemento)
@@ -258,36 +366,47 @@ fun BarraInferiorAnimada(
                                 onInicio()
                             },
 
-                        horizontalAlignment = Alignment.CenterHorizontally
+                        horizontalAlignment =
+                            Alignment.CenterHorizontally
                     ) {
 
                         Icon(
                             imageVector = Icons.Default.Home,
                             contentDescription = "Inicio",
 
-                            tint = if (opcionSeleccionada == 0) {
-                                colorSeleccionado
-                            } else {
-                                colorInactivo
-                            },
+                            tint =
+                                if (opcionSeleccionada == 0) {
+                                    colorSeleccionado
+                                } else {
+                                    colorInactivo
+                                },
 
-                            modifier = Modifier.size(34.dp)
+                            modifier = Modifier.size(
+                                tamanoIconoInicio
+                            )
                         )
 
-                        Text(
-                            text = "Inicio",
-                            fontSize = 12.sp,
+                        if (mostrarTexto) {
 
-                            color = if (opcionSeleccionada == 0) {
-                                colorSeleccionado
-                            } else {
-                                colorInactivo
-                            }
-                        )
+                            Text(
+                                text = "Inicio",
+                                fontSize = 12.sp,
+
+                                color =
+                                    if (opcionSeleccionada == 0) {
+                                        colorSeleccionado
+                                    } else {
+                                        colorInactivo
+                                    }
+                            )
+                        }
                     }
 
 
+                    // =========================
                     // ESCANEAR
+                    // =========================
+
                     Column(
                         modifier = Modifier
                             .width(anchoElemento)
@@ -295,36 +414,47 @@ fun BarraInferiorAnimada(
                                 onEscanear()
                             },
 
-                        horizontalAlignment = Alignment.CenterHorizontally
+                        horizontalAlignment =
+                            Alignment.CenterHorizontally
                     ) {
 
                         Icon(
                             imageVector = Icons.Default.Add,
                             contentDescription = "Escanear",
 
-                            tint = if (opcionSeleccionada == 1) {
-                                colorSeleccionado
-                            } else {
-                                colorInactivo
-                            },
+                            tint =
+                                if (opcionSeleccionada == 1) {
+                                    colorSeleccionado
+                                } else {
+                                    colorInactivo
+                                },
 
-                            modifier = Modifier.size(38.dp)
+                            modifier = Modifier.size(
+                                tamanoIconoEscanear
+                            )
                         )
 
-                        Text(
-                            text = "Escanear",
-                            fontSize = 12.sp,
+                        if (mostrarTexto) {
 
-                            color = if (opcionSeleccionada == 1) {
-                                colorSeleccionado
-                            } else {
-                                colorInactivo
-                            }
-                        )
+                            Text(
+                                text = "Escanear",
+                                fontSize = 12.sp,
+
+                                color =
+                                    if (opcionSeleccionada == 1) {
+                                        colorSeleccionado
+                                    } else {
+                                        colorInactivo
+                                    }
+                            )
+                        }
                     }
 
 
+                    // =========================
                     // CUENTA
+                    // =========================
+
                     Column(
                         modifier = Modifier
                             .width(anchoElemento)
@@ -332,32 +462,40 @@ fun BarraInferiorAnimada(
                                 onCuenta()
                             },
 
-                        horizontalAlignment = Alignment.CenterHorizontally
+                        horizontalAlignment =
+                            Alignment.CenterHorizontally
                     ) {
 
                         Icon(
                             imageVector = Icons.Default.Person,
                             contentDescription = "Cuenta",
 
-                            tint = if (opcionSeleccionada == 2) {
-                                colorSeleccionado
-                            } else {
-                                colorInactivo
-                            },
+                            tint =
+                                if (opcionSeleccionada == 2) {
+                                    colorSeleccionado
+                                } else {
+                                    colorInactivo
+                                },
 
-                            modifier = Modifier.size(30.dp)
+                            modifier = Modifier.size(
+                                tamanoIconoCuenta
+                            )
                         )
 
-                        Text(
-                            text = "Cuenta",
-                            fontSize = 12.sp,
+                        if (mostrarTexto) {
 
-                            color = if (opcionSeleccionada == 2) {
-                                colorSeleccionado
-                            } else {
-                                colorInactivo
-                            }
-                        )
+                            Text(
+                                text = "Cuenta",
+                                fontSize = 12.sp,
+
+                                color =
+                                    if (opcionSeleccionada == 2) {
+                                        colorSeleccionado
+                                    } else {
+                                        colorInactivo
+                                    }
+                            )
+                        }
                     }
                 }
             }

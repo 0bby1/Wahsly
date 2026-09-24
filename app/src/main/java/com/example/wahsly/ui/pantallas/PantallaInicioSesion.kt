@@ -1,6 +1,5 @@
 package com.example.wahsly.ui.pantallas
 
-import android.content.res.Configuration
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -19,12 +18,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -48,7 +42,10 @@ import com.example.wahsly.ui.theme.TextoSecundarioOscuro
 import kotlinx.coroutines.launch
 import com.example.wahsly.AnimacionesVectoriales.WashlyBienvenidaAnimado
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import com.example.wahsly.utilidades.TipoPantalla
+import com.example.wahsly.utilidades.obtenerTipoPantalla
+import androidx.compose.ui.unit.Dp
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -68,20 +65,22 @@ fun PantallaInicioSesion(
     var contrasena by remember { mutableStateOf("") }
     var mostrarContrasena by remember { mutableStateOf(false) }
 
-    // Detectar configuración de pantalla usando WindowSizeClass
-    val configuration = LocalConfiguration.current
-    val esHorizontal = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-    val anchoCompacto = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact
+    val tipoPantalla = obtenerTipoPantalla(windowSizeClass)
 
-    // Tamaños dinámicos según el dispositivo
-    val paddingHorizontal = if (anchoCompacto) 24.dp else 64.dp
-    
-    val logoSize = when {
-        anchoCompacto && esHorizontal -> 180.dp // Celular acostado
-        anchoCompacto && !esHorizontal -> 220.dp // Celular parado
-        !anchoCompacto && esHorizontal -> 400.dp // Tablet acostada
-        else -> 350.dp // Tablet parada
+    val logoSize = when (tipoPantalla) {
+        TipoPantalla.TELEFONO -> 330.dp
+        TipoPantalla.TABLET_VERTICAL -> 600.dp
+        TipoPantalla.TABLET_HORIZONTAL -> 500.dp
     }
+
+    val anchoCampos = when (tipoPantalla) {
+        TipoPantalla.TELEFONO -> 360.dp
+        TipoPantalla.TABLET_VERTICAL -> 440.dp
+        TipoPantalla.TABLET_HORIZONTAL -> 420.dp
+    }
+
+    val anchoBotonTelefono = 210.dp
+    val anchoBotonTablet = 240.dp
 
     // Colores
     val colorFondo = if (modoOscuro) FondoOscuro else FondoClaro
@@ -107,110 +106,248 @@ fun PantallaInicioSesion(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize().background(colorFondo)) {
-        if (esHorizontal) {
-
-            // DISEÑO HORIZONTAL (Celular y Tablet acostados)
-            Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp), // Menos padding general para pantallas bajitas
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Mitad Izquierda: Logo Washly
-                Box(
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(colorFondo)
+    ) {
+        when (tipoPantalla) {
+            // TELÉFONO
+            TipoPantalla.TELEFONO -> {
+                Column(
                     modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight(),
-                    contentAlignment = Alignment.Center
+                        .fillMaxSize()
+                        .statusBarsPadding()
+                        .navigationBarsPadding()
+                        .verticalScroll(rememberScrollState())
+                        .padding(horizontal = 24.dp, vertical = 12.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
                     WashlyBienvenidaAnimado(
-                        modifier = Modifier.size(logoSize),
                         modoOscuro = modoOscuro,
                         tamano = logoSize
                     )
-                }
 
-                // Mitad Derecha: Formulario
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight()
-                        .padding(horizontal = paddingHorizontal)
-                        .verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    CampoCorreo(correo, { correo = it }, colorCampo, colorTextoPrincipal, colorIcono)
-                    Spacer(modifier = Modifier.height(16.dp))
-                    CampoContrasena(contrasena, { contrasena = it }, mostrarContrasena, { mostrarContrasena = it }, colorCampo, colorTextoPrincipal, colorIcono)
+                    Spacer(modifier = Modifier.height(26.dp))
 
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "¿Olvidaste tu contraseña?",
-                        modifier = Modifier.align(Alignment.Start).clickable {
-                            Toast.makeText(context, "Recuperación de contraseña", Toast.LENGTH_SHORT).show()
-                        },
-                        color = colorTextoSecundario,
-                        fontSize = 14.sp
+                    Column(
+                        modifier = Modifier.width(anchoCampos)
+                    ) {
+                        CampoCorreo(
+                            correo = correo,
+                            onValueChange = { correo = it },
+                            colorCampo = colorCampo,
+                            colorTextoPrincipal = colorTextoPrincipal,
+                            colorIcono = colorIcono
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        CampoContrasena(
+                            contrasena = contrasena,
+                            onValueChange = { contrasena = it },
+                            mostrarContrasena = mostrarContrasena,
+                            onMostrarChange = { mostrarContrasena = it },
+                            colorCampo = colorCampo,
+                            colorTextoPrincipal = colorTextoPrincipal,
+                            colorIcono = colorIcono
+                        )
+
+                        Spacer(modifier = Modifier.height(6.dp))
+
+                        Text(
+                            text = "¿Olvidaste tu contraseña?",
+                            modifier = Modifier
+                                .align(Alignment.End)
+                                .clickable {
+                                    Toast.makeText(
+                                        context,
+                                        "Recuperación de contraseña",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                },
+                            color = colorTextoSecundario,
+                            fontSize = 14.sp
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    BotonesAccion(
+                        onIniciarSesionClick = onIniciarSesionClick,
+                        onCrearCuentaClick = onCrearCuenta,
+                        modoOscuro = modoOscuro,
+                        tipoPantalla = tipoPantalla,
+                        colorTextoSecundario = colorTextoSecundario,
+                        anchoBotonTelefono = anchoBotonTelefono,
+                        anchoBotonTablet = anchoBotonTablet
                     )
 
-                    Spacer(modifier = Modifier.height(32.dp))
-                    BotonesAccion(onIniciarSesionClick, onCrearCuenta, modoOscuro, !anchoCompacto)
+                    Spacer(modifier = Modifier.height(18.dp))
+                }
+            }
 
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "¿Aún no tienes una cuenta?",
-                        color = colorTextoSecundario,
-                        fontSize = 14.sp
+            // TABLET VERTICAL
+            TipoPantalla.TABLET_VERTICAL -> {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .statusBarsPadding()
+                        .navigationBarsPadding()
+                        .verticalScroll(rememberScrollState())
+                        .padding(horizontal = 36.dp, vertical = 18.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+
+                    Spacer(modifier = Modifier.height(18.dp))
+
+                    WashlyBienvenidaAnimado(
+                        modoOscuro = modoOscuro,
+                        tamano = logoSize
+                    )
+
+                    Spacer(modifier = Modifier.height(22.dp))
+
+                    Column(
+                        modifier = Modifier.width(anchoCampos)
+                    ) {
+                        CampoCorreo(
+                            correo = correo,
+                            onValueChange = { correo = it },
+                            colorCampo = colorCampo,
+                            colorTextoPrincipal = colorTextoPrincipal,
+                            colorIcono = colorIcono
+                        )
+
+                        Spacer(modifier = Modifier.height(14.dp))
+
+                        CampoContrasena(
+                            contrasena = contrasena,
+                            onValueChange = { contrasena = it },
+                            mostrarContrasena = mostrarContrasena,
+                            onMostrarChange = { mostrarContrasena = it },
+                            colorCampo = colorCampo,
+                            colorTextoPrincipal = colorTextoPrincipal,
+                            colorIcono = colorIcono
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Text(
+                            text = "¿Olvidaste tu contraseña?",
+                            modifier = Modifier
+                                .align(Alignment.Start)
+                                .clickable {
+                                    Toast.makeText(
+                                        context,
+                                        "Recuperación de contraseña",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                },
+                            color = colorTextoSecundario,
+                            fontSize = 13.sp
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(28.dp))
+
+                    BotonesAccion(
+                        onIniciarSesionClick = onIniciarSesionClick,
+                        onCrearCuentaClick = onCrearCuenta,
+                        modoOscuro = modoOscuro,
+                        tipoPantalla = tipoPantalla,
+                        colorTextoSecundario = colorTextoSecundario,
+                        anchoBotonTelefono = anchoBotonTelefono,
+                        anchoBotonTablet = anchoBotonTablet
                     )
                 }
             }
-        } else {
 
-            // DISEÑO VERTICAL (Celular y Tablet parados)
 
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = paddingHorizontal, vertical = 24.dp)
-                    .verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                WashlyBienvenidaAnimado(
-                    modifier = Modifier.size(logoSize),
-                    modoOscuro = modoOscuro,
-                    tamano = logoSize
-                )
-                Spacer(modifier = Modifier.height(32.dp))
-
+            // TABLET HORIZONTAL
+            TipoPantalla.TABLET_HORIZONTAL -> {
                 Column(
-                    modifier = Modifier.widthIn(max = 500.dp)
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .statusBarsPadding()
+                        .navigationBarsPadding()
+                        .padding(horizontal = 56.dp, vertical = 20.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    CampoCorreo(correo, { correo = it }, colorCampo, colorTextoPrincipal, colorIcono)
-                    Spacer(modifier = Modifier.height(16.dp))
-                    CampoContrasena(contrasena, { contrasena = it }, mostrarContrasena, { mostrarContrasena = it }, colorCampo, colorTextoPrincipal, colorIcono)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(42.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier.weight(0.9f),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            WashlyBienvenidaAnimado(
+                                modoOscuro = modoOscuro,
+                                tamano = logoSize
+                            )
+                        }
+                        Column(
+                            modifier = Modifier.weight(1.1f)
+                        ) {
+                            Column(
+                                modifier = Modifier.width(anchoCampos)
+                            ) {
+                                CampoCorreo(
+                                    correo = correo,
+                                    onValueChange = { correo = it },
+                                    colorCampo = colorCampo,
+                                    colorTextoPrincipal = colorTextoPrincipal,
+                                    colorIcono = colorIcono
+                                )
 
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "¿Olvidaste tu contraseña?",
-                        modifier = Modifier.align(Alignment.Start).clickable {
-                            Toast.makeText(context, "Recuperación de contraseña", Toast.LENGTH_SHORT).show()
-                        },
-                        color = colorTextoSecundario,
-                        fontSize = 14.sp
-                    )
+                                Spacer(modifier = Modifier.height(14.dp))
 
-                    Spacer(modifier = Modifier.height(32.dp))
-                    BotonesAccion(onIniciarSesionClick, onCrearCuenta, modoOscuro, !anchoCompacto)
+                                CampoContrasena(
+                                    contrasena = contrasena,
+                                    onValueChange = { contrasena = it },
+                                    mostrarContrasena = mostrarContrasena,
+                                    onMostrarChange = { mostrarContrasena = it },
+                                    colorCampo = colorCampo,
+                                    colorTextoPrincipal = colorTextoPrincipal,
+                                    colorIcono = colorIcono
+                                )
 
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "¿Aún no tienes una cuenta?",
-                        modifier = Modifier.align(Alignment.CenterHorizontally),
-                        color = colorTextoSecundario,
-                        fontSize = 14.sp
+                                Spacer(modifier = Modifier.height(8.dp))
+
+                                Text(
+                                    text = "¿Olvidaste tu contraseña?",
+                                    modifier = Modifier
+                                        .align(Alignment.Start)
+                                        .clickable {
+                                            Toast.makeText(
+                                                context,
+                                                "Recuperación de contraseña",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        },
+                                    color = colorTextoSecundario,
+                                    fontSize = 14.sp
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(34.dp))
+
+                    BotonesAccion(
+                        onIniciarSesionClick = onIniciarSesionClick,
+                        onCrearCuentaClick = onCrearCuenta,
+                        modoOscuro = modoOscuro,
+                        tipoPantalla = tipoPantalla,
+                        colorTextoSecundario = colorTextoSecundario,
+                        anchoBotonTelefono = anchoBotonTelefono,
+                        anchoBotonTablet = anchoBotonTablet
                     )
                 }
             }
@@ -218,10 +355,7 @@ fun PantallaInicioSesion(
     }
 }
 
-// ==========================================
 // COMPONENTES REUTILIZABLES
-// ==========================================
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CampoCorreo(
@@ -321,44 +455,85 @@ fun BotonesAccion(
     onIniciarSesionClick: () -> Unit,
     onCrearCuentaClick: () -> Unit,
     modoOscuro: Boolean,
-    esTablet: Boolean
+    tipoPantalla: TipoPantalla,
+    colorTextoSecundario: Color,
+    anchoBotonTelefono: Dp,
+    anchoBotonTablet: Dp
 ) {
-    if (esTablet) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                BotonDegradado(
-                    texto = "Iniciar Sesión",
-                    modoOscuro = modoOscuro,
-                    onClick = onIniciarSesionClick
-                )
-            }
+    when (tipoPantalla) {
 
-            Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                BotonCrearCuenta(
-                    onClick = onCrearCuentaClick,
-                    modoOscuro = modoOscuro
+        // TELÉFONO
+        TipoPantalla.TELEFONO -> {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Box(modifier = Modifier.width(anchoBotonTelefono)) {
+                    BotonDegradado(
+                        texto = "Iniciar Sesión",
+                        modoOscuro = modoOscuro,
+                        onClick = onIniciarSesionClick
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Text(
+                    text = "¿Aún no tienes una cuenta?",
+                    color = colorTextoSecundario,
+                    fontSize = 14.sp
                 )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Box(modifier = Modifier.width(anchoBotonTelefono)) {
+                    BotonCrearCuenta(
+                        onClick = onCrearCuentaClick,
+                        modoOscuro = modoOscuro
+                    )
+                }
             }
         }
-    } else {
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            BotonDegradado(
-                texto = "Iniciar Sesión",
-                modoOscuro = modoOscuro,
-                onClick = onIniciarSesionClick
-            )
 
-            BotonCrearCuenta(
-                onClick = onCrearCuentaClick,
-                modoOscuro = modoOscuro
-            )
+
+        // TABLET VERTICAL / HORIZONTAL
+        TipoPantalla.TABLET_VERTICAL,
+        TipoPantalla.TABLET_HORIZONTAL -> {
+            Row(
+                modifier = Modifier.wrapContentWidth(),
+                horizontalArrangement = Arrangement.spacedBy(26.dp),
+                verticalAlignment = Alignment.Top
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Box(modifier = Modifier.width(anchoBotonTablet)) {
+                        BotonDegradado(
+                            texto = "Iniciar Sesión",
+                            modoOscuro = modoOscuro,
+                            onClick = onIniciarSesionClick
+                        )
+                    }
+                }
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Box(modifier = Modifier.width(anchoBotonTablet)) {
+                        BotonCrearCuenta(
+                            onClick = onCrearCuentaClick,
+                            modoOscuro = modoOscuro
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = "¿Aún no tienes una cuenta?",
+                        color = colorTextoSecundario,
+                        fontSize = 14.sp
+                    )
+                }
+            }
         }
     }
 }

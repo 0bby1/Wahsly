@@ -17,10 +17,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.wahsly.animaciones.AnimacionTransicionAgua
+import com.example.wahsly.datos.database.AppDatabase
 import com.example.wahsly.datos.model.Usuario
 import com.example.wahsly.navegacion.NavegacionPrincipal
 import com.example.wahsly.ui.pantallas.PantallaCargaVideo
@@ -29,6 +31,7 @@ import com.example.wahsly.ui.pantallas.PantallaInicioSesion
 import com.example.wahsly.ui.pantallas.PantallaRegistro
 import com.example.wahsly.ui.pantallas.PantallaSplash
 import com.example.wahsly.utilidades.FotoPerfilStorage
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
@@ -105,15 +108,33 @@ class MainActivity : ComponentActivity() {
 
                         // SPLASH
                         composable("SPLASH") {
+                            val scope = rememberCoroutineScope()
 
                             PantallaSplash(
                                 modoOscuro = modoOscuro,
                                 onTerminar = {
+                                    scope.launch {
+                                        val correoGuardado = preferencias.getString("correo_usuario_activo", null)
+                                        if (correoGuardado != null) {
+                                            val usuarioDao = AppDatabase.getDatabase(this@MainActivity).usuarioDao()
+                                            val usuario = usuarioDao.buscarUsuario(correoGuardado)
+                                            if (usuario != null) {
+                                                usuarioActual = usuario
+                                                seccionActual = "INICIO"
+                                                navController.navigate("PRINCIPAL") {
+                                                    popUpTo("SPLASH") {
+                                                        inclusive = true
+                                                    }
+                                                }
+                                                return@launch
+                                            }
+                                        }
 
-                                    navController.navigate("LOGIN") {
+                                        navController.navigate("LOGIN") {
 
-                                        popUpTo("SPLASH") {
-                                            inclusive = true
+                                            popUpTo("SPLASH") {
+                                                inclusive = true
+                                            }
                                         }
                                     }
                                 }
@@ -135,6 +156,11 @@ class MainActivity : ComponentActivity() {
 
                                 onLoginExitoso = { usuario ->
 
+                                    preferencias
+                                        .edit()
+                                        .putString("correo_usuario_activo", usuario.correo)
+                                        .apply()
+
                                     usuarioActual = usuario
                                     seccionActual = "INICIO"
 
@@ -152,6 +178,11 @@ class MainActivity : ComponentActivity() {
                                 modoOscuro = modoOscuro,
                                 windowSizeClass = windowSizeClass,
                                 onRegistroExitoso = { usuario ->
+
+                                    preferencias
+                                        .edit()
+                                        .putString("correo_usuario_activo", usuario.correo)
+                                        .apply()
 
                                     usuarioActual = usuario
                                     seccionActual = "INICIO"
@@ -240,6 +271,11 @@ class MainActivity : ComponentActivity() {
 
                                 onCerrarSesion = {
 
+                                    preferencias
+                                        .edit()
+                                        .remove("correo_usuario_activo")
+                                        .apply()
+
                                     usuarioActual = null
                                     seccionActual = "INICIO"
 
@@ -299,6 +335,11 @@ class MainActivity : ComponentActivity() {
                                 },
 
                                 onCuentaEliminada = {
+
+                                    preferencias
+                                        .edit()
+                                        .remove("correo_usuario_activo")
+                                        .apply()
 
 
                                     usuarioActual?.correo?.let { correo ->

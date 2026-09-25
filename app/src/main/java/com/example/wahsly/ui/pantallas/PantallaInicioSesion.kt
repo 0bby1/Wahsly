@@ -71,7 +71,7 @@ fun PantallaInicioSesion(
     val tipoPantalla = obtenerTipoPantalla(windowSizeClass)
 
     val logoSize = when (tipoPantalla) {
-        TipoPantalla.TELEFONO -> 330.dp
+        TipoPantalla.TELEFONO -> 280.dp
         TipoPantalla.TABLET_VERTICAL -> 600.dp
         TipoPantalla.TABLET_HORIZONTAL -> 500.dp
     }

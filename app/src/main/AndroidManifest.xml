@@ -17,9 +17,9 @@
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@drawable/icono_cajita_washly"
+        android:icon="@drawable/washly_bienvenida_abierto"
         android:label="@string/app_name"
-        android:roundIcon="@drawable/icono_cajita_washly"
+        android:roundIcon="@drawable/washly_bienvenida_abierto"
         android:supportsRtl="true"
         android:theme="@style/Theme.Wahsly">
 

@@ -32,74 +32,56 @@ import kotlinx.coroutines.delay
 fun WashlyBienvenidaAnimado(
     modoOscuro: Boolean,
     modifier: Modifier = Modifier,
-    tamano: Dp? = null //
+    tamano: Dp? = null
 ) {
-    // ============================================
-    // RESPONSIVE: TAMAÑO SEGÚN DISPOSITIVO
-    // ============================================
+    // Por ahora esta versión usa el nuevo vector de modo claro.
+    // Se conserva modoOscuro en la firma para no romper las llamadas existentes.
+
     val configuration = LocalConfiguration.current
     val anchoDp = configuration.screenWidthDp
     val esTablet = anchoDp >= 600
-    val esHorizontal = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val esHorizontal =
+        configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
     val tamanoFinal: Dp = tamano ?: when {
-        esTablet && esHorizontal -> 380.dp   // Tablet acostada
-        esTablet -> 320.dp                    // Tablet parada
-        esHorizontal -> 220.dp                // Celular acostado
-        else -> 280.dp                        // Celular parado
+        esTablet && esHorizontal -> 380.dp
+        esTablet -> 320.dp
+        esHorizontal -> 220.dp
+        else -> 280.dp
     }
 
-    // PARPADEO
+    // PARPADEO: misma lógica que ya tenías.
     var ojoCerrado by remember { mutableStateOf(false) }
+
     LaunchedEffect(Unit) {
         while (true) {
-            // Ojo abierto
             delay(2800)
-
-            // Cierra el ojo
             ojoCerrado = true
-
             delay(600)
-
-            // Abre el ojo
             ojoCerrado = false
         }
     }
 
-    // SELECCIONAR VECTOR SEGÚN TEMA Y PARPADEO
-    val recursoVector = when {
-        modoOscuro && ojoCerrado -> {
-            R.drawable.washly_bienvenida_cerrado_oscuro
-        }
-        modoOscuro -> {
-            R.drawable.washly_bienvenida_abierto_oscuro
-        }
-        ojoCerrado -> {
-            R.drawable.washly_bienvenida_cerrado
-        } else -> {
-            R.drawable.washly_bienvenida_abierto
-        }
+    // NUEVOS VECTORES DE MODO CLARO.
+    val recursoVector = if (ojoCerrado) {
+        R.drawable.washly_bienvenida_cerrado
+    } else {
+        R.drawable.washly_bienvenida_abierto
     }
 
-    // Cargamos el VectorDrawable como ImageVector
-    val vectorActual = ImageVector.vectorResource(
-        id = recursoVector
-    )
-
+    val vectorActual = ImageVector.vectorResource(id = recursoVector)
     val painterVector = rememberVectorPainter(image = vectorActual)
 
-    // ANIMACIÓN DEL BRILLO DEL OJO
+    // Movimiento e intensidad del brillito.
     val transicion = rememberInfiniteTransition(
         label = "MovimientoOjoWashly"
     )
 
     val movimientoOjo by transicion.animateFloat(
-        initialValue = -3f,
-        targetValue = 3f,
+        initialValue = -2.5f,
+        targetValue = 2.5f,
         animationSpec = infiniteRepeatable(
-            animation = tween(
-                durationMillis = 900
-            ),
+            animation = tween(durationMillis = 900),
             repeatMode = RepeatMode.Reverse
         ),
         label = "MovimientoBrillo"
@@ -109,35 +91,22 @@ fun WashlyBienvenidaAnimado(
         initialValue = 0.45f,
         targetValue = 1f,
         animationSpec = infiniteRepeatable(
-            animation = tween(
-                durationMillis = 600
-            ),
+            animation = tween(durationMillis = 600),
             repeatMode = RepeatMode.Reverse
         ),
         label = "IntensidadBrillo"
     )
 
-    // DIBUJAR VECTOR
     Canvas(
         modifier = modifier.size(tamanoFinal)
     ) {
-        val escala = size.height / 792f
-        val centroLogo = Offset(
-            x = size.width / 2f,
-            y = 403.81f * escala
-        )
-        val radioLogo = 237.83f * escala
-        if (modoOscuro) {
-            drawCircle(
-                Color(0xFF6F879E),
-                radius = radioLogo,
-                center = centroLogo
-            )
-        }
+        // El SVG nuevo tiene viewBox="0 0 495.66 504.09".
+        val viewportWidth = 495.66f
+        val viewportHeight = 504.09f
 
-        // Mantiene la proporción original del vector
-        val proporcion = 612f / 792f
-        val anchoVector = size.height * proporcion
+        // Mantener la proporción original y centrarlo horizontalmente.
+        val escala = size.height / viewportHeight
+        val anchoVector = viewportWidth * escala
         val desplazamientoX = (size.width - anchoVector) / 2f
 
         translate(
@@ -154,40 +123,30 @@ fun WashlyBienvenidaAnimado(
             }
         }
 
-        // BRILLO DENTRO DEL OJO
+        // BRILLO PEQUEÑO DENTRO DEL OJO DERECHO.
+        // Solo se dibuja mientras el ojo está abierto.
         if (!ojoCerrado) {
-            val escalaInterna = size.height / 792f
-            val centroX = desplazamientoX + ((407f + movimientoOjo) * escalaInterna)
-            val centroY = 401f * escalaInterna
+            val centroX =
+                desplazamientoX + ((341.5f + movimientoOjo) * escala)
+            val centroY = 249.0f * escala
 
-            val colorBrillo =
-                if (modoOscuro) {
-                    Color(0xFFF4EFEB)
-                } else {
-                    Color.White
-                }
-
-            // Brillo principal
             drawCircle(
-                color = colorBrillo.copy(
-                    alpha = intensidadBrillo
-                ),
-                radius = 3.2f * escalaInterna,
+                color = Color.White.copy(alpha = intensidadBrillo),
+                radius = 3.2f * escala,
                 center = Offset(
                     x = centroX,
                     y = centroY
                 )
             )
 
-            // Brillito pequeño
             drawCircle(
-                color = colorBrillo.copy(
+                color = Color.White.copy(
                     alpha = intensidadBrillo * 0.75f
                 ),
-                radius = 1.4f * escalaInterna,
+                radius = 1.4f * escala,
                 center = Offset(
-                    x = centroX + (5f * escalaInterna),
-                    y = centroY + (5f * escalaInterna)
+                    x = centroX + (5f * escala),
+                    y = centroY + (4f * escala)
                 )
             )
         }

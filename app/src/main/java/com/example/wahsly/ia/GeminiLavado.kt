@@ -40,7 +40,7 @@ data class ResultadoLavado(
 // CONEXION CON GEMINI
 object GeminiLavado {
     private const val MODELO =
-        "gemini-3.5-flash"
+        "gemini-3-flash-preview"
     private const val URL_API =
         "https://generativelanguage.googleapis.com/v1beta/interactions"
 

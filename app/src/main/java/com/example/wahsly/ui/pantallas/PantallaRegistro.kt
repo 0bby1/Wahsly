@@ -39,9 +39,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import com.example.wahsly.R
-import com.example.wahsly.datos.database.AppDatabase
 import com.example.wahsly.datos.model.Usuario
-import com.example.wahsly.datos.repository.UsuarioRepository
 import com.example.wahsly.ui.theme.AzulGradienteOscuro
 import com.example.wahsly.ui.theme.AzulPrincipalClaro
 import com.example.wahsly.ui.theme.AzulTextoClaro
@@ -67,9 +65,10 @@ fun PantallaRegistro(
     onVolverLogin: () -> Unit
 ) {
     val context = LocalContext.current
-    val db = remember { AppDatabase.getDatabase(context) }
-    val repository = remember { UsuarioRepository(db.usuarioDao()) }
-    val viewModel: RegistroViewModel = viewModel(factory = ViewModelFactory(repository))
+
+    val viewModel: RegistroViewModel = viewModel(
+        factory = ViewModelFactory()
+    )
 
     // Mostrar Toast cuando aparezca mensaje de error
     LaunchedEffect(viewModel.mensajeError) {
@@ -446,6 +445,7 @@ fun PantallaRegistro(
 
                 Spacer(modifier = Modifier.height(espacioEntreCampos))
 
+
                 // CONTRASEÑA
                 OutlinedTextField(
                     value = viewModel.contrasena,
@@ -480,7 +480,12 @@ fun PantallaRegistro(
                                     } else {
                                         Icons.Default.Visibility
                                     },
-                                contentDescription = null,
+                                contentDescription =
+                                    if (viewModel.mostrarContrasena) {
+                                        "Ocultar contraseña"
+                                    } else {
+                                        "Mostrar contraseña"
+                                    },
                                 tint = colorTextoCampo
                             )
                         }
@@ -513,7 +518,114 @@ fun PantallaRegistro(
                     )
                 )
 
-                Spacer(modifier = Modifier.height(espacioEntreCampos))
+
+
+                // REQUISITOS DE CONTRASEÑA
+
+                if (viewModel.contrasena.isNotEmpty()) {
+
+                    val pendientes = buildList {
+
+                        if (viewModel.contrasena.length < 8) {
+                            add("Mínimo 8 caracteres")
+                        }
+
+                        if (!Regex("[A-Z]").containsMatchIn(
+                                viewModel.contrasena
+                            )
+                        ) {
+                            add("Una letra mayúscula")
+                        }
+
+                        if (!Regex("[0-9]").containsMatchIn(
+                                viewModel.contrasena
+                            )
+                        ) {
+                            add("Un número")
+                        }
+
+                        if (!Regex("[^A-Za-z0-9]").containsMatchIn(
+                                viewModel.contrasena
+                            )
+                        ) {
+                            add("Un símbolo especial (!, @, #)")
+                        }
+
+                    }
+
+                    Spacer(
+                        modifier = Modifier.height(8.dp)
+                    )
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                color = if (pendientes.isEmpty()) {
+                                    Color(0xFF2E7D32).copy(
+                                        alpha = 0.12f
+                                    )
+                                } else if (modoOscuro) {
+                                    Color.White.copy(alpha = 0.08f)
+                                } else {
+                                    AzulPrincipalClaro.copy(
+                                        alpha = 0.10f
+                                    )
+                                },
+                                shape = RoundedCornerShape(10.dp)
+                            )
+                            .padding(
+                                horizontal = 12.dp,
+                                vertical = 10.dp
+                            ),
+                        verticalArrangement =
+                            Arrangement.spacedBy(5.dp)
+                    ) {
+
+                        if (pendientes.isEmpty()) {
+
+                            Text(
+                                text = "✓ Contraseña válida",
+                                fontSize = 13.sp,
+                                color = if (modoOscuro) {
+                                    Color(0xFF81C784)
+                                } else {
+                                    Color(0xFF2E7D32)
+                                }
+                            )
+
+                        } else {
+
+                            Text(
+                                text = "A tu contraseña le falta:",
+                                fontSize = 13.sp,
+                                color = colorTitulo
+                            )
+
+                            pendientes.forEach { requisito ->
+
+                                Text(
+                                    text = "• $requisito",
+                                    fontSize = 12.sp,
+                                    color = colorTitulo.copy(
+                                        alpha = 0.85f
+                                    )
+                                )
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+                Spacer(
+                    modifier = Modifier.height(
+                        espacioEntreCampos
+                    )
+                )
+
 
                 // CONFIRMAR CONTRASEÑA
                 OutlinedTextField(
@@ -769,4 +881,39 @@ private fun BotonRegistroResponsivo(
             fontWeight = FontWeight.SemiBold
         )
     }
+}
+
+@Composable
+private fun RequisitoContrasena(
+    texto: String,
+    cumplido: Boolean,
+    colorTexto: Color
+) {
+
+    val colorRequisito =
+        if (cumplido) {
+            Color(0xFF2E7D32)
+        } else {
+            colorTexto.copy(alpha = 0.75f)
+        }
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+
+        Text(
+            text = if (cumplido) "✓" else "○",
+            color = colorRequisito,
+            fontSize = 15.sp
+        )
+
+        Text(
+            text = texto,
+            color = colorRequisito,
+            fontSize = 13.sp
+        )
+
+    }
+
 }

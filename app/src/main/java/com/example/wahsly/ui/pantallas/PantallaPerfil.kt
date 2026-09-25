@@ -71,6 +71,7 @@ fun PantallaPerfil(
     modoOscuro: Boolean,
     windowSizeClass: WindowSizeClass,
     onConfiguracion: () -> Unit,
+    onAyudaSoporte: () -> Unit,
     onVolver: () -> Unit,
     onCerrarSesion: () -> Unit,
     mostrarBarraInferior: Boolean = true,
@@ -407,10 +408,15 @@ fun PantallaPerfil(
                                     .background(AzulPrincipalClaro)
                                     .border(
                                         width = 2.dp,
-                                        color = if (modoOscuro) { CremaOscuro } else { FondoClaro },
+                                        color = if (modoOscuro) {
+                                            CremaOscuro
+                                        } else {
+                                            FondoClaro
+                                        },
                                         shape = CircleShape
                                     )
-                                    .clickable(role = Role.Button
+                                    .clickable(
+                                        role = Role.Button
                                     ) {
                                         selectorFoto.launch(
                                             PickVisualMediaRequest(
@@ -443,7 +449,8 @@ fun PantallaPerfil(
                         .widthIn(max = anchoMaximoTarjeta),
                     shape = RoundedCornerShape(18.dp),
                     colors = CardDefaults.cardColors(containerColor = colorTarjeta),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 5.dp
+                    elevation = CardDefaults.cardElevation(
+                        defaultElevation = 5.dp
                     )
                 ) {
                     Column {
@@ -469,16 +476,16 @@ fun PantallaPerfil(
                             iconoTamano = iconoTamanoOpcion,
                             paddingVertical = paddingVerticalOpcion,
                             colorContenido = colorTexto,
-                            onClick = {
-                                // Pantalla de Ayuda en un futuro
-                            }
+                            onClick = onAyudaSoporte
                         )
+
 
                         HorizontalDivider(
                             modifier = Modifier.padding(horizontal = 16.dp),
                             thickness = 1.dp,
                             color = colorDivisor
                         )
+
 
                         // CERRAR SESIÓN
                         OpcionPerfilConFlecha(
@@ -489,91 +496,112 @@ fun PantallaPerfil(
                             paddingVertical = paddingVerticalOpcion,
                             colorContenido = colorTexto,
                             onClick = {
+
+                                android.util.Log.d(
+                                    "WAHSLY_SESION",
+                                    "Se presionó Cerrar Sesión"
+                                )
+
                                 mostrarDialogoCerrarSesion = true
+
+                                android.util.Log.d(
+                                    "WAHSLY_SESION",
+                                    "Estado del diálogo: $mostrarDialogoCerrarSesion"
+                                )
+
                             }
                         )
+
                     }
+
+                    Spacer(modifier = Modifier.height(24.dp))
                 }
 
-                Spacer(modifier = Modifier.height(24.dp))
-            }
-
-            // POP-UP CERRAR SESIÓN (fuera del scroll para que quede fijo)
-            if (mostrarDialogoCerrarSesion) {
-                Dialog(
-                    onDismissRequest = {
-                        mostrarDialogoCerrarSesion = false
-                    }
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(28.dp))
-                            .background(colorDialogo)
-                            .padding(24.dp)
-                    ) {
-                        // BOTÓN X
-                        IconButton(
-                            onClick = {
-                                mostrarDialogoCerrarSesion = false
-                            },
-                            modifier = Modifier.align(Alignment.TopEnd)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Close,
-                                contentDescription = "Cerrar",
-                                tint = colorTextoDialogo
-                            )
+                // POP-UP CERRAR SESIÓN (fuera del scroll para que quede fijo)
+                if (mostrarDialogoCerrarSesion) {
+                    Dialog(
+                        onDismissRequest = {
+                            mostrarDialogoCerrarSesion = false
                         }
-                        Column(
+                    ) {
+                        Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(
-                                    top = 24.dp,
-                                    bottom = 8.dp
-                                )
-                                .semantics {
-                                    liveRegion = LiveRegionMode.Polite
-                                    contentDescription = "Ventana de confirmación: ¿Deseas cerrar sesión?"
-                                },
-                            horizontalAlignment = Alignment.CenterHorizontally
+                                .clip(RoundedCornerShape(28.dp))
+                                .background(colorDialogo)
+                                .padding(24.dp)
                         ) {
-                            // TEXTO
-                            Text(
-                                text = "¿Deseas cerrar sesión?",
-                                color = colorTextoDialogo,
-                                fontSize = 22.sp,
-                                fontWeight = FontWeight.Bold,
-                                textAlign = TextAlign.Center
-                            )
-
-                            Spacer(modifier = Modifier.height(24.dp))
-
-                            // BOTÓN ACEPTAR
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(50.dp))
-                                    .background(colorBotonDialogo)
-                                    .clickable(
-                                        role = Role.Button,
-                                        onClickLabel = "Confirmar cierre de sesión",
-                                        onClick = {
-                                            mostrarDialogoCerrarSesion = false
-                                            onCerrarSesion()
-                                        }
-                                    )
-                                    .padding(
-                                        horizontal = 40.dp,
-                                        vertical = 12.dp
-                                    )
-                                    .semantics(mergeDescendants = true) { }
+                            // BOTÓN X
+                            IconButton(
+                                onClick = {
+                                    mostrarDialogoCerrarSesion = false
+                                },
+                                modifier = Modifier.align(Alignment.TopEnd)
                             ) {
-                                Text(
-                                    text = "Aceptar",
-                                    color = colorTextoBotonDialogo,
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.Medium
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = "Cerrar",
+                                    tint = colorTextoDialogo
                                 )
+                            }
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(
+                                        top = 40.dp,
+                                        bottom = 8.dp
+                                    )
+                                    .semantics {
+                                        liveRegion = LiveRegionMode.Polite
+                                        contentDescription =
+                                            "Ventana de confirmación: ¿Deseas cerrar sesión?"
+                                    },
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+
+                                // TEXTO
+                                Text(
+                                    text = "¿Deseas cerrar sesión?",
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 20.dp),
+                                    color = colorTextoDialogo,
+                                    fontSize = 22.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    textAlign = TextAlign.Center
+                                )
+
+                                Spacer(
+                                    modifier = Modifier.height(24.dp)
+                                )
+
+
+                                // BOTÓN ACEPTAR
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(50.dp))
+                                        .background(colorBotonDialogo)
+                                        .clickable(
+                                            role = Role.Button,
+                                            onClickLabel = "Confirmar cierre de sesión",
+                                            onClick = {
+                                                mostrarDialogoCerrarSesion = false
+                                                onCerrarSesion()
+                                            }
+                                        )
+                                        .padding(
+                                            horizontal = 40.dp,
+                                            vertical = 12.dp
+                                        )
+                                        .semantics(mergeDescendants = true) { }
+                                ) {
+                                    Text(
+                                        text = "Aceptar",
+                                        color = colorTextoBotonDialogo,
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                }
                             }
                         }
                     }
@@ -582,55 +610,55 @@ fun PantallaPerfil(
         }
     }
 }
-
-// OPCIÓN DEL PERFIL
-@Composable
-fun OpcionPerfilConFlecha(
-    icono: ImageVector,
-    texto: String,
-    fontSize: TextUnit = 14.sp,
-    iconoTamano: androidx.compose.ui.unit.Dp = 22.dp,
-    paddingVertical: androidx.compose.ui.unit.Dp = 12.dp,
-    colorContenido: Color,
-    onClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(
-                role = Role.Button,
-                onClickLabel = "Acceder a $texto",
-                onClick = onClick
-            )
-            .padding(
-                horizontal = 24.dp,
-                vertical = paddingVertical
-            )
-            .semantics(mergeDescendants = true
-            ) { },
-        verticalAlignment = Alignment.CenterVertically
+    // OPCIÓN DEL PERFIL
+    @Composable
+    fun OpcionPerfilConFlecha(
+        icono: ImageVector,
+        texto: String,
+        fontSize: TextUnit = 14.sp,
+        iconoTamano: androidx.compose.ui.unit.Dp = 22.dp,
+        paddingVertical: androidx.compose.ui.unit.Dp = 12.dp,
+        colorContenido: Color,
+        onClick: () -> Unit
     ) {
-        Icon(
-            imageVector = icono,
-            contentDescription = null,
-            tint = colorContenido,
-            modifier = Modifier.size(iconoTamano)
-        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(
+                    role = Role.Button,
+                    onClickLabel = "Acceder a $texto",
+                    onClick = onClick
+                )
+                .padding(
+                    horizontal = 24.dp,
+                    vertical = paddingVertical
+                )
+                .semantics(
+                    mergeDescendants = true
+                ) { },
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = icono,
+                contentDescription = null,
+                tint = colorContenido,
+                modifier = Modifier.size(iconoTamano)
+            )
 
-        Spacer(modifier = Modifier.width(20.dp))
+            Spacer(modifier = Modifier.width(20.dp))
 
-        Text(
-            text = texto,
-            fontSize = fontSize,
-            color = colorContenido,
-            modifier = Modifier.weight(1f)
-        )
+            Text(
+                text = texto,
+                fontSize = fontSize,
+                color = colorContenido,
+                modifier = Modifier.weight(1f)
+            )
 
-        Icon(
-            imageVector = Icons.Default.KeyboardArrowRight,
-            contentDescription = null,
-            tint = colorContenido,
-            modifier = Modifier.size(iconoTamano)
-        )
+            Icon(
+                imageVector = Icons.Default.KeyboardArrowRight,
+                contentDescription = null,
+                tint = colorContenido,
+                modifier = Modifier.size(iconoTamano)
+            )
+        }
     }
-}

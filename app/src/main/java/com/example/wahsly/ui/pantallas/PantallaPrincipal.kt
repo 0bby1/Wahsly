@@ -28,9 +28,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.contentDescription
 import com.example.wahsly.R
-import com.example.wahsly.datos.database.AppDatabase
 import com.example.wahsly.datos.model.Usuario
-import com.example.wahsly.datos.repository.HistorialRepository
 import com.example.wahsly.ui.theme.AzulPrincipalClaro
 import com.example.wahsly.ui.theme.AzulTextoClaro
 import com.example.wahsly.ui.theme.CremaOscuro
@@ -39,7 +37,6 @@ import com.example.wahsly.ui.theme.FondoOscuro
 import com.example.wahsly.ui.theme.IconoSecundarioClaro
 import com.example.wahsly.ui.theme.RosaOscuro
 import com.example.wahsly.ui.theme.TarjetaRutinaClaro
-import com.example.wahsly.datos.model.RegistroEscaneo
 import com.example.wahsly.ia.resultadoLavadoDesdeJson
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -59,6 +56,11 @@ import com.example.wahsly.utilidades.FotoPerfilStorage
 import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
 import com.example.wahsly.utilidades.TipoPantalla
 import com.example.wahsly.utilidades.obtenerTipoPantalla
+import com.example.wahsly.datos.repository.FirebaseHistorialRepository
+import com.example.wahsly.datos.repository.RegistroHistorialFirebase
+import kotlinx.coroutines.flow.catch
+import android.util.Log
+
 
 @Composable
 fun PantallaPrincipal(
@@ -73,8 +75,8 @@ fun PantallaPrincipal(
 
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val db = remember { AppDatabase.getDatabase(context) }
-    val historialRepository = remember { HistorialRepository(db.historialDao()) }
+    val historialRepository = remember {
+        FirebaseHistorialRepository() }
     val correoUsuario = usuario?.correo.orEmpty()
 
     var fotoPerfilMenu by remember(correoUsuario) {
@@ -95,20 +97,28 @@ fun PantallaPrincipal(
         }
     }
 
-    val registrosFlow =
-        remember(correoUsuario) {
-            historialRepository
-                .registrosPorUsuario(
-                    correoUsuario
+
+    val registrosFlow = remember(correoUsuario) {
+        historialRepository
+            .registrosPorUsuario()
+            .catch { error ->
+                Log.e(
+                    "WAHSLY_HISTORIAL",
+                    "No se pudo cargar el historial",
+                    error
                 )
-        }
-    val registros by registrosFlow
-        .collectAsState(
-            initial = emptyList()
-        )
+                emit(emptyList())
+            }
+    }
+
+    val registros by registrosFlow.collectAsState(
+        initial = emptyList()
+    )
+
     var busqueda by remember { mutableStateOf("") }
     var tabSeleccionado by remember { mutableIntStateOf(0) }
-    var registroSeleccionado by remember { mutableStateOf<RegistroEscaneo?>(null) }
+    var registroSeleccionado by remember {
+        mutableStateOf<RegistroHistorialFirebase?>(null) }
 
     // RESPONSIVE: DETECCIÓN DE DISPOSITIVO CON WindowSizeClass
     val configuration = LocalConfiguration.current
@@ -434,7 +444,7 @@ fun PantallaPrincipal(
                                         onVerMas = { registroSeleccionado = it },
                                         onEliminar = {
                                             scope.launch {
-                                                historialRepository.eliminarRegistro(it)
+                                                historialRepository.eliminarRegistro(it.id)
                                             }
                                         }
                                     )
@@ -465,7 +475,7 @@ fun PantallaPrincipal(
                                         onVerMas = { registroSeleccionado = it },
                                         onEliminar = {
                                             scope.launch {
-                                                historialRepository.eliminarRegistro(it)
+                                                historialRepository.eliminarRegistro(it.id)
                                             }
                                         }
                                     )
@@ -684,15 +694,15 @@ fun PantallaPrincipal(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TarjetaRutina(
-    registro: RegistroEscaneo,
+    registro: RegistroHistorialFirebase,
     modoOscuro: Boolean,
     colorBordeTarjeta: Color,
     colorTarjetaRutina: Color,
     colorTextoPrincipal: Color,
     colorTextoSecundario: Color,
     tamanoLogoRutina: Dp,
-    onVerMas: (RegistroEscaneo) -> Unit,
-    onEliminar: (RegistroEscaneo) -> Unit
+    onVerMas: (RegistroHistorialFirebase) -> Unit,
+    onEliminar: (RegistroHistorialFirebase) -> Unit
 ) {
     val resultado = resultadoLavadoDesdeJson(registro.informacion)
     val estadoDeslizar = rememberSwipeToDismissBoxState(

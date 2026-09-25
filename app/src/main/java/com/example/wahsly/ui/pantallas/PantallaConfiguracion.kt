@@ -36,10 +36,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.wahsly.datos.database.AppDatabase
 import com.example.wahsly.datos.model.Usuario
-import com.example.wahsly.datos.repository.HistorialRepository
-import com.example.wahsly.datos.repository.UsuarioRepository
 import com.example.wahsly.ui.theme.AzulPrincipalClaro
 import com.example.wahsly.ui.theme.AzulTextoClaro
 import com.example.wahsly.ui.theme.CremaOscuro
@@ -67,12 +64,11 @@ fun PantallaConfiguracion(
     val context = LocalContext.current
 
     // DEPENDENCIAS PARA CAMBIAR CONTRASEÑA / ELIMINAR CUENTA
-    val db = remember { AppDatabase.getDatabase(context) }
-    val usuarioRepository = remember { UsuarioRepository(db.usuarioDao()) }
-    val historialRepository = remember { HistorialRepository(db.historialDao()) }
+
     val cuentaViewModel: CuentaViewModel = viewModel(
-        factory = ViewModelFactory(usuarioRepository, historialRepository)
+        factory = ViewModelFactory()
     )
+
 
     // COLORES
     val colorFondo =

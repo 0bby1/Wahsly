@@ -24,11 +24,9 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.wahsly.auth.AutenticadorLocal
+import com.example.wahsly.auth.AutenticadorFirebase
 import com.example.wahsly.auth.CredencialesIncorrectasException
-import com.example.wahsly.datos.database.AppDatabase
 import com.example.wahsly.datos.model.Usuario
-import com.example.wahsly.datos.repository.UsuarioRepository
 import com.example.wahsly.ui.componentes.BotonCrearCuenta
 import com.example.wahsly.ui.componentes.BotonDegradado
 import com.example.wahsly.ui.theme.AzulPrincipalClaro
@@ -47,6 +45,7 @@ import com.example.wahsly.utilidades.obtenerTipoPantalla
 import androidx.compose.ui.unit.Dp
 
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PantallaInicioSesion(
@@ -55,11 +54,15 @@ fun PantallaInicioSesion(
     onCrearCuenta: () -> Unit,
     onLoginExitoso: (Usuario) -> Unit
 ) {
+
     val context = LocalContext.current
-    val db = remember { AppDatabase.getDatabase(context) }
-    val repository = remember { UsuarioRepository(db.usuarioDao()) }
-    val autenticador = remember { AutenticadorLocal(repository) }
+
+    val autenticador = remember {
+        AutenticadorFirebase()
+    }
+
     val scope = rememberCoroutineScope()
+
 
     var correo by remember { mutableStateOf("") }
     var contrasena by remember { mutableStateOf("") }

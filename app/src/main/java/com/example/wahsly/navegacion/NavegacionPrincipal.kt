@@ -40,17 +40,14 @@ import com.example.wahsly.ui.theme.AzulPrincipalClaro
 import com.example.wahsly.ui.theme.RosaOscuro
 import com.example.wahsly.ui.theme.TarjetaPerfilOscuro
 import kotlinx.coroutines.launch
-import com.example.wahsly.datos.database.AppDatabase
-import com.example.wahsly.datos.model.RegistroEscaneo
-import com.example.wahsly.datos.repository.HistorialRepository
 import com.example.wahsly.ia.aJson
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import com.example.wahsly.utilidades.obtenerTipoPantalla
 import com.example.wahsly.utilidades.TipoPantalla
-
-@Composable
+import com.example.wahsly.datos.repository.FirebaseHistorialRepository
+  @Composable
 fun NavegacionPrincipal(
     seccionActual: String,
     usuario: Usuario?,
@@ -58,13 +55,15 @@ fun NavegacionPrincipal(
     windowSizeClass: WindowSizeClass,
     onCambiarSeccion: (String) -> Unit,
     onConfiguracion: () -> Unit,
+    onAyudaSoporte: () -> Unit,
     onCerrarSesion: () -> Unit
 ) {
 
+
     val context = LocalContext.current
     val tipoPantalla = obtenerTipoPantalla(windowSizeClass)
-    val db = remember { AppDatabase.getDatabase(context) }
-    val historialRepository = remember { HistorialRepository(db.historialDao()) }
+    val historialRepository = remember {
+        FirebaseHistorialRepository() }
     val scope = rememberCoroutineScope()
     var analizandoEtiqueta by remember { mutableStateOf(false) }
     var resultadoLavado by remember { mutableStateOf<ResultadoLavado?>(null) }
@@ -167,23 +166,12 @@ fun NavegacionPrincipal(
                                                         Locale.getDefault()
                                                     ).format(Date())
 
-                                                val correoUsuario = usuario?.correo
+                                                historialRepository.agregarRegistro(
+                                                    nombre = nombreRutina,
+                                                    fecha = fechaActual,
+                                                    informacion = resultado.aJson()
+                                                )
 
-                                                if (correoUsuario.isNullOrBlank()) {
-                                                    throw IllegalStateException(
-                                                        "No hay un usuario activo."
-                                                    )
-                                                }
-
-                                                val registro =
-                                                    RegistroEscaneo(
-                                                        correoUsuario = correoUsuario,
-                                                        nombre = nombreRutina,
-                                                        fecha = fechaActual,
-                                                        informacion = resultado.aJson()
-                                                    )
-
-                                                historialRepository.agregarRegistro(registro)
                                             }
                                             resultadoLavado = resultado
                                         } catch (e: Exception) {
@@ -208,12 +196,14 @@ fun NavegacionPrincipal(
                             mostrarBarraInferior = false,
                             animarCabecera = animarCambioCabecera,
                             onConfiguracion = onConfiguracion,
+                            onAyudaSoporte = onAyudaSoporte,
                             onVolver = {
                                 onCambiarSeccion("INICIO")
                             },
                             onCerrarSesion = onCerrarSesion
                         )
                     }
+
                 }
             }
 

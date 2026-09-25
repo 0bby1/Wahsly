@@ -1,9 +1,10 @@
+
 import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
-    id("com.google.devtools.ksp")
+    id("com.google.gms.google-services")
 }
 
 val localProperties = Properties().apply {
@@ -66,6 +67,8 @@ android {
 }
 
 dependencies {
+
+    // JETPACK COMPOSE
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)
@@ -75,6 +78,8 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+
+    // PRUEBAS
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
@@ -82,14 +87,25 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
+
+    // INTERFAZ Y NAVEGACIÓN
     implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.core:core-splashscreen:1.0.1")
     implementation(libs.constraintlayout.compose)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
-    implementation("androidx.room:room-runtime:2.7.2")
-    implementation("androidx.room:room-ktx:2.7.2")
-    ksp("androidx.room:room-compiler:2.7.2")
+
+    // FIREBASE
+    implementation(
+        platform("com.google.firebase:firebase-bom:34.19.0")
+    )
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-firestore")
+
+    // CORRUTINAS PARA FIREBASE
+    implementation(
+        "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.10.2"
+    )
 
     // CAMERAX
     implementation(libs.androidx.camera.core)
@@ -97,6 +113,6 @@ dependencies {
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.view)
 
-    // Lifecycle para Compose
+    // LIFECYCLE PARA COMPOSE
     implementation(libs.androidx.lifecycle.runtime.compose)
 }

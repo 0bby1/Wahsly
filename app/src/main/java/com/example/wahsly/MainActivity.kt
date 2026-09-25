@@ -22,7 +22,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.wahsly.animaciones.AnimacionTransicionAgua
-import com.example.wahsly.datos.database.AppDatabase
 import com.example.wahsly.datos.model.Usuario
 import com.example.wahsly.navegacion.NavegacionPrincipal
 import com.example.wahsly.ui.pantallas.PantallaCargaVideo
@@ -34,6 +33,10 @@ import com.example.wahsly.utilidades.FotoPerfilStorage
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.LaunchedEffect
 import android.content.pm.ActivityInfo
+import com.example.wahsly.ui.pantallas.PantallaAyudaSoporte
+import com.example.wahsly.datos.repository.FirebaseUsuarioRepository
+import com.google.firebase.auth.FirebaseAuth
+
 
 class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
@@ -89,6 +92,11 @@ class MainActivity : ComponentActivity() {
                 MaterialTheme {
                     // NAVCONTROLLER
                     val navController = rememberNavController()
+
+                    val firebaseRepository = remember {
+                        FirebaseUsuarioRepository()
+                    }
+
                     var usuarioActual by remember {
                         mutableStateOf<Usuario?>(null)
                     }
@@ -100,21 +108,49 @@ class MainActivity : ComponentActivity() {
                     }
 
                     // RESTAURAR USUARIO DESPUÉS DE ROTAR
+
                     LaunchedEffect(Unit) {
-                        val correoGuardado =
-                            preferencias.getString(
-                                "correo_usuario_activo",
-                                null
-                            )
-                        usuarioActual =
-                            if (correoGuardado != null) {
-                                AppDatabase
-                                    .getDatabase(this@MainActivity)
-                                    .usuarioDao()
-                                    .buscarUsuario(correoGuardado)
-                            } else { null }
-                        cargandoUsuarioGuardado = false
+
+                        cargandoUsuarioGuardado = true
+
+                        try {
+
+                            val firebaseUser =
+                                firebaseRepository.obtenerUsuarioActual()
+
+                            usuarioActual =
+                                if (firebaseUser != null) {
+
+                                    val perfil =
+                                        firebaseRepository.obtenerUsuario(
+                                            firebaseUser.uid
+                                        )
+
+                                    Usuario(
+                                        nombre = perfil.nombre,
+                                        apellido = perfil.apellido,
+                                        correo = perfil.correo,
+                                        contrasena = ""
+                                    )
+
+                                } else {
+
+                                    null
+
+                                }
+
+                        } catch (e: Exception) {
+
+                            usuarioActual = null
+
+                        } finally {
+
+                            cargandoUsuarioGuardado = false
+
+                        }
+
                     }
+
 
                     // NAVHOST
                     if (!cargandoUsuarioGuardado) {
@@ -131,38 +167,39 @@ class MainActivity : ComponentActivity() {
                                 val scope = rememberCoroutineScope()
                                 PantallaSplash(
                                     modoOscuro = modoOscuro,
+
                                     onTerminar = {
-                                        scope.launch {
-                                            val correoGuardado =
-                                                preferencias.getString(
-                                                    "correo_usuario_activo",
-                                                    null
-                                                )
-                                            if (correoGuardado != null) {
-                                                val usuarioDao =
-                                                    AppDatabase
-                                                        .getDatabase(this@MainActivity)
-                                                        .usuarioDao()
-                                                val usuario =
-                                                    usuarioDao.buscarUsuario(
-                                                        correoGuardado
-                                                    )
-                                                if (usuario != null) {
-                                                    usuarioActual = usuario
-                                                    seccionActual = "INICIO"
-                                                    navController.navigate(
-                                                        "PRINCIPAL"
-                                                    ) {
-                                                        popUpTo("SPLASH") { inclusive = true }
-                                                    }
-                                                    return@launch
+
+                                        if (usuarioActual != null) {
+
+                                            seccionActual = "INICIO"
+
+                                            navController.navigate("PRINCIPAL") {
+
+                                                popUpTo("SPLASH") {
+                                                    inclusive = true
                                                 }
+
+                                                launchSingleTop = true
+
                                             }
+
+                                        } else {
+
                                             navController.navigate("LOGIN") {
-                                                popUpTo("SPLASH") { inclusive = true }
+
+                                                popUpTo("SPLASH") {
+                                                    inclusive = true
+                                                }
+
+                                                launchSingleTop = true
+
                                             }
+
                                         }
+
                                     }
+
                                 )
                             }
 
@@ -174,43 +211,61 @@ class MainActivity : ComponentActivity() {
                                     onCrearCuenta = {
                                         navController.navigate("REGISTRO")
                                     },
-                                    onLoginExitoso = { usuario ->
-                                        preferencias
-                                            .edit()
-                                            .putString("correo_usuario_activo", usuario.correo)
-                                            .apply()
-                                        usuarioActual = usuario
-                                        seccionActual = "INICIO"
-                                        navController.navigate(
-                                            "TRANSICION_AGUA"
-                                        )
-                                    }
-                                )
-                            }
 
-                            // REGISTRO
-                            composable("REGISTRO") {
-                                PantallaRegistro(
-                                    modoOscuro = modoOscuro,
-                                    windowSizeClass = windowSizeClass,
-                                    onRegistroExitoso = { usuario ->
-                                        preferencias
-                                            .edit()
-                                            .putString("correo_usuario_activo", usuario.correo)
-                                            .apply()
+                                    onLoginExitoso = { usuario ->
+
                                         usuarioActual = usuario
+
                                         seccionActual = "INICIO"
+
                                         navController.navigate(
                                             "TRANSICION_AGUA"
                                         ) {
-                                            popUpTo("REGISTRO") { inclusive = true }
+
+                                            popUpTo("LOGIN") {
+                                                inclusive = true
+                                            }
+
+                                            launchSingleTop = true
+
                                         }
+
+                                    }
+
+                                )
+                            }
+
+
+                            // REGISTRO
+                            composable("REGISTRO") {
+
+                                PantallaRegistro(
+                                    modoOscuro = modoOscuro,
+                                    windowSizeClass = windowSizeClass,
+
+                                    onRegistroExitoso = { usuario ->
+
+                                        usuarioActual = usuario
+
+                                        seccionActual = "INICIO"
+
+                                        navController.navigate("TRANSICION_AGUA") {
+
+                                            popUpTo("REGISTRO") {
+                                                inclusive = true
+                                            }
+
+                                            launchSingleTop = true
+                                        }
+
                                     },
+
                                     onVolverLogin = {
                                         navController.popBackStack()
                                     }
                                 )
                             }
+
 
                             // TRANSICION DE AGUA
                             composable("TRANSICION_AGUA") {
@@ -253,21 +308,60 @@ class MainActivity : ComponentActivity() {
                                         seccionActual = nuevaSeccion
                                     },
                                     onConfiguracion = { navController.navigate("CONFIGURACION") },
+
+                                    onAyudaSoporte = {
+                                        navController.navigate("AYUDA_SOPORTE") {
+                                            launchSingleTop = true
+                                        }
+                                    },
+
+
+
                                     onCerrarSesion = {
+
+                                        // Cerrar sesión en Firebase
+                                        FirebaseAuth.getInstance().signOut()
+
+                                        // Eliminar la sesión antigua de Room
                                         preferencias
                                             .edit()
                                             .remove("correo_usuario_activo")
                                             .apply()
+
+                                        // Limpiar el usuario activo
                                         usuarioActual = null
+
+                                        // Restaurar sección inicial
                                         seccionActual = "INICIO"
-                                        navController.navigate(
-                                            "LOGIN"
-                                        ) {
-                                            popUpTo("PRINCIPAL") { inclusive = true }
+
+                                        // Regresar al inicio de sesión
+                                        navController.navigate("LOGIN") {
+
+                                            popUpTo(navController.graph.id) {
+                                                inclusive = true
+                                            }
+
                                             launchSingleTop = true
+
                                         }
+
+                                    }
+
+                                )
+                            }
+
+
+                            // AYUDA Y SOPORTE
+                            composable("AYUDA_SOPORTE") {
+
+                                PantallaAyudaSoporte(
+                                    usuario = usuarioActual,
+                                    modoOscuro = modoOscuro,
+                                    onVolver = {
+                                        navController.popBackStack()
                                     }
                                 )
+
                             }
 
                             // CONFIGURACION
@@ -299,26 +393,41 @@ class MainActivity : ComponentActivity() {
                                             .apply()
                                     },
                                     onVolver = { navController.popBackStack() },
+
                                     onCuentaEliminada = {
+
+                                        // Cerrar cualquier sesión que pudiera permanecer activa
+                                        FirebaseAuth.getInstance().signOut()
+
+                                        // Borrar referencia de la sesión anterior
                                         preferencias
                                             .edit()
                                             .remove("correo_usuario_activo")
                                             .apply()
+
+                                        // Eliminar foto de perfil guardada localmente
                                         usuarioActual?.correo?.let { correo ->
                                             FotoPerfilStorage.eliminarFoto(
                                                 this@MainActivity,
                                                 correo
                                             )
                                         }
+
+                                        // Limpiar datos del usuario en la aplicación
                                         usuarioActual = null
                                         seccionActual = "INICIO"
-                                        navController.navigate(
-                                            "LOGIN"
-                                        ) {
-                                            popUpTo("PRINCIPAL") { inclusive = true }
+
+                                        // Regresar al login sin conservar pantallas anteriores
+                                        navController.navigate("LOGIN") {
+
+                                            popUpTo(navController.graph.id) {
+                                                inclusive = true
+                                            }
+
                                             launchSingleTop = true
                                         }
                                     }
+
                                 )
                             }
                         }

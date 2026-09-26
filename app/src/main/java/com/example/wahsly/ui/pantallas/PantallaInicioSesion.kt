@@ -42,6 +42,7 @@ import com.example.wahsly.AnimacionesVectoriales.WashlyBienvenidaAnimado
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import com.example.wahsly.utilidades.TipoPantalla
 import com.example.wahsly.utilidades.obtenerTipoPantalla
+import com.example.wahsly.utilidades.vibrar
 import androidx.compose.ui.unit.Dp
 
 
@@ -97,6 +98,7 @@ fun PantallaInicioSesion(
         scope.launch {
             try {
                 val usuario = autenticador.iniciarSesion(correo, contrasena)
+                vibrar(context)
                 Toast.makeText(context, "Bienvenido ${usuario.nombre}", Toast.LENGTH_LONG).show()
                 onLoginExitoso(usuario)
             } catch (e: IllegalArgumentException) {

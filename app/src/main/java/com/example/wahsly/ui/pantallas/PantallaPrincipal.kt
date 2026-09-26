@@ -56,6 +56,7 @@ import com.example.wahsly.utilidades.FotoPerfilStorage
 import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
 import com.example.wahsly.utilidades.TipoPantalla
 import com.example.wahsly.utilidades.obtenerTipoPantalla
+import com.example.wahsly.utilidades.vibrar
 import com.example.wahsly.datos.repository.FirebaseHistorialRepository
 import com.example.wahsly.datos.repository.RegistroHistorialFirebase
 import kotlinx.coroutines.flow.catch
@@ -443,6 +444,7 @@ fun PantallaPrincipal(
                                         tamanoLogoRutina = tamanoLogoRutina,
                                         onVerMas = { registroSeleccionado = it },
                                         onEliminar = {
+                                            vibrar(context)
                                             scope.launch {
                                                 historialRepository.eliminarRegistro(it.id)
                                             }
@@ -474,6 +476,7 @@ fun PantallaPrincipal(
                                         tamanoLogoRutina = tamanoLogoRutina,
                                         onVerMas = { registroSeleccionado = it },
                                         onEliminar = {
+                                            vibrar(context)
                                             scope.launch {
                                                 historialRepository.eliminarRegistro(it.id)
                                             }

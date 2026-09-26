@@ -62,6 +62,7 @@ import kotlinx.coroutines.launch
 import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
 import com.example.wahsly.utilidades.TipoPantalla
 import com.example.wahsly.utilidades.obtenerTipoPantalla
+import com.example.wahsly.utilidades.vibrar
 
 
 // Pantalla de perfil de usuario
@@ -586,6 +587,7 @@ fun PantallaPerfil(
                                             onClickLabel = "Confirmar cierre de sesión",
                                             onClick = {
                                                 mostrarDialogoCerrarSesion = false
+                                                vibrar(context)
                                                 onCerrarSesion()
                                             }
                                         )

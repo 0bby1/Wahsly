@@ -46,6 +46,7 @@ import com.example.wahsly.ui.theme.RosaOscuro
 import com.example.wahsly.ui.theme.TarjetaPerfilOscuro
 import com.example.wahsly.viewmodels.CuentaViewModel
 import com.example.wahsly.viewmodels.ViewModelFactory
+import com.example.wahsly.utilidades.vibrar
 
 // COLOR DE ACCIONES PELIGROSAS (ELIMINAR CUENTA)
 private val RojoPeligro = Color(0xFFD64545)
@@ -108,6 +109,7 @@ fun PantallaConfiguracion(
     // AVISO DE CONTRASEÑA CAMBIADA CON ÉXITO
     LaunchedEffect(cuentaViewModel.contrasenaCambiada) {
         if (cuentaViewModel.contrasenaCambiada) {
+            vibrar(context)
             mostrarDialogoContrasena = false
             Toast.makeText(
                 context,
@@ -822,6 +824,7 @@ fun PantallaConfiguracion(
                             usuario = usuario,
                             contrasena = contrasenaConfirmacion,
                             onEliminada = {
+                                vibrar(context)
                                 mostrarDialogoEliminarCuenta = false
                                 onCuentaEliminada()
                             }

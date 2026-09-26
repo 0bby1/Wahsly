@@ -56,6 +56,7 @@ import com.example.wahsly.viewmodels.ViewModelFactory
 import kotlinx.coroutines.delay
 import com.example.wahsly.utilidades.TipoPantalla
 import com.example.wahsly.utilidades.obtenerTipoPantalla
+import com.example.wahsly.utilidades.vibrar
 
 @Composable
 fun PantallaRegistro(
@@ -784,6 +785,7 @@ fun PantallaRegistro(
             }
 
             LaunchedEffect(Unit) {
+                vibrar(context)
                 delay(1000)
                 viewModel.registroExitosoManejado()
                 viewModel.usuarioRegistrado?.let { usuario ->

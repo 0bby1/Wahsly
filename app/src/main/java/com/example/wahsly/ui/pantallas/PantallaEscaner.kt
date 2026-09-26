@@ -63,6 +63,7 @@ import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
 import com.example.wahsly.utilidades.TipoPantalla
 import com.example.wahsly.utilidades.obtenerTipoPantalla
+import com.example.wahsly.utilidades.vibrar
 import androidx.compose.foundation.clickable
 
 data class DatosEscaneo(
@@ -308,6 +309,7 @@ fun PantallaEscaner(
 
     // FUNCION TOMAR FOTO
     fun tomarFoto() {
+        vibrar(context)
         val captura = imageCapture
         if (captura == null) {
             Toast.makeText(

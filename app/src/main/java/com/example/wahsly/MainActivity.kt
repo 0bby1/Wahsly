@@ -35,6 +35,7 @@ import androidx.compose.runtime.LaunchedEffect
 import android.content.pm.ActivityInfo
 import com.example.wahsly.ui.pantallas.PantallaAyudaSoporte
 import com.example.wahsly.datos.repository.FirebaseUsuarioRepository
+import com.example.wahsly.utilidades.vibrar
 import com.google.firebase.auth.FirebaseAuth
 
 
@@ -318,6 +319,8 @@ class MainActivity : ComponentActivity() {
 
 
                                     onCerrarSesion = {
+
+                                        vibrar(this@MainActivity)
 
                                         // Cerrar sesión en Firebase
                                         FirebaseAuth.getInstance().signOut()

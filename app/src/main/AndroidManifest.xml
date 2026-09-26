@@ -8,6 +8,9 @@
     <!-- LO USAREMOS DESPUES PARA GEMINI -->
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!-- PERMISO PARA VIBRACION -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+
     <!-- Permite que la app también pueda instalarse en dispositivos que no tengan cámara -->
     <uses-feature
         android:name="android.hardware.camera.any"

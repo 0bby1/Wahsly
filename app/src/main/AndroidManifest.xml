@@ -5,7 +5,7 @@
     <!-- PERMISO PARA USAR LA CAMARA -->
     <uses-permission android:name="android.permission.CAMERA" />
 
-    <!-- LO USAREMOS DESPUES PARA GEMINI -->
+    <!-- USADO PARA GEMINI -->
     <uses-permission android:name="android.permission.INTERNET" />
 
     <!-- PERMISO PARA VIBRACION -->

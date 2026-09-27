@@ -47,7 +47,10 @@ import java.util.Locale
 import com.example.wahsly.utilidades.obtenerTipoPantalla
 import com.example.wahsly.utilidades.TipoPantalla
 import com.example.wahsly.datos.repository.FirebaseHistorialRepository
-  @Composable
+import com.example.wahsly.utilidades.FotoRutinaStorage
+import java.net.SocketTimeoutException
+
+@Composable
 fun NavegacionPrincipal(
     seccionActual: String,
     usuario: Usuario?,
@@ -62,12 +65,12 @@ fun NavegacionPrincipal(
 
     val context = LocalContext.current
     val tipoPantalla = obtenerTipoPantalla(windowSizeClass)
-    val historialRepository = remember {
-        FirebaseHistorialRepository() }
+    val historialRepository = remember { FirebaseHistorialRepository() }
     val scope = rememberCoroutineScope()
     var analizandoEtiqueta by remember { mutableStateOf(false) }
     var resultadoLavado by remember { mutableStateOf<ResultadoLavado?>(null) }
     var errorGemini by remember { mutableStateOf<String?>(null) }
+    var reinicioEscanerPorTimeout by remember { mutableStateOf(0) }
     var primeraCarga by remember { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
@@ -131,6 +134,7 @@ fun NavegacionPrincipal(
                         PantallaEscaner(
                             modoOscuro = modoOscuro,
                             windowSizeClass = windowSizeClass,
+                            reinicioPorTimeout = reinicioEscanerPorTimeout,
                             onDatosConfirmados = { datos ->
                                 if (!analizandoEtiqueta) {
                                     scope.launch {
@@ -166,21 +170,30 @@ fun NavegacionPrincipal(
                                                         Locale.getDefault()
                                                     ).format(Date())
 
+                                                val fotoBase64 =
+                                                    FotoRutinaStorage.prepararFoto(
+                                                        context = context,
+                                                        uri = datos.fotoUri
+                                                    )
+
                                                 historialRepository.agregarRegistro(
                                                     nombre = nombreRutina,
                                                     fecha = fechaActual,
-                                                    informacion = resultado.aJson()
+                                                    informacion = resultado.aJson(),
+                                                    fotoBase64 = fotoBase64
                                                 )
-
                                             }
                                             resultadoLavado = resultado
                                         } catch (e: Exception) {
-                                            errorGemini =
-                                                e.message
-                                                    ?: "No se pudo analizar la etiqueta."
-                                        } finally {
-                                            analizandoEtiqueta = false
+                                        if (e is SocketTimeoutException) {
+                                            reinicioEscanerPorTimeout++
+                                            errorGemini = "La solicitud tardó demasiado. Intenta escanear nuevamente."
+                                        } else {
+                                            errorGemini = e.message ?: "No se pudo analizar la etiqueta."
                                         }
+                                    } finally {
+                                        analizandoEtiqueta = false
+                                    }
                                     }
                                 }
                             }

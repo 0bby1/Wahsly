@@ -101,34 +101,24 @@ fun PantallaPerfil(
 
     // Cargar la foto local y sincronizarla con Firebase.
     LaunchedEffect(correoUsuario) {
-
         fotoPerfil = null
-
         val correo = correoUsuario
-
         if (!correo.isNullOrBlank()) {
-
             try {
-
                 fotoPerfil = FotoPerfilStorage.cargarFoto(
                     context = context,
                     correo = correo
                 )
-
-                val fotoFirebase =
-                    repositorioFotos.obtenerFotoPerfilBase64()
+                val fotoFirebase = repositorioFotos.obtenerFotoPerfilBase64()
 
                 if (!fotoFirebase.isNullOrBlank()) {
-
                     fotoPerfil =
                         FotoPerfilStorage.guardarFotoDesdeFirestore(
                             context = context,
                             correo = correo,
                             fotoBase64 = fotoFirebase
                         )
-
                 } else if (fotoPerfil != null) {
-
                     // Sincronizar una fotografía que ya existía
                     // antes de implementar Firebase.
                     val fotoPreparada =
@@ -136,18 +126,11 @@ fun PantallaPerfil(
                             context = context,
                             correo = correo
                         )
-
-                    repositorioFotos.guardarFotoPerfil(
-                        fotoPreparada
-                    )
+                    repositorioFotos.guardarFotoPerfil(fotoPreparada)
                 }
-
             } catch (e: CancellationException) {
-
                 throw e
-
             } catch (e: Exception) {
-
                 Log.e(
                     "WAHSLY_FOTO",
                     "No se pudo sincronizar la fotografía",
@@ -168,13 +151,9 @@ fun PantallaPerfil(
             !correo.isNullOrBlank() &&
             !guardandoFoto
         ) {
-
             scopeFoto.launch {
-
                 guardandoFoto = true
-
                 try {
-
                     fotoPerfil = FotoPerfilStorage.guardarFoto(
                         context = context,
                         correo = correo,
@@ -187,38 +166,28 @@ fun PantallaPerfil(
                             correo = correo
                         )
 
-                    repositorioFotos.guardarFotoPerfil(
-                        fotoPreparada
-                    )
+                    repositorioFotos.guardarFotoPerfil(fotoPreparada)
 
                     Toast.makeText(
                         context,
                         "Fotografía guardada y sincronizada",
                         Toast.LENGTH_SHORT
                     ).show()
-
                 } catch (e: CancellationException) {
-
                     throw e
-
                 } catch (e: Exception) {
-
                     Log.e(
                         "WAHSLY_FOTO",
                         "Error al guardar fotografía",
                         e
                     )
-
                     Toast.makeText(
                         context,
                         "La foto se guardó localmente, pero no se pudo sincronizar. Revisa tu conexión.",
                         Toast.LENGTH_LONG
                     ).show()
-
                 } finally {
-
                     guardandoFoto = false
-
                 }
             }
         }
@@ -283,10 +252,10 @@ fun PantallaPerfil(
 
     // Separación entre avatar y tarjeta
     val espacioAvatarTarjeta = when {
-        esCelularHorizontal -> 16.dp
-        esTabletHorizontal -> 24.dp
-        esTabletVertical -> 46.dp
-        else -> 52.dp
+        esCelularHorizontal -> 10.dp
+        esTabletHorizontal -> 20.dp
+        esTabletVertical -> 40.dp
+        else -> 16.dp
     }
 
     // Ancho de la tarjeta blanca
@@ -403,7 +372,6 @@ fun PantallaPerfil(
         containerColor = colorFondo,
         contentWindowInsets = WindowInsets.systemBars,
     ) { padding ->
-        // CONTENIDO SCROLLEABLE (para que quepa en celular horizontal)
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -540,6 +508,20 @@ fun PantallaPerfil(
                     }
                 }
 
+                // SALUDO DEL USUARIO
+                if (usuario != null) {
+                    Text(
+                        text = "Hola ${usuario.nombre}!",
+                        color = colorTexto,
+                        fontSize = if (esCelularHorizontal) 18.sp else 22.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 14.dp)
+                    )
+                }
+
                 // Espacio entre avatar y tarjeta
                 Spacer(modifier = Modifier.height(espacioAvatarTarjeta))
 
@@ -580,13 +562,11 @@ fun PantallaPerfil(
                             onClick = onAyudaSoporte
                         )
 
-
                         HorizontalDivider(
                             modifier = Modifier.padding(horizontal = 16.dp),
                             thickness = 1.dp,
                             color = colorDivisor
                         )
-
 
                         // CERRAR SESIÓN
                         OpcionPerfilConFlecha(
@@ -597,7 +577,6 @@ fun PantallaPerfil(
                             paddingVertical = paddingVerticalOpcion,
                             colorContenido = colorTexto,
                             onClick = {
-
                                 android.util.Log.d(
                                     "WAHSLY_SESION",
                                     "Se presionó Cerrar Sesión"
@@ -672,10 +651,7 @@ fun PantallaPerfil(
                                     textAlign = TextAlign.Center
                                 )
 
-                                Spacer(
-                                    modifier = Modifier.height(24.dp)
-                                )
-
+                                Spacer(modifier = Modifier.height(24.dp))
 
                                 // BOTÓN ACEPTAR
                                 Box(

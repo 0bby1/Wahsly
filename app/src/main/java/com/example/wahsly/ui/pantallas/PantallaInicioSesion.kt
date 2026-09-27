@@ -73,8 +73,8 @@ fun PantallaInicioSesion(
 
     val logoSize = when (tipoPantalla) {
         TipoPantalla.TELEFONO -> 280.dp
-        TipoPantalla.TABLET_VERTICAL -> 600.dp
-        TipoPantalla.TABLET_HORIZONTAL -> 500.dp
+        TipoPantalla.TABLET_VERTICAL -> 400.dp
+        TipoPantalla.TABLET_HORIZONTAL -> 350.dp
     }
 
     val anchoCampos = when (tipoPantalla) {

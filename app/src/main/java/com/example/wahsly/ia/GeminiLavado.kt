@@ -33,7 +33,8 @@ data class ResultadoLavado(
     val planchado: String,
     val limpiezaProfesional: String,
     val tratamientoMancha: String,
-    val precauciones: String
+    val precauciones: String,
+    val productosRecomendados: List<String>
 )
 
 
@@ -148,6 +149,24 @@ object GeminiLavado {
                 Si existe una mancha, recomienda un tratamiento previo
                 seguro solamente cuando no contradiga las instrucciones
                 del fabricante.
+                
+                Recomienda entre 1 y 3 productos de cuidado que puedan
+                ser útiles para esta prenda.
+
+                IMPORTANTE SOBRE LOS PRODUCTOS:
+
+                - Recomienda tipos de producto, no marcas comerciales.
+                - Los productos deben respetar las instrucciones de la etiqueta.
+                - No recomiendes cloro si la etiqueta lo prohíbe.
+                - No recomiendes productos agresivos para prendas delicadas.
+                - Si existe una mancha, puedes recomendar un quitamanchas
+                  apropiado únicamente si es seguro para la prenda.
+                - Mantén los nombres breves.
+
+                Ejemplos:
+                - Detergente líquido para ropa de color
+                - Detergente para prendas delicadas
+                - Quitamanchas sin cloro
 
                 Responde siempre en español.
 
@@ -273,6 +292,27 @@ object GeminiLavado {
                         )
                     )
 
+                    .put(
+                        "productos_recomendados",
+                        JSONObject()
+                            .put(
+                                "type",
+                                "array"
+                            )
+                            .put(
+                                "description",
+                                "Lista de 1 a 3 tipos de productos seguros y útiles para el cuidado de la prenda."
+                            )
+                            .put(
+                                "items",
+                                JSONObject()
+                                    .put(
+                                        "type",
+                                        "string"
+                                    )
+                            )
+                    )
+
             val camposObligatorios =
                 JSONArray()
                     .put("etiqueta_legible")
@@ -286,6 +326,7 @@ object GeminiLavado {
                     .put("limpieza_profesional")
                     .put("tratamiento_mancha")
                     .put("precauciones")
+                    .put("productos_recomendados")
 
             val esquema =
                 JSONObject()
@@ -413,7 +454,19 @@ object GeminiLavado {
                     json.optString(
                         "precauciones",
                         ""
-                    )
+                    ),
+                productosRecomendados =
+                    json.optJSONArray(
+                        "productos_recomendados"
+                    )?.let { productos ->
+
+                        List(productos.length()) { indice ->
+                            productos.optString(indice)
+                        }.filter {
+                            it.isNotBlank()
+                        }
+
+                    } ?: emptyList()
             )
         }
     }
@@ -552,10 +605,10 @@ object GeminiLavado {
             val codigo = conexion.responseCode
 
             val stream = if (codigo in 200..299) {
-                    conexion.inputStream
-                } else {
-                    conexion.errorStream
-                }
+                conexion.inputStream
+            } else {
+                conexion.errorStream
+            }
 
             val respuesta =
                 stream
@@ -566,28 +619,39 @@ object GeminiLavado {
                     .orEmpty()
 
             if (codigo !in 200..299) {
+
                 val mensajeServidor =
                     try {
-                        JSONObject(
-                            respuesta
-                        )
-                            .optJSONObject(
-                                "error"
-                            )
-                            ?.optString(
-                                "message"
-                            )
-
+                        JSONObject(respuesta)
+                            .optJSONObject("error")
+                            ?.optString("message")
                     } catch (_: Exception) {
                         null
                     }
 
-                throw IllegalStateException(
-                    mensajeServidor
-                        ?.takeIf {
-                            it.isNotBlank()
+                val mensajeUsuario =
+                    when {
+
+                        codigo == 429 ||
+                                codigo == 503 ||
+                                mensajeServidor?.contains(
+                                    "high demand",
+                                    ignoreCase = true
+                                ) == true -> {
+
+                            "El servicio de análisis está ocupado en este momento. " +
+                                    "Espera unos segundos e intenta nuevamente."
                         }
-                        ?: "Error de Gemini: HTTP $codigo"
+
+                        else -> {
+                            mensajeServidor
+                                ?.takeIf { it.isNotBlank() }
+                                ?: "No se pudo analizar la etiqueta."
+                        }
+                    }
+
+                throw IllegalStateException(
+                    mensajeUsuario
                 )
             }
 

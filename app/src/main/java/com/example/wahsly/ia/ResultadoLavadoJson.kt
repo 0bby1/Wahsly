@@ -1,6 +1,7 @@
 package com.example.wahsly.ia
 
 import org.json.JSONObject
+import org.json.JSONArray
 
 // Convertir resultado a JSON para guardarlo en ROOM
 fun ResultadoLavado.aJson(): String {
@@ -21,6 +22,15 @@ fun ResultadoLavado.aJson(): String {
         .put("limpiezaProfesional", limpiezaProfesional)
         .put("tratamientoMancha", tratamientoMancha)
         .put("precauciones", precauciones)
+        .put(
+            "productosRecomendados",
+            JSONArray().apply {
+                productosRecomendados.forEach { producto ->
+                    put(producto)
+                }
+            }
+        )
+        .toString()
         .toString()
 }
 
@@ -130,7 +140,20 @@ fun resultadoLavadoDesdeJson(
                 json.optString(
                     "precauciones",
                     ""
-                )
+                ),
+
+            productosRecomendados =
+                json.optJSONArray(
+                    "productosRecomendados"
+                )?.let { productos ->
+
+                    List(productos.length()) { indice ->
+                        productos.optString(indice)
+                    }.filter {
+                        it.isNotBlank()
+                    }
+
+                } ?: emptyList()
         )
     } catch (_: Exception) {
         null

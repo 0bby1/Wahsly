@@ -78,6 +78,7 @@ data class DatosEscaneo(
 fun PantallaEscaner(
     modoOscuro: Boolean,
     windowSizeClass: WindowSizeClass,
+    reinicioPorTimeout: Int = 0,
     onDatosConfirmados: (DatosEscaneo) -> Unit
 ) {
 
@@ -201,6 +202,9 @@ fun PantallaEscaner(
 
     var imageCapture by remember { mutableStateOf<ImageCapture?>(null) }
     var imagenCongelada by remember { mutableStateOf<ImageBitmap?>(null) }
+    LaunchedEffect(reinicioPorTimeout) {
+        if (reinicioPorTimeout > 0) { imagenCongelada = null }
+    }
     var puntoEnfoque by remember { mutableStateOf<Offset?>(null) }
     var idEnfoque by remember { mutableIntStateOf(0) }
     val escalaEnfoque = remember { Animatable(1f) }
@@ -564,7 +568,9 @@ fun PantallaEscaner(
         Row(
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                .statusBarsPadding()
+                .windowInsetsPadding(
+                    WindowInsets.safeDrawing.only(WindowInsetsSides.Top)
+                )
                 .fillMaxWidth()
                 .padding(
                     top = paddingSuperiorIconos,
@@ -711,53 +717,33 @@ fun PantallaEscaner(
             }
         }
 
-        // ZOOM SOLO EN HORIZONTAL
         if (tipoPantalla == TipoPantalla.TABLET_HORIZONTAL) {
-            Row(
+            IconButton(
+                onClick = {
+                    if (tienePermisoCamara) {
+                        tomarFoto()
+                    } else {
+                        launcherPermisoCamara.launch(
+                            Manifest.permission.CAMERA
+                        )
+                    }
+                },
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .navigationBarsPadding()
-                    .padding(bottom = 74.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    .padding(bottom = 100.dp)
+                    .size(tamanoBotonFoto)
+                    .background(
+                        color = FondoClaro,
+                        shape = CircleShape
+                    )
+                    .border(
+                        width = 3.dp,
+                        color = Color.White,
+                        shape = CircleShape
+                    )
             ) {
-                IconButton(
-                    onClick = {
-                        val nuevoZoom =
-                            (zoomActual - 0.10f)
-                                .coerceIn(0f, 1f)
-                        zoomActual = nuevoZoom
-                        camara
-                            ?.cameraControl
-                            ?.setLinearZoom(nuevoZoom)
-                    }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ZoomOut,
-                        contentDescription = "Alejar",
-                        tint = colorControles,
-                        modifier = Modifier.size(tamanoIconosZoom)
-                    )
-                }
-
-                IconButton(
-                    onClick = {
-                        val nuevoZoom =
-                            (zoomActual + 0.10f)
-                                .coerceIn(0f, 1f)
-                        zoomActual = nuevoZoom
-                        camara
-                            ?.cameraControl
-                            ?.setLinearZoom(nuevoZoom)
-                    }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ZoomIn,
-                        contentDescription = "Acercar",
-                        tint = colorControles,
-                        modifier = Modifier.size(tamanoIconosZoom)
-                    )
-                }
+                // botón vacío a propósito
             }
         }
     }

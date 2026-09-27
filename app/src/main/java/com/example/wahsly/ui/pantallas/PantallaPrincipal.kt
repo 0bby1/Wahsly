@@ -61,6 +61,15 @@ import com.example.wahsly.datos.repository.FirebaseHistorialRepository
 import com.example.wahsly.datos.repository.RegistroHistorialFirebase
 import kotlinx.coroutines.flow.catch
 import android.util.Log
+import androidx.compose.ui.layout.ContentScale
+import com.example.wahsly.utilidades.FotoRutinaStorage
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.graphics.Brush
 
 
 @Composable
@@ -120,6 +129,9 @@ fun PantallaPrincipal(
     var tabSeleccionado by remember { mutableIntStateOf(0) }
     var registroSeleccionado by remember {
         mutableStateOf<RegistroHistorialFirebase?>(null) }
+    var registroAEliminar by remember {
+        mutableStateOf<RegistroHistorialFirebase?>(null)
+    }
 
     // RESPONSIVE: DETECCIÓN DE DISPOSITIVO CON WindowSizeClass
     val configuration = LocalConfiguration.current
@@ -146,7 +158,7 @@ fun PantallaPrincipal(
     val colorBordeTarjeta = if (modoOscuro) RosaOscuro else Color.Transparent
 
     // Altura donde Android muestra hora, batería, WiFi, etc.
-    val alturaStatusBar = WindowInsets.statusBars
+    val alturaStatusBar = WindowInsets.safeDrawing
         .asPaddingValues()
         .calculateTopPadding()
 
@@ -443,11 +455,8 @@ fun PantallaPrincipal(
                                         colorTextoSecundario = colorTextoSecundario,
                                         tamanoLogoRutina = tamanoLogoRutina,
                                         onVerMas = { registroSeleccionado = it },
-                                        onEliminar = {
-                                            vibrar(context)
-                                            scope.launch {
-                                                historialRepository.eliminarRegistro(it.id)
-                                            }
+                                        onEliminar = { registro ->
+                                            registroAEliminar = registro
                                         }
                                     )
                                 }
@@ -475,11 +484,8 @@ fun PantallaPrincipal(
                                         colorTextoSecundario = colorTextoSecundario,
                                         tamanoLogoRutina = tamanoLogoRutina,
                                         onVerMas = { registroSeleccionado = it },
-                                        onEliminar = {
-                                            vibrar(context)
-                                            scope.launch {
-                                                historialRepository.eliminarRegistro(it.id)
-                                            }
+                                        onEliminar = { registro ->
+                                            registroAEliminar = registro
                                         }
                                     )
                                 }
@@ -497,6 +503,11 @@ fun PantallaPrincipal(
                 resultadoLavadoDesdeJson(
                     registro.informacion
                 )
+            val fotoRutina = remember(registro.fotoBase64) {
+                FotoRutinaStorage.cargarFoto(
+                    registro.fotoBase64
+                )
+            }
             if (resultado != null) {
                 val colorDialogo = if (modoOscuro) { FondoOscuro } else { FondoClaro }
                 val colorTexto = if (modoOscuro) { RosaOscuro } else { AzulPrincipalClaro }
@@ -517,6 +528,19 @@ fun PantallaPrincipal(
                                 .heightIn(max = maxAltoDialogo)
                                 .verticalScroll(rememberScrollState())
                         ) {
+                            fotoRutina?.let { foto ->
+                                Image(
+                                    bitmap = foto,
+                                    contentDescription = "Foto de la etiqueta de lavado",
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(170.dp)
+                                        .clip(RoundedCornerShape(18.dp))
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                            }
+
                             Text(
                                 text = "Prendas: ${resultado.cantidad}",
                                 color = colorTexto
@@ -643,6 +667,27 @@ fun PantallaPrincipal(
                                 color = colorTexto
                             )
 
+                            if (resultado.productosRecomendados.isNotEmpty()) {
+                                Spacer(modifier = Modifier.height(14.dp))
+
+                                Text(
+                                    text = "Productos recomendados:",
+                                    fontWeight = FontWeight.Bold,
+                                    color = colorTexto
+                                )
+
+                                Spacer(modifier = Modifier.height(6.dp))
+                                resultado.productosRecomendados.forEach { producto ->
+                                    Text(
+                                        text = "• $producto",
+                                        color = colorTexto,
+                                        modifier = Modifier.padding(
+                                            bottom = 4.dp
+                                        )
+                                    )
+                                }
+                            }
+
                             if (
                                 resultado
                                     .informacionAdicional
@@ -691,6 +736,124 @@ fun PantallaPrincipal(
                 )
             }
         }
+        registroAEliminar?.let { registro ->
+            val fondoPopup = if (modoOscuro) {
+                Color(0xFFDCEAF6)
+            } else {
+                AzulPrincipalClaro
+            }
+
+            val colorTextoPopup = if (modoOscuro) {
+                AzulTextoClaro
+            } else {
+                Color.White
+            }
+
+            val colorBordeCancelar = if (modoOscuro) {
+                Color(0xFFBFC9D4)
+            } else {
+                CremaOscuro
+            }
+
+            val colorFondoEliminar = if (modoOscuro) {
+                AzulPrincipalClaro
+            } else {
+                CremaOscuro
+            }
+
+            val colorTextoEliminar = if (modoOscuro) {
+                Color.White
+            } else {
+                AzulTextoClaro
+            }
+
+            Dialog(
+                onDismissRequest = {
+                    registroAEliminar = null
+                },
+                properties = DialogProperties(
+                    dismissOnBackPress = true,
+                    dismissOnClickOutside = true
+                )
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.98f)
+                        .clip(RoundedCornerShape(42.dp))
+                        .background(fondoPopup)
+                        .padding(horizontal = 28.dp, vertical = 34.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+
+                        Text(
+                            text = "¿Deseas eliminar\nesta rutina?",
+                            color = colorTextoPopup,
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center,
+                            lineHeight = 32.sp
+                        )
+
+                        Spacer(modifier = Modifier.height(34.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+
+                            Box(
+                                modifier = Modifier
+                                    .width(115.dp)
+                                    .height(58.dp)
+                                    .clip(RoundedCornerShape(22.dp))
+                                    .border(
+                                        width = 3.dp,
+                                        color = colorBordeCancelar,
+                                        shape = RoundedCornerShape(22.dp)
+                                    )
+                                    .clickable { registroAEliminar = null },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "No, cancelar",
+                                    color = colorTextoPopup,
+                                    fontSize = 17.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+
+                            Box(
+                                modifier = Modifier
+                                    .width(140.dp)
+                                    .height(58.dp)
+                                    .clip(RoundedCornerShape(22.dp))
+                                    .background(colorFondoEliminar)
+                                    .clickable {
+                                        vibrar(context)
+                                        scope.launch {
+                                            historialRepository.eliminarRegistro(registro.id)
+                                            registroAEliminar = null
+                                        }
+                                    },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "Eliminar",
+                                    color = colorTextoEliminar,
+                                    fontSize = 19.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -712,7 +875,7 @@ fun TarjetaRutina(
         confirmValueChange = { estado ->
             if (estado == SwipeToDismissBoxValue.EndToStart) {
                 onEliminar(registro)
-                true
+                false
             } else {
                 false
             }

@@ -14,7 +14,8 @@ data class RegistroHistorialFirebase(
     val id: String,
     val nombre: String,
     val fecha: String,
-    val informacion: String
+    val informacion: String,
+    val fotoBase64: String = ""
 )
 
 class FirebaseHistorialRepository {
@@ -35,9 +36,7 @@ class FirebaseHistorialRepository {
 
     fun registrosPorUsuario(): Flow<List<RegistroHistorialFirebase>> =
         callbackFlow {
-
             val listener = try {
-
                 historialUsuario()
                     .orderBy(
                         "creadoEn",
@@ -51,35 +50,27 @@ class FirebaseHistorialRepository {
                                 "Error al consultar historial",
                                 error
                             )
-
                             close(error)
                             return@addSnapshotListener
                         }
 
                         val registros =
                             snapshot?.documents?.map { documento ->
-
                                 RegistroHistorialFirebase(
                                     id = documento.id,
-                                    nombre = documento.getString("nombre")
-                                        .orEmpty(),
-                                    fecha = documento.getString("fecha")
-                                        .orEmpty(),
-                                    informacion = documento.getString("informacion")
-                                        .orEmpty()
+                                    nombre = documento.getString("nombre").orEmpty(),
+                                    fecha = documento.getString("fecha").orEmpty(),
+                                    informacion = documento.getString("informacion").orEmpty(),
+                                    fotoBase64 = documento.getString("fotoBase64").orEmpty()
                                 )
-
                             }.orEmpty()
-
                         trySend(registros)
                     }
 
             } catch (e: Exception) {
-
                 close(e)
                 return@callbackFlow
             }
-
             awaitClose {
                 listener.remove()
             }
@@ -88,16 +79,16 @@ class FirebaseHistorialRepository {
     suspend fun agregarRegistro(
         nombre: String,
         fecha: String,
-        informacion: String
+        informacion: String,
+        fotoBase64: String = ""
     ) {
-
         val datos = hashMapOf(
             "nombre" to nombre,
             "fecha" to fecha,
             "informacion" to informacion,
+            "fotoBase64" to fotoBase64,
             "creadoEn" to FieldValue.serverTimestamp()
         )
-
         historialUsuario()
             .add(datos)
             .await()
@@ -106,7 +97,6 @@ class FirebaseHistorialRepository {
     suspend fun eliminarRegistro(
         id: String
     ) {
-
         historialUsuario()
             .document(id)
             .delete()

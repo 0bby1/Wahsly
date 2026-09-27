@@ -163,7 +163,6 @@ class CuentaViewModel : ViewModel() {
             }
 
         }
-
     }
 
     fun eliminarCuenta(
@@ -221,7 +220,7 @@ class CuentaViewModel : ViewModel() {
                         contrasena
                     )
 
-                // Verificar la identidad antes de eliminar datos.
+                // Confirmar la identidad antes de borrar datos.
                 firebaseUser
                     .reauthenticate(credencial)
                     .await()
@@ -237,9 +236,9 @@ class CuentaViewModel : ViewModel() {
                 val historial =
                     documentoUsuario.collection("historial")
 
-                // Firestore no elimina automáticamente
-                // las subcolecciones al borrar un documento.
-                // Por eso eliminamos primero el historial.
+                // Eliminar primero todos los registros del historial.
+                // Firestore no borra las subcolecciones
+                // automáticamente al eliminar un documento.
                 while (true) {
 
                     val documentos =
@@ -264,12 +263,15 @@ class CuentaViewModel : ViewModel() {
                 }
 
                 // Eliminar el perfil de Firestore.
+                // Cuando agreguemos la foto comprimida
+                // al documento del usuario,
+                // también se eliminará aquí.
                 documentoUsuario
                     .delete()
                     .await()
 
                 // Eliminar la cuenta de Authentication
-                // únicamente después de limpiar Firestore.
+                // después de limpiar Firestore.
                 firebaseUser
                     .delete()
                     .await()
@@ -281,21 +283,8 @@ class CuentaViewModel : ViewModel() {
                     "Cuenta eliminada de Firebase"
                 )
 
-
-                firebaseUser
-                    .delete()
-                    .await()
-
-                cuentaEliminada = true
-
-                Log.d(
-                    "WAHSLY_CUENTA",
-                    "Cuenta eliminada de Firebase"
-                )
-
-                onEliminada()
-
-
+                // Avisar a MainActivity para limpiar
+                // la fotografía local y regresar al login.
                 onEliminada()
 
             } catch (e: CancellationException) {
@@ -334,7 +323,5 @@ class CuentaViewModel : ViewModel() {
             }
 
         }
-
     }
-
 }

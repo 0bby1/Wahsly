@@ -63,6 +63,9 @@ import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
 import com.example.wahsly.utilidades.TipoPantalla
 import com.example.wahsly.utilidades.obtenerTipoPantalla
 import com.example.wahsly.utilidades.vibrar
+import android.util.Log
+import com.example.wahsly.datos.repository.FirebaseUsuarioRepository
+import kotlinx.coroutines.CancellationException
 
 
 // Pantalla de perfil de usuario
@@ -79,21 +82,77 @@ fun PantallaPerfil(
     animarCabecera: Boolean = false
 ) {
 
+
     val context = LocalContext.current
     val scopeFoto = rememberCoroutineScope()
     val correoUsuario = usuario?.correo
-    var fotoPerfil by remember(correoUsuario) { mutableStateOf<ImageBitmap?>(null) }
 
+    val repositorioFotos = remember {
+        FirebaseUsuarioRepository()
+    }
+
+    var fotoPerfil by remember(correoUsuario) {
+        mutableStateOf<ImageBitmap?>(null)
+    }
+
+    var guardandoFoto by remember {
+        mutableStateOf(false)
+    }
+
+    // Cargar la foto local y sincronizarla con Firebase.
     LaunchedEffect(correoUsuario) {
+
         fotoPerfil = null
-        if (!correoUsuario.isNullOrBlank()) {
+
+        val correo = correoUsuario
+
+        if (!correo.isNullOrBlank()) {
+
             try {
+
                 fotoPerfil = FotoPerfilStorage.cargarFoto(
-                    context,
-                    correoUsuario
+                    context = context,
+                    correo = correo
                 )
+
+                val fotoFirebase =
+                    repositorioFotos.obtenerFotoPerfilBase64()
+
+                if (!fotoFirebase.isNullOrBlank()) {
+
+                    fotoPerfil =
+                        FotoPerfilStorage.guardarFotoDesdeFirestore(
+                            context = context,
+                            correo = correo,
+                            fotoBase64 = fotoFirebase
+                        )
+
+                } else if (fotoPerfil != null) {
+
+                    // Sincronizar una fotografía que ya existía
+                    // antes de implementar Firebase.
+                    val fotoPreparada =
+                        FotoPerfilStorage.prepararFotoParaFirestore(
+                            context = context,
+                            correo = correo
+                        )
+
+                    repositorioFotos.guardarFotoPerfil(
+                        fotoPreparada
+                    )
+                }
+
+            } catch (e: CancellationException) {
+
+                throw e
+
             } catch (e: Exception) {
-                fotoPerfil = null
+
+                Log.e(
+                    "WAHSLY_FOTO",
+                    "No se pudo sincronizar la fotografía",
+                    e
+                )
             }
         }
     }
@@ -101,29 +160,70 @@ fun PantallaPerfil(
     val selectorFoto = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
     ) { uri ->
-        if (uri != null && correoUsuario != null) {
+
+        val correo = correoUsuario
+
+        if (
+            uri != null &&
+            !correo.isNullOrBlank() &&
+            !guardandoFoto
+        ) {
+
             scopeFoto.launch {
+
+                guardandoFoto = true
+
                 try {
+
                     fotoPerfil = FotoPerfilStorage.guardarFoto(
                         context = context,
-                        correo = correoUsuario,
+                        correo = correo,
                         uri = uri
                     )
+
+                    val fotoPreparada =
+                        FotoPerfilStorage.prepararFotoParaFirestore(
+                            context = context,
+                            correo = correo
+                        )
+
+                    repositorioFotos.guardarFotoPerfil(
+                        fotoPreparada
+                    )
+
                     Toast.makeText(
                         context,
-                        "Fotografía actualizada",
+                        "Fotografía guardada y sincronizada",
                         Toast.LENGTH_SHORT
                     ).show()
+
+                } catch (e: CancellationException) {
+
+                    throw e
+
                 } catch (e: Exception) {
+
+                    Log.e(
+                        "WAHSLY_FOTO",
+                        "Error al guardar fotografía",
+                        e
+                    )
+
                     Toast.makeText(
                         context,
-                        "No se pudo guardar la fotografía",
-                        Toast.LENGTH_SHORT
+                        "La foto se guardó localmente, pero no se pudo sincronizar. Revisa tu conexión.",
+                        Toast.LENGTH_LONG
                     ).show()
+
+                } finally {
+
+                    guardandoFoto = false
+
                 }
             }
         }
     }
+
 
     // RESPONSIVE CON WindowSizeClass
     val tipoPantalla = obtenerTipoPantalla(windowSizeClass)

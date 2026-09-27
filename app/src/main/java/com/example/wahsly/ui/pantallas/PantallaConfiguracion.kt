@@ -124,8 +124,14 @@ fun PantallaConfiguracion(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(colorFondo),
+            .background(colorFondo)
+            .windowInsetsPadding(
+                WindowInsets.safeDrawing.only(
+                    WindowInsetsSides.Top
+                )
+            ),
         contentAlignment = Alignment.TopCenter
+
     ) {
         // BoxWithConstraints para detectar si está en horizontal o vertical
         BoxWithConstraints(

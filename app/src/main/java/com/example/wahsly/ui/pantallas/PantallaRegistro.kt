@@ -166,7 +166,11 @@ fun PantallaRegistro(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .statusBarsPadding()
+                .windowInsetsPadding(
+                    WindowInsets.safeDrawing.only(
+                        WindowInsetsSides.Top
+                    )
+                )
                 .navigationBarsPadding()
                 .verticalScroll(rememberScrollState())
                 .padding(

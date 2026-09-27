@@ -37,6 +37,9 @@ import com.example.wahsly.ui.pantallas.PantallaAyudaSoporte
 import com.example.wahsly.datos.repository.FirebaseUsuarioRepository
 import com.example.wahsly.utilidades.vibrar
 import com.google.firebase.auth.FirebaseAuth
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 
 
 class MainActivity : ComponentActivity() {
@@ -51,6 +54,7 @@ class MainActivity : ComponentActivity() {
             } else {
                 ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
             }
+        ocultarBarrasDelSistema()
 
         setContent {
             val windowSizeClass = calculateWindowSizeClass(this)
@@ -437,6 +441,25 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
+        }}
+        // MODO INMERSIVO: oculta la barra de navegación y la de estado
+        private fun ocultarBarrasDelSistema() {
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+
+            val controladorInsets =
+                WindowCompat.getInsetsController(window, window.decorView)
+
+            controladorInsets.hide(WindowInsetsCompat.Type.systemBars())
+
+            controladorInsets.systemBarsBehavior =
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        }
+
+        // Vuelve a ocultarlas si reaparecen (p. ej. al regresar de otra app)
+        override fun onWindowFocusChanged(hasFocus: Boolean) {
+            super.onWindowFocusChanged(hasFocus)
+            if (hasFocus) {
+                ocultarBarrasDelSistema()
+            }
         }
     }
-}

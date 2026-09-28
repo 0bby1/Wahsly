@@ -78,7 +78,7 @@ data class DatosEscaneo(
 fun PantallaEscaner(
     modoOscuro: Boolean,
     windowSizeClass: WindowSizeClass,
-    reinicioPorTimeout: Int = 0,
+    reinicioPorError: Int = 0,
     onDatosConfirmados: (DatosEscaneo) -> Unit
 ) {
 
@@ -202,8 +202,8 @@ fun PantallaEscaner(
 
     var imageCapture by remember { mutableStateOf<ImageCapture?>(null) }
     var imagenCongelada by remember { mutableStateOf<ImageBitmap?>(null) }
-    LaunchedEffect(reinicioPorTimeout) {
-        if (reinicioPorTimeout > 0) { imagenCongelada = null }
+    LaunchedEffect(reinicioPorError) {
+        if (reinicioPorError > 0) { imagenCongelada = null }
     }
     var puntoEnfoque by remember { mutableStateOf<Offset?>(null) }
     var idEnfoque by remember { mutableIntStateOf(0) }

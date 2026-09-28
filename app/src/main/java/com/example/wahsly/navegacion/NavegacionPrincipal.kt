@@ -70,7 +70,7 @@ fun NavegacionPrincipal(
     var analizandoEtiqueta by remember { mutableStateOf(false) }
     var resultadoLavado by remember { mutableStateOf<ResultadoLavado?>(null) }
     var errorGemini by remember { mutableStateOf<String?>(null) }
-    var reinicioEscanerPorTimeout by remember { mutableStateOf(0) }
+    var reinicioEscanerPorError by remember { mutableStateOf(0) }
     var primeraCarga by remember { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
@@ -134,7 +134,7 @@ fun NavegacionPrincipal(
                         PantallaEscaner(
                             modoOscuro = modoOscuro,
                             windowSizeClass = windowSizeClass,
-                            reinicioPorTimeout = reinicioEscanerPorTimeout,
+                            reinicioPorError = reinicioEscanerPorError,
                             onDatosConfirmados = { datos ->
                                 if (!analizandoEtiqueta) {
                                     scope.launch {
@@ -185,15 +185,15 @@ fun NavegacionPrincipal(
                                             }
                                             resultadoLavado = resultado
                                         } catch (e: Exception) {
-                                        if (e is SocketTimeoutException) {
-                                            reinicioEscanerPorTimeout++
-                                            errorGemini = "La solicitud tardó demasiado. Intenta escanear nuevamente."
-                                        } else {
-                                            errorGemini = e.message ?: "No se pudo analizar la etiqueta."
+                                            reinicioEscanerPorError++
+                                            if (e is SocketTimeoutException) {
+                                                errorGemini = "La solicitud tardó demasiado. Intenta escanear nuevamente."
+                                            } else {
+                                                errorGemini = e.message ?: "No se pudo analizar la etiqueta."
+                                            }
+                                        } finally {
+                                            analizandoEtiqueta = false
                                         }
-                                    } finally {
-                                        analizandoEtiqueta = false
-                                    }
                                     }
                                 }
                             }
